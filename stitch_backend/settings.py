@@ -24,6 +24,15 @@ env = environ.Env(
     TELEGRAM_BOT_TOKEN=(str, ""),
     TELEGRAM_BOT_USERNAME=(str, ""),
     TELEGRAM_ADMIN_CHAT_IDS=(list, []),
+    PAYME_MERCHANT_ID=(str, ""),
+    PAYME_KEY=(str, ""),
+    PAYME_ACCOUNT_FIELD=(str, "order_id"),
+    CLICK_SERVICE_ID=(str, ""),
+    CLICK_MERCHANT_ID=(str, ""),
+    CLICK_SECRET_KEY=(str, ""),
+    ANTHROPIC_API_KEY=(str, ""),
+    ANTHROPIC_MODEL=(str, "claude-opus-5"),
+    ANTHROPIC_EFFORT=(str, "low"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -214,6 +223,44 @@ TELEGRAM_ADMIN_CHAT_IDS = [str(x).strip() for x in env("TELEGRAM_ADMIN_CHAT_IDS"
 #: Webhook manzilidagi maxfiy qism — tashqi so'rovlar bot nomidan
 #: soxta xabar yubora olmasligi uchun. Bo'sh bo'lsa webhook yopiq.
 TELEGRAM_WEBHOOK_SECRET = env.str("TELEGRAM_WEBHOOK_SECRET", default="")
+
+
+# --------------------------------------------------------------------------
+# To'lov tizimlari (Payme, Click)
+# --------------------------------------------------------------------------
+#
+# Kalitlar bo'sh bo'lsa tugmalar KO'RINMAYDI va qo'lda tasdiqlash oqimi
+# ishlaydi. Avtomatik to'lov qo'shimcha, o'rnini bosuvchi emas.
+#
+# DIQQAT — BIRLIKLAR HAR XIL:
+#   Payme summani TIYINDA yuboradi (bizning amount_tiyin bilan bir xil)
+#   Click  summani SO'MDA yuboradi (kasrli son)
+# Shu sabab ikkalasi alohida modulda.
+
+PAYME_MERCHANT_ID = env("PAYME_MERCHANT_ID").strip()
+PAYME_KEY = env("PAYME_KEY").strip()
+#: Payme kabinetida sozlangan maydon nomi (bizda — to'lov so'rovi raqami)
+PAYME_ACCOUNT_FIELD = env("PAYME_ACCOUNT_FIELD").strip() or "order_id"
+
+CLICK_SERVICE_ID = env("CLICK_SERVICE_ID").strip()
+CLICK_MERCHANT_ID = env("CLICK_MERCHANT_ID").strip()
+CLICK_SECRET_KEY = env("CLICK_SECRET_KEY").strip()
+
+
+# --------------------------------------------------------------------------
+# AI Mentor (Claude API)
+# --------------------------------------------------------------------------
+#
+# Kalit bo'sh bo'lsa chat sozlanmagan xabarini beradi va modelga so'rov
+# ketmaydi — sayt buzilmaydi.
+#
+# EFFORT: dasturlash tushunchasini tushuntirish chuqur fikrlashni talab
+# qilmaydi, shuning uchun standart "low" — javob tez keladi va arzon.
+# Murakkabroq javob kerak bo'lsa "medium" qiling.
+
+ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY").strip()
+ANTHROPIC_MODEL = env("ANTHROPIC_MODEL").strip() or "claude-opus-5"
+ANTHROPIC_EFFORT = env("ANTHROPIC_EFFORT").strip() or "low"
 
 
 # --------------------------------------------------------------------------

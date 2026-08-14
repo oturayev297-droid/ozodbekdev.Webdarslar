@@ -196,6 +196,8 @@
         </div>
     </nav>
 
+    {% include "includes/mentor_chat.html" %}
+
     <script>
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -932,30 +934,16 @@
 
             let isOpen = false;
 
-            const knowledgeBase = {
-                greetings: ["salom", "hello", "hi", "qalay", "assalomu alaykum", "xayrli"],
-                python: ["python", "py", "pandas", "numpy", "ai", "ml"],
-                django: ["django", "drf", "rest framework", "orm", "admin"],
-                javascript: ["js", "javascript", "script", "es6", "frontend", "dom"],
-                react: ["react", "jsx", "hooks", "component", "state", "props"],
-                nodejs: ["node", "nodejs", "express", "npm", "server"],
-                learning: ["dars", "o'rganish", "boshlash", "roadmap", "kurs", "qaer"],
-                about: ["kim", "ozodbek", "muallif", "sayt", "platforma"],
-                guide: ["yo'riqnoma", "yoriqnoma", "guide", "qanday", "nima", "maqsad"]
-            };
+            {% comment %}
+            Ilgari bu yerda qattiq kodlangan "bilimlar bazasi" bor edi —
+            kalit so'z bo'yicha tayyor javob qaytaradigan if/else. Endi
+            chat haqiqiy modelga ulangan (includes/mentor_chat.html), shu
+            sababli u olib tashlandi.
 
-            const responses = {
-                greetings: "Assalomu alaykum! 👋 Bugun qaysi texnologiyani o'rganamiz? Men Python, Django, JS va React bo'yicha yordam bera olaman.",
-                python: "🐍 **Python** - o'rganish uchun eng qulay va kuchli tillardan biri.",
-                django: "🎸 **Django** - bu 'batteries included' web framework.",
-                javascript: "⚡ **JavaScript** - webning yuragi.",
-                react: "⚛️ **React.js** - Meta tomonidan yaratilgan frontend kutubxonasi.",
-                nodejs: "🟢 **Node.js** - JavaScriptni serverda ishlatish muhiti.",
-                learning: "📚 O'rganishni boshlash uchun **'Darslar'** sahifasiga o'ting.",
-                about: "👨‍💻 Bu platforma **Ozodbek** tomonidan yaratilgan.",
-                guide: "🎓 **Ozodbek.web** - O'zbekistondagi eng zamonaviy backend ta'lim platformasi!\n\n✨ **Maqsad**: Har bir o'quvchini professional backend dasturchiga aylantirish.\n\n🚀 **Imkoniyatlar**:\n• **Interaktiv Darslar** - Python, Django, Node.js, React\n• **Amaliy Loyihalar** - Real-world tajriba\n• **AI Yordamchi** - 24/7 yordam\n• **Kod Muharriri** - Browserda to'g'ridan-to'g'ri kod yozish\n• **Testlar** - Bilimingizni tekshiring\n\n👨‍💻 **Muallif haqida**: Bu platforma **Ozodbek Turayev** tomonidan yaratilgan - tajribali backend dasturchi va texnologiya ixlosmandi. Uning maqsadi - O'zbekistonda sifatli IT ta'limni hammaga ochiq qilish!\n\n💡 Savollaringiz bormi? Menga yozing!",
-                default: "Uzur, men bu savolga aniq javob topa olmadim. Savolni o'zgartirib ko'ring yoki 'Darslar' bo'limiga qarang."
-            };
+            Faqat "Yo'riqnoma" tugmasining matni qoldi: u AI javobi emas,
+            platforma tavsifi.
+            {% endcomment %}
+            const GUIDE_TEXT = "🎓 **Ozodbek.web** - O'zbekistondagi eng zamonaviy backend ta'lim platformasi!\n\n✨ **Maqsad**: Har bir o'quvchini professional backend dasturchiga aylantirish.\n\n🚀 **Imkoniyatlar**:\n• **Interaktiv Darslar** - Python, Django, Node.js, React\n• **Amaliy Loyihalar** - Real-world tajriba\n• **AI Yordamchi** - 24/7 yordam\n• **Kod Muharriri** - Browserda to'g'ridan-to'g'ri kod yozish\n• **Testlar** - Bilimingizni tekshiring\n\n👨‍💻 **Muallif haqida**: Bu platforma **Ozodbek Turayev** tomonidan yaratilgan - tajribali backend dasturchi va texnologiya ixlosmandi. Uning maqsadi - O'zbekistonda sifatli IT ta'limni hammaga ochiq qilish!\n\n💡 Savollaringiz bormi? Menga yozing!";
 
             function toggleChat() {
                 isOpen = !isOpen;
@@ -980,16 +968,11 @@
             if(toggleBtn) toggleBtn.addEventListener('click', toggleChat);
             if(closeBtn) closeBtn.addEventListener('click', toggleChat);
 
-            if(chatForm) {
-                chatForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const text = chatInput.value.trim();
-                    if (!text) return;
-                    addMessage(text, 'user');
-                    chatInput.value = '';
-                    simulateAIResponse(text);
-                });
-            }
+            initMentorChat({
+                formId: 'chat-form',
+                inputId: 'chat-input',
+                messagesId: 'chat-messages',
+            });
 
             function addMessage(text, sender) {
                 const div = document.createElement('div');
@@ -1006,30 +989,7 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 
-            function simulateAIResponse(userText) {
-                const typingId = 'typing-' + Date.now();
-                const typingDiv = document.createElement('div');
-                typingDiv.id = typingId;
-                typingDiv.className = 'flex gap-3';
-                typingDiv.innerHTML = `<div class="flex-shrink-0 mt-1"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center"><span class="material-icons-round text-cyan-400 text-xs">auto_awesome</span></div></div><div class="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/5 text-sm text-slate-300 w-16 flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span><span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span></div>`;
-                chatMessages.appendChild(typingDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
 
-                let responseText = responses.default;
-                const lowerText = userText.toLowerCase();
-                for (const [key, keywords] of Object.entries(knowledgeBase)) {
-                    if (keywords.some(k => lowerText.includes(k))) {
-                        responseText = responses[key];
-                        break;
-                    }
-                }
-
-                setTimeout(() => {
-                    const typingEl = document.getElementById(typingId);
-                    if (typingEl) typingEl.remove();
-                    addMessage(responseText, 'ai');
-                }, 1500);
-            }
 
             // Guide Link Handler
             const guideLink = document.getElementById('guide-link');
@@ -1040,7 +1000,7 @@
                         toggleChat();
                     }
                     setTimeout(() => {
-                        addMessage(responses.guide, 'ai');
+                        addMessage(GUIDE_TEXT, 'ai');
                     }, isOpen ? 100 : 500);
                 });
             }

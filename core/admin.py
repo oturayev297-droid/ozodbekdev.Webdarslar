@@ -3,7 +3,7 @@ from django.contrib.admin.sites import AlreadyRegistered
 from django.urls import reverse
 from django.db.models import Count, Q
 from django.utils.html import format_html
-from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress, LoginAttempt, Certificate
+from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress, LoginAttempt, Certificate, MentorMessage
 
 # Helper function to safely register models
 def safe_register(model, admin_class=None):
@@ -322,3 +322,39 @@ class CertificateAdmin(admin.ModelAdmin):
     def action_restore(self, request, queryset):
         count = queryset.filter(revoked_at__isnull=False).update(revoked_at=None)
         self.message_user(request, f"{count} ta sertifikat tiklandi.")
+
+
+# AI Mentor suhbatlari — faqat o'qish
+try:
+    admin.site.unregister(MentorMessage)
+except admin.sites.NotRegistered:
+    pass
+@admin.register(MentorMessage)
+class MentorMessageAdmin(admin.ModelAdmin):
+    """
+    Javob sifatini va suiiste'molni kuzatish uchun. Qo'lda
+    yaratilmaydi va tahrirlanmaydi — bu suhbat yozuvi.
+    """
+
+    list_display = ('created_at', 'user', 'short_question', 'lesson', 'answered')
+    list_filter = ('created_at', 'lesson__module__category')
+    search_fields = ('user__username', 'question', 'answer')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('user', 'question', 'answer', 'lesson', 'created_at')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'lesson')
+
+    @admin.display(description="Savol")
+    def short_question(self, obj):
+        return (obj.question[:70] + '...') if len(obj.question) > 70 else obj.question
+
+    @admin.display(description="Javob berildi", boolean=True)
+    def answered(self, obj):
+        return bool(obj.answer)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

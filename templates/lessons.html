@@ -385,6 +385,8 @@
 
     <form id="csrf-holder" class="hidden">{% csrf_token %}</form>
 
+    {% include "includes/mentor_chat.html" %}
+
     <script>
         // Course data from backend securely parsed for IDE compatibility
         const courseData = JSON.parse('{{ course_data_json|escapejs }}');
@@ -434,114 +436,20 @@
                 toggleChatBtn.addEventListener('click', toggleChat);
                 closeChatBtn.addEventListener('click', toggleChat);
 
-                chatForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const text = chatInput.value.trim();
-                    if (!text) return;
-
-                    // User Message
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = 'flex gap-3 flex-row-reverse mb-4';
-                    msgDiv.innerHTML = `<div class="bg-primary p-4 rounded-3xl text-sm text-white max-w-[85%] shadow-lg">${text}</div>`;
-                    chatMessages.appendChild(msgDiv);
-                    chatInput.value = '';
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                    // Typing Indicator
-                    const typingDiv = document.createElement('div');
-                    typingDiv.className = 'flex gap-3 mb-4';
-                    typingDiv.innerHTML = `
-                        <div class="flex-shrink-0 mt-1">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center">
-                                <span class="material-icons-round text-cyan-400 text-xs">auto_awesome</span>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 p-4 rounded-2xl rounded-tl-none border border-white/5 text-sm text-slate-300 w-16 flex items-center justify-center gap-1">
-                            <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"></span>
-                            <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-                            <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
-                        </div>
-                    `;
-                    chatMessages.appendChild(typingDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                    // Process AI Response after delay
-                    setTimeout(() => {
-                        chatMessages.removeChild(typingDiv);
-                        const responseHTML = getAIResponse(text);
-                        const botDiv = document.createElement('div');
-                        botDiv.className = 'flex gap-3 mb-4 opacity-0 transition-opacity duration-300';
-                        botDiv.innerHTML = `
-                            <div class="flex-shrink-0 mt-1">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                                    <span class="material-icons-round text-white text-xs">auto_awesome</span>
-                                </div>
-                            </div>
-                            <div class="bg-white/5 p-4 md:p-5 rounded-2xl rounded-tl-none border border-white/10 text-sm md:text-base text-slate-300 max-w-[85%] shadow-lg leading-relaxed">
-                                ${responseHTML}
-                            </div>
-                        `;
-                        chatMessages.appendChild(botDiv);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        
-                        // Fade in
-                        setTimeout(() => botDiv.classList.remove('opacity-0'), 10);
-                    }, 1200);
+                initMentorChat({
+                    formId: 'chat-form',
+                    inputId: 'chat-input',
+                    messagesId: 'chat-messages',
+                    getLessonId: () => {
+                        if (currentCourse === null) return null;
+                        const lesson = courseData[currentCourse].lessons[currentLessonIndex];
+                        return lesson ? lesson.id : null;
+                    },
                 });
             }
         });
 
-        // AI Knowledge Base Function
-        function getAIResponse(query) {
-            const q = query.toLowerCase();
-            
-            // Python Knowledge
-            if (q.includes('python') || q.includes('piton')) {
-                if (q.includes('yil') || q.includes('qachon') || q.includes('yarat') || q.includes('chiqarilgan')) {
-                    return `<strong>Python Qachon Yaratilgan?</strong><br><br>Python dasturlash tili <strong>1991-yilda</strong> Gollandiyalik mutaxassis <strong>Guido van Rossum</strong> tomonidan yaratilgan. O'sha paytda u o'qilishi oson va sodda bo'lgan, ammo kuchli skript tilini yaratishni maqsad qilgan. Dastlabki nomi loyiha davomida BBC ning "Monty Python's Flying Circus" komediya shousidan olingan.`;
-                }
-                if (q.includes('qanday ishl') || q.includes('qanaqa ishl') || q.includes('qanday til')) {
-                    return `<strong>Python Qanday Ishlaydi?</strong><br><br>Python — bu <strong>Kompilyatsiya qilinmaydigan, Interpretatsiya qilinadigan</strong> yuqori darajadagi til. <br><br>1. Siz kod yozasiz (.py).<br>2. Python virtual mashinasi (PVM) kodingizni to'g'ridan to'g'ri o'qiydi va bayt-kodga aylantiradi.<br>3. Kod tepadan pastga qarab darhol ijro etiladi. Shu darajada aqlliki tip (type) larni o'zi avtomatik aniqlaydi (Dynamic Typing). Asosan Data Science, AI va Web Backend (Django/FastAPI) dagi kuchli ekotizimi bilan mashhur.`;
-                }
-                return `<strong>Python Dasturlash Tili</strong><br><br>Python hozirda dunyodagi eng mashhur va o'rganish uchun eng oson dasturlash tillaridan biridir. Uning boy kutubxonalari ortidan Sun'iy intellekt (AI), Ma'lumotlar tahlili (Data Science) va Django orqali murakkab Web ilovalarni qisqa vaqt ichida yozish mumkin kabi yirik operatsiyalarni tayyorlaydi.`;
-            }
-            
-            // Django
-            if (q.includes('django') || q.includes('djengo')) {
-                if (q.includes('yil') || q.includes('qachon') || q.includes('yarat') || q.includes('chiqarilgan')) {
-                    return `<strong>Django Qachon Yaratilgan?</strong><br><br>Django veb-freymvorki dastlab <strong>2003-yilda</strong> Amerikaning "Lawrence Journal-World" gazetasining veb-ishlab chiquvchilari (Adrian Holovaty va Simon Willison) tomonidan yangiliklar saytlarini tezroq yaratish uchun ishlab chiqilgan. Omma uchun ochiq manbali (Open Source) versiyasi <strong>2005-yil iyulida</strong> taqdim etilgan. Nomlanishi mashhur jaz gitarachisi Django Reinhardt sharafiga qo'yilgan.`;
-                }
-                if (q.includes('qanday ishl') || q.includes('arxitektura') || q.includes('mtv')) {
-                    return `<strong>Django Qanday Ishlaydi?</strong><br><br>Django <strong>MVT (Model-View-Template)</strong> arxitekturasida ishlaydi. Bu shuni anglatadiki:<br><br>&bull; <strong>Model:</strong> Ma'lumotlar bazasi (PostgreSQL/SQLite) bilan gaplashadigan Python klasslari.<br>&bull; <strong>View:</strong> Asosiy hisob-kitoblar, va foydalanuvchidan qabul qilingan so'rovni tahlil qilib bazadan ma'lumot olib beruvchi Mantiq.<br>&bull; <strong>Template:</strong> Aynan dizayn (HTML/CSS) qismi bo'lib, View orqali olingan o'zgaruvchilarni ekranga chizib beradi.<br><br>U to'liq "Batteries Included" (hamma narsa ichida) degan qoidaga asoslanadi va xavfsizlik (CSRF/SQL Injection) himoyalarini avtomatik ta'minlaydi.`;
-                }
-                return `<strong>Django Freymvorki</strong><br><br>Django bu Python tilining eng yirik Veb Freymvorki hisoblanadi. Uning yordamida juda ham xavfsiz va backend logikasi mustahkam bo'lgan katta darajadagi platformalar (Masalan, Instagram va Pinterest kabi) yozilgan. Qo'shimcha Django Admin paneli, tayyor foydalanuvchi tizimi bilan boshqalardan ajralib turadi.`;
-            }
 
-            // JavaScript / React
-            if (q.includes('react') || q.includes('js') || q.includes('javascript') || q.includes('node')) {
-                if (q.includes('yil') || q.includes('qachon') || q.includes('yarat') || q.includes('chiqarilgan')) {
-                    return `<strong>JavaScript va Zamonaviy JS</strong><br><br><strong>JavaScript:</strong> 1995-yilda asos solingan (Brendan Eich tomonidan, atigi 10 kun ichida). Dastlab faqattgina chiroyli buttonlar va brauzer animatsiyalari uchun o'ylab topilgan.<br><br><strong>Node.js:</strong> 2009-yilda (Ryan Dahl) tomonidan chiqarilgan. JS ni nafaqat brauzerda, balki Server kompyuterda (Backendda) ishlashiga imkon yaratdi.<br><br><strong>React.js:</strong> 2013-yilda Facebook kompaniyasi (hozirgi Meta) tomonidan taqdim etildi.`;
-                }
-                if (q.includes('qanday ishl') || q.includes('qanaqa ishl') || q.includes('nimaga')) {
-                    return `<strong>Zamonaviy JS Stack (React va Node) qanday ishlaydi?</strong><br><br>Hozirgi JavaSript (V8 Engine) - bu to'liq asinxron, event-driven (xodisalarga asoslangan) mantiqda bajariladi.<br><br><strong>React:</strong> Virtual DOM texnologiyasida ishlaydi. Ekranning faqatgina o'zgargan va uzilgan joylarini topib qolganiga tegmasdan tezkor ishlash uchun komponentlashtirilgan html qaytaradi.<br><br><strong>Node.js:</strong> Single-thread (yakka tarmoqli) Event Loop arxitekturasida ishlaydi. Ya'ni u kutib otirmasdan hamma topshiriqlarni asenkron ravishda "Fonga" tashlaydi va shuning hisobiga real-time (Chat/O'yinlar) yozish uchun eng maqbul vositadir.`;
-                }
-                return `<strong>JavaSript Ekosistemasi</strong><br><br>Bugungi kunda JavaScript - Frontendning yagona qiroli. Barcha Web brauzerlar faqatgina JS da gaplashadi. Uning React, Vue, Angular kabi kutubxonalari saytlarni chiroyli ilova ko'rinishiga kelishini taminlasa, Node.js orqali backend ham yozish imkoni uni "Full-Stack" tilga aylantirdi.`;
-            }
-
-            // Fallbacks & Fun queries
-            if (q.includes('salom') || q.includes('assalom') || q.includes('qanaqasiz')) {
-                return `Assalomu Alaykum! Men <strong>Ozodbek.web Akademiyasining</strong> super AI ustoziman. Dasturlash (Xususan Python, Django, JavaScript) bo'yicha hohlagan tarixingiz va savolingizni berishingiz mumkin! Qachon yaratilgan? yoki Qanday ishlaydi? kabi formatlarda bemalol so'rang.`;
-            }
-            if (q.includes('rahmat') || q.includes('tushunarli') || q.includes('zor')) {
-                return `Arzimaydi! Yana qanday savollaringiz bor? Har qanday chalkashlikda men yordamga tayyorman ✨`;
-            }
-            if (q.includes('kim yaratgan') || q.includes('kim yozgan') || q.includes('muallif')) {
-                return `Aynan qaysi texnologiya haqida so'rayapsiz? Iltimos, so'rovingizga texnologiya nomini (Masalan: Python kim yaratgan yoki Django kim yaratgan) qo'shib so'rang, batafsil aytib beraman.`;
-            }
-
-            // Default
-            return `Ajoyib savol! Ammo, men asosan <strong>Python, Django, React.js va Node.js</strong> texnologiyalari tarixini, ularning ichki qanday ishlashlarini mukammal javob berishga moslashganman.<br><br>Iltimos, yuqoridagi texnologiyalar atrofida qanday ishlaydi yoki qachon o'ylab topilgan singari aniq terminlar bilan murojaat qiling, To'liq malumot beraman!`;
-        }
 
         function selectCourse(courseKey) {
             if (!courseData[courseKey]) {

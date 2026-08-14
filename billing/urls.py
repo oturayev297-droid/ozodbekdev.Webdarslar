@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import gateway_views, views
 
 app_name = 'billing'
 
@@ -16,4 +16,12 @@ urlpatterns = [
     path('telegram/unlink/', views.telegram_unlink, name='telegram_unlink'),
     # Maxfiy manzil — `.env` dagi TELEGRAM_WEBHOOK_SECRET bilan mos kelishi kerak
     path('telegram/hook/<str:secret>/', views.telegram_webhook, name='telegram_webhook'),
+
+    # ── To'lov tizimlari ──
+    # Bu manzillar TASHQI serverlar uchun. Ularni to'lov tizimi
+    # kabinetiga aynan shu ko'rinishda yozib qo'yish kerak.
+    path('pay/<int:request_id>/<str:provider>/', views.start_gateway_payment, name='start_payment'),
+    path('payme/', gateway_views.payme_endpoint, name='payme_endpoint'),
+    path('click/prepare/', gateway_views.click_prepare, name='click_prepare'),
+    path('click/complete/', gateway_views.click_complete, name='click_complete'),
 ]

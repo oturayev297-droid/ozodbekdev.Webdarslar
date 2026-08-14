@@ -91,9 +91,34 @@
         {% endwith %}
     </div>
 
+    {% if gateways and open_request.status != 'RECEIPT_UPLOADED' %}
+        {# ── DARHOL TO'LASH ── #}
+        <div class="p-5 md:p-6 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 mb-6">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-icons-round text-emerald-400 text-lg">bolt</span>
+                <p class="text-sm font-bold text-white">Darhol to'lash</p>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed mb-5">
+                To'lov tizimi orqali to'lasangiz obuna <b>avtomatik</b> ochiladi —
+                administrator tasdiqlashini kutish shart emas.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                {% for gw in gateways %}
+                <a href="{% url 'billing:start_payment' open_request.id gw.code %}"
+                   class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-emerald-500 text-white font-black text-xs uppercase tracking-widest hover:bg-emerald-600 hover:-translate-y-0.5 transition-all shadow-lg shadow-emerald-500/20">
+                    {{ gw.name }} orqali to'lash
+                    <span class="material-icons-round text-sm">arrow_forward</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     {% if open_request.status == 'REQUESTED' %}
         <div class="p-5 md:p-6 rounded-2xl bg-amber-500/5 border border-amber-500/15">
-            <p class="text-sm text-amber-400 font-bold mb-2">Administrator so'rovingizni ko'rib chiqmoqda</p>
+            <p class="text-sm text-amber-400 font-bold mb-2">
+                {% if gateways %}Yoki karta orqali{% else %}Administrator so'rovingizni ko'rib chiqmoqda{% endif %}
+            </p>
             <p class="text-xs text-slate-400 leading-relaxed">
                 Karta rekvizitlari tasdiqlangandan keyin shu sahifada ko'rinadi.
                 Odatda bu bir necha soat ichida bo'ladi.

@@ -223,7 +223,130 @@ yoziladi, to'lov oqimi buzilmaydi.
 O'quvchi profil sahifasidan bir martalik havola oladi va bosadi — telefon
 raqami so'ralmaydi.
 
-## 9. Backup
+## 9. To'lov tizimlari (Payme / Click)
+
+Kalitlar bo'sh bo'lsa tugmalar ko'rinmaydi va **qo'lda tasdiqlash oqimi
+ishlashda davom etadi**. Avtomatik to'lov qo'shimcha, o'rnini bosuvchi emas.
+
+### Birliklar — ENG KO'P XATO QILINADIGAN JOY
+
+| Tizim | Birlik | Misol (300 000 so'm) |
+|---|---|---|
+| Payme | **tiyin** (butun son) | `30000000` |
+| Click | **so'm** (kasrli son) | `300000.00` |
+
+Kodda bu farq bir joyda hal qilingan (`gateway_links.py` va har bir
+gateway moduli). Boshqa joyda aylantirish yozmang.
+
+### Payme
+
+`.env`:
+
+```
+PAYME_MERCHANT_ID=<kabinetdan>
+PAYME_KEY=<kabinetdan, "Kalit" bo'limi>
+PAYME_ACCOUNT_FIELD=order_id
+```
+
+Payme kabinetida ko'rsatiladigan manzil:
+
+```
+https://sizning-domen.uz/obuna/payme/
+```
+
+Kabinetda **bitta maydon** sozlanadi — nomi `PAYME_ACCOUNT_FIELD` bilan
+aynan bir xil bo'lishi shart (standart `order_id`). Unga bizning to'lov
+so'rovimiz raqami yoziladi.
+
+Payme sinov (sandbox) rejimida barcha metodlarni tekshiradi:
+`CheckPerformTransaction`, `CreateTransaction`, `PerformTransaction`,
+`CancelTransaction`, `CheckTransaction`, `GetStatement`. Hammasi yozilgan.
+
+### Click
+
+`.env`:
+
+```
+CLICK_SERVICE_ID=<kabinetdan>
+CLICK_MERCHANT_ID=<kabinetdan>
+CLICK_SECRET_KEY=<kabinetdan>
+```
+
+Click kabinetida ikkita manzil ko'rsatiladi:
+
+```
+Prepare:  https://sizning-domen.uz/obuna/click/prepare/
+Complete: https://sizning-domen.uz/obuna/click/complete/
+```
+
+### Ishga tushirishdan oldin
+
+1. **HTTPS majburiy** — ikkala tizim ham shifrlanmagan manzilni qabul qilmaydi.
+2. Avval **sinov rejimida** (sandbox) to'liq oqimni o'tkazing. Kod
+   protokolga muvofiq yozilgan va testlar bilan qoplangan, lekin haqiqiy
+   kalitlarsiz faqat soxta so'rovlar bilan sinalgan.
+3. Sinovda tekshiring: to'lov o'tgach obuna **darhol** ochilishi, takror
+   so'rovda obuna **ikki marta uzaymasligi**, noto'g'ri summa **rad
+   etilishi**.
+4. Admin panel → **To'lov tizimi tranzaksiyalari** da har bir chaqiruv
+   ko'rinadi (`raw_request` bilan birga) — nosozlikni shu yerdan qidiring.
+
+### To'lovdan keyin bekor qilish
+
+Payme `CancelTransaction` ni to'lovdan keyin ham yuborishi mumkin (pul
+qaytarish). Bunda **obuna davri avtomatik o'chirilmaydi** — u moliyaviy
+jurnal va o'zgarmasligi kerak. Adminga Telegram xabari boradi, qarorni
+u qabul qiladi.
+
+## 10. AI Mentor (Claude API)
+
+1. [platform.claude.com](https://platform.claude.com) da API kalit oling.
+2. `.env` ga yozing:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-...
+ANTHROPIC_MODEL=claude-opus-5
+ANTHROPIC_EFFORT=low
+```
+
+Kalit bo'sh bo'lsa chat "sozlanmagan" xabarini beradi — sayt buzilmaydi.
+
+### Xarajat
+
+Har savol pul turadi, shuning uchun cheklovlar kodda qat'iy belgilangan
+(`core/ai_mentor.py`):
+
+| Nima | Qiymat |
+|---|---|
+| Daqiqada savol | 5 |
+| Kunda savol | 60 |
+| Yuboriladigan tarix | oxirgi 6 almashuv |
+| Javob uzunligi | 4096 token |
+
+Tizim ko'rsatmasi keshlanadi, ya'ni har so'rovda qayta hisoblanmaydi.
+`ANTHROPIC_EFFORT=low` — dasturlash tushunchasini tushuntirish chuqur
+fikrlashni talab qilmaydi. Javoblar sifati yetarli bo'lmasa `medium`
+qiling.
+
+Admin panel → **AI Mentor savollari** da barcha suhbatlar ko'rinadi —
+javob sifatini va suiiste'molni shu yerdan kuzating.
+
+## 11. Ortiqcha video fayllar
+
+Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
+yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
+fayllar diskni bekorga egallaydi.
+
+```bash
+python manage.py prune_orphan_videos            # faqat ko'rsatadi
+python manage.py prune_orphan_videos --delete   # o'chiradi (tasdiq so'raydi)
+```
+
+Standart holda **hech narsa o'chirilmaydi**. Backup borligiga ishonch
+hosil qilmasdan `--delete` ishlatmang — video fayllarni qaytarib
+bo'lmaydi.
+
+## 12. Backup
 
 ```bash
 # Baza
@@ -233,6 +356,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 10. Loglar
+## 13. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

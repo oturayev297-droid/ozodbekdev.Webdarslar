@@ -26,5 +26,8 @@ requests==2.32.4
 # --- PDF sertifikatlar ---
 reportlab==5.0.0
 
+# --- AI Mentor (Claude API) ---
+anthropic==0.122.0
+
 # --- Production server ---
 gunicorn==23.0.0

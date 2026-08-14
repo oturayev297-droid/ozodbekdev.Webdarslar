@@ -31,6 +31,9 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('profile/', views.profile, name='profile'),
 
+    # AI Mentor
+    path('mentor/ask/', views.mentor_ask, name='mentor_ask'),
+
     # Sertifikatlar
     path('certificates/', views.my_certificates, name='my_certificates'),
     path('certificates/<str:code>/pdf/', views.certificate_pdf, name='certificate_pdf'),

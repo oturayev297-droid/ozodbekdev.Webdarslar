@@ -250,6 +250,43 @@ class Certificate(models.Model):
         return self.full_name or self.user.username
 
 
+class MentorMessage(models.Model):
+    """
+    AI Mentor suhbati.
+
+    NEGA SAQLANADI (uchta sabab):
+      1. Kontekst — model oldingi savollarni ko'rishi kerak. Tarix
+         SERVERDA turadi, klientdan qabul qilinmaydi: aks holda o'quvchi
+         soxta "assistant" javoblarini yuborib modelni boshqarib olardi.
+      2. Cheklov — kunlik va daqiqalik kvota shu jadvaldan sanaladi.
+      3. Nazorat — javob sifati va suiiste'molni admin ko'ra oladi.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mentor_messages')
+    question = models.TextField()
+    answer = models.TextField(blank=True)
+
+    #: Qaysi darsni ko'rayotganda so'ralgani (bo'lmasa None)
+    lesson = models.ForeignKey(
+        Lesson, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='mentor_messages',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "AI Mentor savoli"
+        verbose_name_plural = "AI Mentor savollari"
+        ordering = ['-created_at']
+        indexes = [
+            # Kvota aynan shu ustunlar bo'yicha sanaydi
+            models.Index(fields=['user', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.question[:50]}"
+
+
 class LoginAttempt(models.Model):
     """
     Login urinishi jurnali — brute-force cheklovi shundan hisoblanadi.

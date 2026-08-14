@@ -161,6 +161,10 @@ class PaymentMethod(models.TextChoices):
     CLICK = 'CLICK', "Click"
     PAYME = 'PAYME', "Payme"
 
+    # DIQQAT: `GatewayTransaction.Provider` bilan qiymatlari MOS kelishi
+    # kerak — avtomatik to'lov tasdiqlanganda provider shu yerga
+    # ko'chiriladi. Yangi to'lov tizimi qo'shilsa ikkalasiga ham qo'shing.
+
 
 class RequestStatus(models.TextChoices):
     """To'lov so'rovining holati.
@@ -253,11 +257,6 @@ class PaymentRequest(models.Model):
 
     #: Rad etish sababi ham shu yerda
     admin_note = models.TextField(blank=True)
-
-    #: KELAJAK UCHUN: Click/Payme tranzaksiya id si. Hozir ishlatilmaydi,
-    #: lekin unique bo'lgani uchun takror webhook ikkinchi yozuv yarata
-    #: olmaydi — idempotentlik naqshi bir xil qoladi.
-    external_tx_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -382,6 +381,91 @@ class SubscriptionPeriod(models.Model):
     def is_revenue(self) -> bool:
         """Tushum hisobotiga kiradimi."""
         return self.source == PeriodSource.PAYMENT
+
+
+class GatewayTransaction(models.Model):
+    """
+    Payme / Click tranzaksiyasi.
+
+    NEGA ALOHIDA JADVAL: `PaymentRequest` — bu BIZNING so'rovimiz, u
+    to'lov tizimining holatini bilmaydi. Payme esa tranzaksiyani yaratish,
+    bajarish va bekor qilishni ALOHIDA chaqiruvlar bilan qiladi va har
+    biri uchun vaqt hamda holat saqlanishini talab qiladi
+    (`CheckTransaction` shularni qaytaradi). Bitta maydonga sig'maydi.
+
+    IDEMPOTENTLIK: `(provider, external_id)` unique. To'lov tizimi bir xil
+    so'rovni takror yuborsa (ular buni ATAYLAB qiladi — tarmoq uzilsa
+    qayta urinishadi) ikkinchi yozuv yaratilmaydi. Ustiga obunani
+    uzaytirish `SubscriptionPeriod.payment_request` unique bilan yana bir
+    marta himoyalangan.
+    """
+
+    class Provider(models.TextChoices):
+        PAYME = 'PAYME', "Payme"
+        CLICK = 'CLICK', "Click"
+
+    class State(models.IntegerChoices):
+        """
+        Payme holatlari. Click uchun ham shular ishlatiladi — ikki xil
+        holat to'plami bo'lsa hisobot ikki joyda yozilishi kerak bo'lardi.
+        """
+
+        CREATED = 1, "Yaratildi"
+        PERFORMED = 2, "To'landi"
+        CANCELLED = -1, "Bekor qilindi"
+        CANCELLED_AFTER_PERFORM = -2, "To'lovdan keyin bekor qilindi"
+
+    provider = models.CharField(max_length=10, choices=Provider.choices, db_index=True)
+
+    #: Payme: `params.id`. Click: `click_trans_id`.
+    external_id = models.CharField(max_length=100)
+
+    #: PROTECT: to'lov yozuvi bor so'rovni o'chirib bo'lmaydi
+    payment_request = models.ForeignKey(
+        PaymentRequest, on_delete=models.PROTECT, related_name='gateway_transactions'
+    )
+
+    #: Tekshirish uchun: to'lov tizimi yuborgan summa (tiyinda saqlanadi).
+    #: Click so'mda yuboradi — qabul qilishda tiyinga aylantiriladi, shunda
+    #: taqqoslash bitta birlikda bo'ladi.
+    amount_tiyin = models.PositiveIntegerField()
+
+    state = models.IntegerField(choices=State.choices, default=State.CREATED, db_index=True)
+
+    #: Payme `time` (millisekund) — `CheckTransaction` javobida qaytariladi
+    external_created_ms = models.BigIntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    performed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+
+    #: Payme `CancelTransaction.reason`
+    cancel_reason = models.IntegerField(null=True, blank=True)
+
+    #: Kelgan so'rovlarni tergov uchun saqlab qo'yamiz
+    raw_request = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "To'lov tizimi tranzaksiyasi"
+        verbose_name_plural = "To'lov tizimi tranzaksiyalari"
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['provider', 'external_id'],
+                name='unique_gateway_transaction',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['payment_request', 'state']),
+        ]
+
+    def __str__(self):
+        return f"{self.provider} {self.external_id} ({self.get_state_display()})"
+
+    @property
+    def is_open(self) -> bool:
+        """Hali bajarilmagan va bekor qilinmagan."""
+        return self.state == self.State.CREATED
 
 
 class TelegramLinkToken(models.Model):

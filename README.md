@@ -5,12 +5,13 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 ## Nima bor
 
 - **73 video dars** 4 yo'nalishda (Python 15, Django 13, React 15, JavaScript 30)
-- **Obuna tizimi** — qo'lda tasdiqlanadigan to'lov, 1/3/6/12 oy
+- **Obuna tizimi** — Payme / Click avtomatik yoki qo'lda tasdiqlash, 1/3/6/12 oy
 - **Testlar** — server tomonda tekshiriladigan, natijasi soxtalashtirilmaydigan
 - **PDF sertifikat** — 80%+ ballda avtomatik, ommaviy tekshirish kodi bilan
 - **O'zlashtirish nazorati** — dars tugatish, level tizimi, haftalik faollik
 - **Parolni tiklash** — emailga 6 xonali kod
 - **Telegram xabarnomalar** — to'lov rekvizitlari, tasdiq, muddat eslatmalari
+- **AI Mentor** — Claude API'ga ulangan haqiqiy o'qituvchi chat
 - **Kod muharriri** — brauzerda **Python** (Pyodide) va JavaScript
 - **Brute-force himoyasi** — login urinishlari cheklovi
 - **Admin panel** — kontent, o'quvchilar, to'lovlar va sertifikatlar
@@ -37,6 +38,7 @@ core/                  kontent va autentifikatsiya
   password_reset.py    6 xonali kod bilan parol tiklash
   lockout.py           login urinishlari cheklovi (brute-force himoyasi)
   certificates.py      PDF sertifikat generatsiyasi va tekshirish
+  ai_mentor.py         Claude API orqali o'qituvchi chat
   admin.py             kontent admin paneli
 billing/               obuna va to'lov
   models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
@@ -45,6 +47,9 @@ billing/               obuna va to'lov
   payment_requests.py  to'lov so'rovi oqimi
   gating.py            kontent darvozasi (bepul dars / obuna)
   telegram.py          xabarnomalar va hisobni ulash
+  gateways/payme.py    Payme Merchant API (JSON-RPC)
+  gateways/click.py    Click SHOP API (prepare / complete)
+  gateway_links.py     to'lov sahifasiga havola qurish
   admin.py             to'lovlarni ko'rib chiqish paneli
 stitch_backend/        Django proyekt sozlamalari
 templates/             HTML shablonlar (Tailwind CDN)
@@ -53,7 +58,8 @@ media/lesson_videos/   dars videolari (git ga tushmaydi, ~5 GB)
 
 ## Obuna tizimi
 
-To'lov **qo'lda** tasdiqlanadi (Click/Payme keyingi bosqichda):
+Ikki yo'l bor. **Avtomatik** — Payme yoki Click orqali, obuna darhol
+ochiladi. **Qo'lda** — kartaga o'tkazma, admin tasdiqlaydi:
 
 ```
 o'quvchi muddat tanlaydi    -> REQUESTED
@@ -63,6 +69,14 @@ admin tasdiqlaydi           -> CONFIRMED         (obuna uzayadi)
 admin rad etadi             -> REJECTED          (kutish darhol tugaydi)
 javobsiz qoladi             -> EXPIRED
 ```
+
+To'lov tizimi kalitlari bo'sh bo'lsa tugmalar ko'rinmaydi va qo'lda
+tasdiqlash ishlashda davom etadi — avtomatik to'lov **qo'shimcha**,
+o'rnini bosuvchi emas.
+
+**BIRLIKLAR HAR XIL:** Payme tiyinda (`30000000`), Click so'mda
+(`300000.00`). Aylantirish faqat `gateway_links.py` va gateway
+modullarida — boshqa joyda yozmang.
 
 Sozlash:
 
@@ -80,6 +94,13 @@ python manage.py subscription_daily
 python manage.py prune_login_attempts
 ```
 
+Video qayta yuklanganda eski fayl diskda qoladi — vaqti-vaqti bilan
+tozalang (standart holda faqat ko'rsatadi, o'chirmaydi):
+
+```bash
+python manage.py prune_orphan_videos
+```
+
 ## Sertifikatlar
 
 Testda **80%+** ball olinganda sertifikat avtomatik beriladi (`certificates.PASS_SCORE`).
@@ -88,6 +109,28 @@ kodni kiritib haqiqiyligini ko'radi (login talab qilinmaydi).
 
 PDF diskda **saqlanmaydi** — har so'rovda `reportlab` bilan qayta chiziladi.
 Mazmun `Certificate` yozuvida muzlatilgan, PDF esa uning ko'rinishi.
+
+## AI Mentor
+
+Chat `claude-opus-5` modeliga ulangan. `ANTHROPIC_API_KEY` bo'sh bo'lsa
+o'quvchi "sozlanmagan" xabarini oladi va sayt buzilmaydi.
+
+Xarajat nazorati:
+- Har o'quvchiga daqiqada 5, kunida 60 savol
+- Suhbat tarixidan faqat oxirgi 6 almashuv yuboriladi
+- Tizim ko'rsatmasi keshlanadi (`cache_control`)
+- `effort=low` — tushuntirish uchun chuqur fikrlash kerak emas
+
+**Suhbat tarixi SERVERDA saqlanadi**, klientdan qabul qilinmaydi. Aks
+holda o'quvchi soxta "assistant" javoblarini yuborib modelni boshqarib
+olardi (prompt injection).
+
+**Model javobi SERVERDA HTML ga aylantiriladi** va tozalanadi — matn
+to'g'ridan-to'g'ri `innerHTML` ga tushmaydi.
+
+Streaming ataylab ishlatilmagan: loyiha gunicorn'ning sinxron
+worker'larida ishlaydi va oqim butun javob davomida worker'ni band
+qilib turardi.
 
 ## Kod muharriri
 
@@ -137,6 +180,23 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
     yuborilmagani uchun tasdiqlangan to'lov bekor bo'lib qolmasligi kerak.
 18. **Ko'p qatorli `{# #}` ISHLATILMAYDI** — u faqat bir qatorli izoh,
     ko'p qatorda matn sahifaga chiqib ketadi. `{% comment %}` ishlatiladi.
+19. **To'lov tizimi summasi SERVERDAGI qiymat bilan solishtiriladi.**
+    Payme/Click yuborgan summaga hech qachon ishonilmaydi.
+20. **Gateway obunani `confirm_request` orqali uzaytiradi** — qo'lda
+    tasdiqlash bilan aynan bir xil yo'l. Ikkinchi yo'l yozilsa
+    idempotentlik va jurnal qoidalari ikki joyda takrorlanardi.
+21. **Takror so'rov obunani ikki marta uzaytirmaydi.** Payme va Click
+    tarmoq uzilganda so'rovni ATAYLAB qayta yuboradi. Ikki qatlam himoya:
+    `GatewayTransaction (provider, external_id)` va
+    `SubscriptionPeriod.payment_request` unique.
+22. **`secrets.compare_digest` satrlarda faqat ASCII qabul qiladi** —
+    tashqi ma'lumot bilan solishtirishda BAYTLAR ishlatiladi, aks holda
+    buzilgan sarlavha serverni 500 ga tushirardi.
+23. **To'lovdan keyin bekor qilishda davr jurnali o'chirilmaydi** —
+    adminga xabar boradi, qarorni u qabul qiladi.
+24. **AI Mentor suhbat tarixi serverda** — klientdan qabul qilinmaydi.
+25. **Model javobi serverda HTML ga aylantiriladi** — `_to_html` faqat
+    kerakli teglarni chiqaradi, qolgani qochiriladi.
 
 ## Testlar
 
@@ -144,11 +204,16 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 python manage.py test                  # hammasi
 python manage.py test billing          # obuna va to'lov
 python manage.py test core.tests_phase3  # cheklov, sertifikat, muharrir
+python manage.py test billing.tests_gateways  # Payme / Click
+python manage.py test core.tests_mentor       # AI Mentor
 ```
 
 ## Hali qilinmagan
 
-- Click / Payme avtomatik integratsiyasi (`external_tx_id` maydoni tayyor)
 - Videolarni CDN / S3 ga ko'chirish
 - 66 darsga test yaratish (hozir 7 test bor)
-- "AI Mentor" ni haqiqiy AI ga ulash (hozir qattiq kodlangan javoblar)
+
+> **Payme / Click:** kod yozilgan va testlar bilan qoplangan, lekin
+> haqiqiy merchant kalitlarisiz faqat soxta so'rovlar bilan sinalgan.
+> Ishga tushirishdan oldin **sandbox** da to'liq oqimni o'tkazing —
+> `DEPLOY.md` 9-bo'limi.

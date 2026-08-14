@@ -453,6 +453,8 @@
     </div>
 
     <!-- Initialization Scripts -->
+    {% include "includes/mentor_chat.html" %}
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Apply dynamic heights and widths safely
@@ -502,17 +504,10 @@
             toggleBtn.addEventListener('click', toggleChat);
             closeBtn.addEventListener('click', toggleChat);
             
-            chatForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const text = chatInput.value.trim();
-                if (!text) return;
-                
-                const userDiv = document.createElement('div');
-                userDiv.className = 'flex gap-3 flex-row-reverse';
-                userDiv.innerHTML = `<div class="bg-primary p-3.5 rounded-2xl text-sm text-white max-w-[85%]">${text}</div>`;
-                chatMessages.appendChild(userDiv);
-                chatInput.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            initMentorChat({
+                formId: 'chat-form',
+                inputId: 'chat-input',
+                messagesId: 'chat-messages',
             });
         });
     </script>

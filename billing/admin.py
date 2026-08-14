@@ -18,11 +18,12 @@ import json
 from django.contrib import admin, messages
 from django.db.models import Count, Sum
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from . import dates, payment_requests
 from .models import (
     AdminSetting,
+    GatewayTransaction,
     PaymentMethod,
     PaymentRequest,
     PeriodSource,
@@ -155,15 +156,27 @@ class PaymentRequestAdmin(admin.ModelAdmin):
     readonly_fields = (
         'user', 'plan', 'months', 'amount_display', 'status', 'requested_at',
         'expires_at', 'card_issued_at', 'receipt_sent_at', 'receipt_source',
-        'confirmed_at', 'rejected_at', 'reviewed_by_admin', 'external_tx_id',
-        'created_at', 'updated_at', 'flow_help',
+        'confirmed_at', 'rejected_at', 'reviewed_by_admin',
+        'created_at', 'updated_at', 'flow_help', 'gateway_info',
     )
     fields = (
         'flow_help', 'user', 'plan', 'months', 'amount_display', 'status',
+        'gateway_info',
         'requested_at', 'expires_at', 'card_issued_at',
         'receipt_sent_at', 'receipt_source',
         'confirmed_at', 'rejected_at', 'reviewed_by_admin', 'admin_note',
     )
+
+    @admin.display(description="Avtomatik to'lov")
+    def gateway_info(self, obj):
+        rows = obj.gateway_transactions.all()
+        if not rows:
+            return "— (qo'lda tasdiqlanadi)"
+        return format_html_join(
+            format_html("<br>"),
+            "{}: <code>{}</code> — {}",
+            ((t.get_provider_display(), t.external_id, t.get_state_display()) for t in rows),
+        )
 
     @admin.display(description="Oqim")
     def flow_help(self, obj):
@@ -439,6 +452,74 @@ class SubscriptionPeriodAdmin(admin.ModelAdmin):
     @admin.display(description="Tugash", ordering='end_date')
     def end_display(self, obj):
         return dates.format_date(obj.end_date)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+# ==========================================================================
+# To'lov tizimi tranzaksiyalari — faqat o'qish
+# ==========================================================================
+
+
+@admin.register(GatewayTransaction)
+class GatewayTransactionAdmin(admin.ModelAdmin):
+    """
+    Payme / Click tranzaksiyalari.
+
+    Qo'lda YARATILMAYDI va o'zgartirilmaydi: yozuvlar to'lov tizimining
+    chaqiruvlaridan paydo bo'ladi va ular bilan solishtiriladi
+    (`GetStatement`). Qo'lda tahrirlash nomuvofiqlikka olib kelardi.
+    """
+
+    list_display = (
+        'created_at', 'provider', 'external_id', 'request_link',
+        'amount_display', 'state_badge', 'performed_at',
+    )
+    list_filter = ('provider', 'state', 'created_at')
+    search_fields = ('external_id', 'payment_request__user__username')
+    date_hierarchy = 'created_at'
+
+    readonly_fields = (
+        'provider', 'external_id', 'payment_request', 'amount_display',
+        'state', 'external_created_ms', 'created_at', 'performed_at',
+        'cancelled_at', 'cancel_reason', 'raw_request',
+    )
+    exclude = ('amount_tiyin',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'payment_request__user'
+        )
+
+    @admin.display(description="So'rov")
+    def request_link(self, obj):
+        url = reverse('admin:billing_paymentrequest_change', args=[obj.payment_request_id])
+        return format_html('<a href="{}">#{}</a>', url, obj.payment_request_id)
+
+    @admin.display(description="Summa", ordering='amount_tiyin')
+    def amount_display(self, obj):
+        return dates.format_money(obj.amount_tiyin)
+
+    @admin.display(description="Holat", ordering='state')
+    def state_badge(self, obj):
+        colors = {
+            GatewayTransaction.State.CREATED: '#f59e0b',
+            GatewayTransaction.State.PERFORMED: '#10b981',
+            GatewayTransaction.State.CANCELLED: '#6b7280',
+            GatewayTransaction.State.CANCELLED_AFTER_PERFORM: '#ef4444',
+        }
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">{}</span>',
+            colors.get(obj.state, '#6b7280'), obj.get_state_display(),
+        )
 
     def has_add_permission(self, request):
         return False

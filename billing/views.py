@@ -8,12 +8,12 @@ from django.conf import settings as dj_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import dates, payment_requests, telegram
-from .models import PeriodSource, ReceiptSource, RequestStatus
+from . import dates, gateway_links, payment_requests, telegram
+from .models import OPEN_STATUSES, PaymentRequest, PeriodSource, ReceiptSource, RequestStatus
 from .services import BillingError, STATUS_LABELS, get_plan, get_state
 
 logger = logging.getLogger(__name__)
@@ -65,6 +65,7 @@ def plans(request):
         'open_request': open_request,
         'cards': cards,
         'receipt_sources': ReceiptSource.choices,
+        'gateways': gateway_links.available(request),
     })
 
 
@@ -120,6 +121,36 @@ def cancel_request(request):
         messages.success(request, "So'rov bekor qilindi.")
 
     return redirect('billing:plans')
+
+
+@login_required
+def start_gateway_payment(request, request_id, provider):
+    """
+    O'quvchini to'lov tizimi sahifasiga yo'naltiradi.
+
+    Havola SERVERDA quriladi: summa va so'rov raqami shu yerdan olinadi.
+    Klientda qurilsa o'quvchi summani o'zgartirib yuborardi — Payme va
+    Click esa havoladagi summani ko'rsatadi.
+    """
+    payment_request = get_object_or_404(
+        PaymentRequest, pk=request_id, user=request.user
+    )
+
+    if payment_request.status not in OPEN_STATUSES:
+        messages.error(request, "Bu to'lov so'rovi yopilgan.")
+        return redirect('billing:plans')
+
+    provider = (provider or '').upper()
+    try:
+        url = gateway_links.build_url(provider, payment_request, request)
+    except gateway_links.GatewayNotConfigured as exc:
+        messages.error(request, str(exc))
+        return redirect('billing:plans')
+
+    logger.info(
+        "[TO'LOV] %s -> %s (so'rov #%s)", request.user.username, provider, payment_request.pk
+    )
+    return redirect(url)
 
 
 @login_required

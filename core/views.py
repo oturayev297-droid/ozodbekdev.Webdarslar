@@ -22,7 +22,7 @@ from urllib.parse import quote
 from billing.gating import can_access_lesson, can_access_quiz, paywall
 from billing.services import get_state
 
-from . import certificates, lockout
+from . import ai_mentor, certificates, lockout
 from . import password_reset as pwreset
 from .models import (
     Category,
@@ -625,6 +625,48 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('landing')
+
+
+# ==========================================================================
+# AI Mentor
+# ==========================================================================
+
+
+@login_required
+@require_POST
+def mentor_ask(request):
+    """
+    AI Mentor'ga savol.
+
+    Suhbat tarixi SERVERDA saqlanadi — klientdan qabul qilinmaydi.
+    Aks holda o'quvchi soxta "assistant" javoblarini yuborib modelni
+    boshqarib olardi.
+    """
+    try:
+        payload = json.loads(request.body or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': "Noto'g'ri format"}, status=400)
+
+    # Dars konteksti — faqat o'quvchi ko'ra oladigan dars qabul qilinadi
+    lesson = None
+    lesson_id = payload.get('lesson_id')
+    if lesson_id:
+        lesson = Lesson.objects.filter(id=lesson_id).select_related(
+            'module__category'
+        ).first()
+        if lesson and not can_access_lesson(request.user, lesson):
+            lesson = None
+
+    try:
+        result = ai_mentor.ask(request.user, payload.get('question'), lesson=lesson)
+    except ai_mentor.MentorError as exc:
+        return JsonResponse({'success': False, 'error': exc.message}, status=exc.status)
+
+    return JsonResponse({
+        'success': True,
+        'answer': result['answer'],
+        'mock': result['mock'],
+    })
 
 
 # ==========================================================================
