@@ -1,0 +1,67 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}Obuna jurnali{% endblock %}
+{% block heading %}Obuna jurnali{% endblock %}
+
+{% block content %}
+
+<p class="text-sm text-slate-500 mb-5 leading-relaxed max-w-3xl">
+    Bu jurnal <b class="text-slate-400">o'zgartirilmaydi va o'chirilmaydi</b>.
+    Har bir obuna uzaytirilishi shu yerga bir marta yoziladi va summa
+    o'sha paytdagi holicha muzlatib qo'yiladi.
+</p>
+
+<form method="get" class="flex flex-wrap items-center gap-2 mb-5">
+    <input name="q" value="{{ q }}" placeholder="Login yoki email"
+           class="flex-1 min-w-[200px] bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+    <select name="source" class="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+        <option value="">Barcha manbalar</option>
+        {% for value, label in sources %}
+            <option value="{{ value }}" {% if source == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button class="px-5 py-2.5 rounded-xl bg-primary text-slate-950 font-bold text-sm">Ko'rish</button>
+</form>
+
+<div class="glass rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="data w-full text-sm">
+            <thead><tr class="border-b border-white/5">
+                <th>Yozilgan</th><th>O'quvchi</th><th>Manba</th><th>Usul</th>
+                <th>Summa</th><th>Muddat</th><th>Tugash</th><th>Kim</th>
+            </tr></thead>
+            <tbody>
+            {% for period in page_obj %}
+                <tr>
+                    <td class="text-slate-500 text-xs whitespace-nowrap">{{ period.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'panel:student_detail' period.subscription.user.id %}" class="hover:text-primary">
+                            {{ period.subscription.user.username }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="px-2 py-0.5 rounded-full text-[11px]
+                            {% if period.is_revenue %}bg-emerald-500/20 text-emerald-300{% else %}bg-slate-600/30 text-slate-400{% endif %}">
+                            {{ period.get_source_display }}
+                        </span>
+                    </td>
+                    <td class="text-slate-400 text-xs">{{ period.get_payment_method_display|default:"—" }}</td>
+                    <td class="{% if period.is_revenue %}font-semibold text-emerald-400{% else %}text-slate-600{% endif %}">
+                        {% if period.amount_tiyin %}{{ period.amount_tiyin|money }}{% else %}—{% endif %}
+                    </td>
+                    <td class="text-slate-400">{% if period.months %}{{ period.months }} oy{% else %}—{% endif %}</td>
+                    <td class="whitespace-nowrap">{{ period.end_date|tashkent_date }}</td>
+                    <td class="text-slate-500 text-xs">{{ period.created_by_admin.username|default:"—" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="8" class="text-center text-slate-500 py-10">Yozuv topilmadi.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'panel/includes/pagination.html' %}
+
+{% endblock %}

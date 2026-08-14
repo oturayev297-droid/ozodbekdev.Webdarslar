@@ -1,0 +1,155 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}Kuzatish{% endblock %}
+{% block heading %}Kuzatish{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Urinishlar (24s)</p>
+        <p class="text-2xl font-extrabold">{{ security.attempts_24h }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Muvaffaqiyatsiz</p>
+        <p class="text-2xl font-extrabold {% if security.failed_24h %}text-amber-400{% endif %}">
+            {{ security.failed_24h }}
+        </p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Mentor (24s)</p>
+        <p class="text-2xl font-extrabold">{{ mentor_stats.day }}</p>
+        <p class="text-xs mt-2 text-slate-500">30 kunda {{ mentor_stats.month }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Hafta faolligi</p>
+        <p class="text-2xl font-extrabold text-secondary">{{ students.active_week }}</p>
+    </div>
+</div>
+
+{% if security.top_failed_ips %}
+    <div class="glass rounded-2xl p-5 mb-6">
+        <h2 class="font-bold text-sm mb-3">Eng ko'p noto'g'ri urinish bo'lgan IP lar (24 soat)</h2>
+        <div class="flex flex-wrap gap-2">
+            {% for row in security.top_failed_ips %}
+                <span class="px-3 py-1.5 rounded-lg bg-white/5 text-sm font-mono">
+                    {{ row.ip }}
+                    <span class="text-amber-400 font-bold ml-1">{{ row.count }}</span>
+                </span>
+            {% endfor %}
+        </div>
+        <p class="text-[11px] text-slate-600 mt-3 leading-relaxed">
+            Ketma-ket noto'g'ri urinishlar avtomatik qulflanadi. Bitta IP
+            dan juda ko'p urinish bo'lsa — bu tanlab sinash urinishi
+            bo'lishi mumkin.
+        </p>
+    </div>
+{% endif %}
+
+<div class="flex flex-wrap gap-1.5 mb-5 text-sm">
+    <a href="?tab=logins" class="px-4 py-2 rounded-lg {% if tab == 'logins' or not tab %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Kirish urinishlari</a>
+    <a href="?tab=mentor" class="px-4 py-2 rounded-lg {% if tab == 'mentor' %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">AI Mentor</a>
+    <a href="?tab=certificates" class="px-4 py-2 rounded-lg {% if tab == 'certificates' %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Sertifikatlar</a>
+</div>
+
+<div class="glass rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        {% if tab == 'mentor' %}
+            <table class="data w-full text-sm">
+                <thead><tr class="border-b border-white/5">
+                    <th>Vaqt</th><th>O'quvchi</th><th>Savol</th><th>Dars</th>
+                </tr></thead>
+                <tbody>
+                {% for msg in page_obj %}
+                    <tr>
+                        <td class="text-slate-500 text-xs whitespace-nowrap">{{ msg.created_at|date:"d.m H:i" }}</td>
+                        <td>
+                            <a href="{% url 'panel:student_detail' msg.user.id %}" class="hover:text-primary">
+                                {{ msg.user.username }}
+                            </a>
+                        </td>
+                        <td class="max-w-md truncate">{{ msg.question }}</td>
+                        <td class="text-slate-500 text-xs">{{ msg.lesson.title|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="text-center text-slate-500 py-10">Yozuv yo'q.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        {% elif tab == 'certificates' %}
+            <table class="data w-full text-sm">
+                <thead><tr class="border-b border-white/5">
+                    <th>Kod</th><th>Egasi</th><th>Test</th><th>Ball</th><th>Berilgan</th><th>Holat</th>
+                </tr></thead>
+                <tbody>
+                {% for cert in page_obj %}
+                    <tr>
+                        <td class="font-mono text-xs">{{ cert.code }}</td>
+                        <td>
+                            <a href="{% url 'panel:student_detail' cert.user.id %}" class="hover:text-primary">
+                                {{ cert.full_name|default:cert.user.username }}
+                            </a>
+                        </td>
+                        <td class="max-w-xs truncate">{{ cert.quiz_title }}</td>
+                        <td class="font-semibold">{{ cert.score_percentage }}%</td>
+                        <td class="text-slate-500 text-xs whitespace-nowrap">{{ cert.issued_at|date:"d.m.Y" }}</td>
+                        <td>
+                            {% if cert.revoked_at %}
+                                <span class="text-red-400 text-xs">Bekor qilingan</span>
+                            {% else %}
+                                <span class="text-emerald-400 text-xs">Amalda</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-slate-500 py-10">Sertifikat yo'q.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        {% else %}
+            <div class="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                <span class="text-sm text-slate-400">Kirish va parol tiklash urinishlari</span>
+                <a href="?tab=logins{% if not only_failed %}&failed=1{% endif %}"
+                   class="text-xs px-3 py-1.5 rounded-lg {% if only_failed %}bg-amber-500/20 text-amber-300{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">
+                    {% if only_failed %}Hammasini ko'rsatish{% else %}Faqat muvaffaqiyatsiz{% endif %}
+                </a>
+            </div>
+            <table class="data w-full text-sm">
+                <thead><tr class="border-b border-white/5">
+                    <th>Vaqt</th><th>Maqsad</th><th>Login</th><th>IP</th><th>Natija</th>
+                </tr></thead>
+                <tbody>
+                {% for attempt in page_obj %}
+                    <tr>
+                        <td class="text-slate-500 text-xs whitespace-nowrap">{{ attempt.created_at|date:"d.m H:i:s" }}</td>
+                        <td class="text-slate-400 text-xs">{{ attempt.get_purpose_display }}</td>
+                        <td class="font-mono text-xs">{{ attempt.username|default:"—" }}</td>
+                        <td class="font-mono text-xs text-slate-400">{{ attempt.ip|default:"—" }}</td>
+                        <td>
+                            {% if attempt.successful %}
+                                <span class="text-emerald-400 text-xs">muvaffaqiyatli</span>
+                            {% else %}
+                                <span class="text-red-400 text-xs">rad etildi</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-slate-500 py-10">Yozuv yo'q.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'panel/includes/pagination.html' %}
+
+<p class="text-xs text-slate-600 mt-6 leading-relaxed max-w-3xl">
+    Kirish urinishlari 30 kun saqlanadi va
+    <code class="font-mono">manage.py prune_login_attempts</code> buyrug'i
+    bilan tozalanadi.
+</p>
+
+{% endblock %}

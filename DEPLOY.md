@@ -176,6 +176,9 @@ Javobsiz to'lov so'rovlarini kuydiradi va 7/3/0 kun qolganda eslatma yuboradi.
 
 # Eski login urinishlari yozuvlarini tozalash (jadval cheksiz o'smasin)
 30 3 * * * cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py prune_login_attempts >> logs/cron.log 2>&1
+
+# Paneldan yuborilgan, navbatda qolgan xabarlarni yuborish (12-bo'limga qarang)
+*/5 * * * * cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py send_panel_messages --budget 240 >> logs/cron.log 2>&1
 ```
 
 Avval quruq sinab ko'ring: `python manage.py subscription_daily --dry-run`
@@ -373,7 +376,74 @@ Har dars bitta so'rov. Tizim ko'rsatmasi keshlanadi. `--limit` bilan
 bir yurishdagi darslar sonini cheklang; buyruq oxirida sarflangan
 tokenlarni ko'rsatadi.
 
-## 12. Ortiqcha video fayllar
+## 12. Boshqaruv paneli (`/panel/`)
+
+Kundalik ish shu panelda: hisobotlar, to'lovlarni tasdiqlash, dars
+joylash, xabar yuborish va kuzatish. Django'ning standart `/admin/`
+paneli zaxira yo'l sifatida qoladi.
+
+### Kirish huquqi
+
+Panel `is_staff` talab qiladi. Huquq **har so'rovda** qayta tekshiriladi —
+xodimlik olib tashlansa, ochiq seans ham keyingi sahifadayoq yopiladi.
+
+```bash
+# Yangi xodim
+python manage.py createsuperuser
+
+# Mavjud hisobga huquq berish
+python manage.py shell -c "from django.contrib.auth.models import User; u=User.objects.get(username='NOM'); u.is_staff=True; u.save()"
+
+# Huquqni olib tashlash (hisob o'chirilmaydi)
+python manage.py shell -c "from django.contrib.auth.models import User; u=User.objects.get(username='NOM'); u.is_staff=False; u.save()"
+```
+
+Kirish urinishlari o'quvchi loginidagi bilan **bir xil** cheklovga
+bo'ysunadi (15 daqiqada 5 urinish). Qulf paytidagi urinishlar
+yozilmaydi, demak muddatni uzaytirmaydi.
+
+Parolni tiklash: `/panel/forgot-password/` — emailga 6 xonali kod, 15
+daqiqa amal qiladi. Bu ishlashi uchun SMTP sozlangan bo'lishi kerak
+(7-bo'limdagi "Email" qismi), aks holda kod terminalga chiqadi va xodim
+uni ololmaydi.
+
+### Xabar yuborish
+
+Faqat **Telegrami ulangan** o'quvchilar oladi. Panel nechta odam
+ulanganini va nechtasi ulanmaganini ko'rsatib turadi.
+
+Katta ro'yxat bitta so'rovda yuborilmaydi (gunicorn uzib qo'yadi):
+panel ~10 soniya yuboradi, qolgani navbatda qoladi. Navbatni yuqoridagi
+cron yopadi:
+
+```bash
+python manage.py send_panel_messages            # navbatni tugatish
+python manage.py send_panel_messages --dry-run  # faqat ko'rish
+python manage.py send_panel_messages --budget 240
+```
+
+`--budget` — bir yurishga ajratiladigan soniya. Cron har 5 daqiqada
+ishlasa, 240 qo'yilsa oldingi yurish tugamasdan yangisi boshlanmaydi.
+
+Bir odam bitta xabarni **ikki marta olmaydi**: har oluvchi uchun alohida
+qator bor va u `(xabar, foydalanuvchi)` bo'yicha unique. Yuborish uzilsa
+to'xtagan joyidan davom etadi.
+
+### Hisobot raqamlari nimadan olinadi
+
+Tushum **faqat** `SubscriptionPeriod` dagi `source=PAYMENT` yozuvlaridan.
+Bepul berilgan davrlar (`ADMIN_GRANT`, `TRIAL`) tushumga **kirmaydi** va
+alohida ko'rsatiladi. Summa to'lov paytida muzlatib yozilgan
+`amount_tiyin` dan olinadi — tarif narxi keyin o'zgarsa ham o'tgan
+oylarning raqamlari o'zgarmaydi.
+
+Aylanma sanasi — `created_at` (pul kelgan payt), `start_date` emas.
+Oylar Asia/Tashkent bo'yicha bo'linadi.
+
+Kutayotgan to'lov so'rovlari **tushum emas** — ular alohida "kutilmoqda"
+sifatida ko'rsatiladi.
+
+## 13. Ortiqcha video fayllar
 
 Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
 yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
@@ -388,7 +458,7 @@ Standart holda **hech narsa o'chirilmaydi**. Backup borligiga ishonch
 hosil qilmasdan `--delete` ishlatmang — video fayllarni qaytarib
 bo'lmaydi.
 
-## 13. Backup
+## 14. Backup
 
 ```bash
 # Baza
@@ -398,6 +468,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 14. Loglar
+## 15. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

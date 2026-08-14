@@ -1,0 +1,78 @@
+{% comment %}
+Yon menyu. Yon paneldan ham, mobil menyudan ham chaqiriladi — shuning
+uchun alohida faylda: ikki nusxa bo'lsa biri yangilanib ikkinchisi
+eskirib qolardi.
+
+`request.resolver_match.url_name` orqali faol bo'lim belgilanadi.
+{% endcomment %}
+{% with u=request.resolver_match.url_name %}
+<div class="px-3 space-y-0.5">
+
+    <a href="{% url 'panel:dashboard' %}"
+       class="nav-item {% if u == 'dashboard' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">insights</span> Bosh sahifa
+    </a>
+
+    <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-slate-600">Moliya</p>
+
+    <a href="{% url 'panel:finance' %}"
+       class="nav-item {% if u == 'finance' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">payments</span> Pul aylanmasi
+    </a>
+
+    <a href="{% url 'panel:payments' %}"
+       class="nav-item {% if u == 'payments' %}active{% endif %} flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="flex items-center gap-3">
+            <span class="material-icons-round text-lg">receipt_long</span> To'lov so'rovlari
+        </span>
+        {% if panel_awaiting %}
+            <span class="px-1.5 min-w-[20px] text-center rounded-full bg-amber-500 text-slate-900 text-[11px] font-bold">{{ panel_awaiting }}</span>
+        {% endif %}
+    </a>
+
+    <a href="{% url 'panel:periods' %}"
+       class="nav-item {% if u == 'periods' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">history_edu</span> Obuna jurnali
+    </a>
+
+    <a href="{% url 'panel:gateways' %}"
+       class="nav-item {% if u == 'gateways' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">account_balance</span> Payme / Click
+    </a>
+
+    <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-slate-600">Ta'lim</p>
+
+    <a href="{% url 'panel:students' %}"
+       class="nav-item {% if u == 'students' or u == 'student_detail' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">group</span> O'quvchilar
+    </a>
+
+    <a href="{% url 'panel:content' %}"
+       class="nav-item {% if u == 'content' or u == 'lesson_edit' or u == 'lesson_new' or u == 'module_edit' or u == 'module_new' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">video_library</span> Darsliklar
+    </a>
+
+    <a href="{% url 'panel:quizzes' %}"
+       class="nav-item {% if u == 'quizzes' %}active{% endif %} flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="flex items-center gap-3">
+            <span class="material-icons-round text-lg">quiz</span> Testlar
+        </span>
+        {% if panel_drafts %}
+            <span class="px-1.5 min-w-[20px] text-center rounded-full bg-slate-600 text-slate-100 text-[11px] font-bold">{{ panel_drafts }}</span>
+        {% endif %}
+    </a>
+
+    <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-slate-600">Aloqa</p>
+
+    <a href="{% url 'panel:messages' %}"
+       class="nav-item {% if u == 'messages' or u == 'message_detail' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">send</span> Xabar yuborish
+    </a>
+
+    <a href="{% url 'panel:monitor' %}"
+       class="nav-item {% if u == 'monitor' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">monitoring</span> Kuzatish
+    </a>
+
+</div>
+{% endwith %}

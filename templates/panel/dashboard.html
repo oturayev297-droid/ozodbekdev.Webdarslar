@@ -1,0 +1,211 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}Bosh sahifa{% endblock %}
+{% block heading %}Bosh sahifa{% endblock %}
+
+{% block content %}
+
+{% comment %} ─── Shoshilinch ish ─── {% endcomment %}
+{% if requests.needs_action %}
+    <a href="{% url 'panel:payments' %}"
+       class="flex items-center gap-4 mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition">
+        <span class="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <span class="material-icons-round">priority_high</span>
+        </span>
+        <span class="min-w-0">
+            <span class="block font-bold text-amber-300">
+                {{ requests.needs_action }} ta o'quvchi pulni yuborib javob kutmoqda
+            </span>
+            <span class="block text-sm text-amber-200/60">
+                Tasdiqlanmaguncha obunasi uzaymaydi. Ko'rish uchun bosing.
+            </span>
+        </span>
+        <span class="material-icons-round ml-auto text-amber-400">chevron_right</span>
+    </a>
+{% endif %}
+
+{% comment %} ─── Asosiy raqamlar ─── {% endcomment %}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Shu oy tushum</p>
+        <p class="text-2xl md:text-3xl font-extrabold">{{ revenue_month.total_display }}</p>
+        <p class="text-xs mt-2">
+            {% if revenue_change_percent is None %}
+                <span class="text-slate-500">{{ revenue_month.count }} ta to'lov</span>
+            {% elif revenue_change_percent >= 0 %}
+                <span class="text-emerald-400">&uarr; {{ revenue_change_percent }}%</span>
+                <span class="text-slate-500">o'tgan oyga nisbatan</span>
+            {% else %}
+                <span class="text-red-400">&darr; {{ revenue_change_percent }}%</span>
+                <span class="text-slate-500">o'tgan oyga nisbatan</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Faol obunachi</p>
+        <p class="text-2xl md:text-3xl font-extrabold text-emerald-400">{{ subscribers.active }}</p>
+        <p class="text-xs mt-2 text-slate-500">
+            {{ subscribers.expiring_soon }} tasi 7 kunda tugaydi
+        </p>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">O'quvchilar</p>
+        <p class="text-2xl md:text-3xl font-extrabold">{{ students.total }}</p>
+        <p class="text-xs mt-2 text-slate-500">
+            +{{ students.new_week }} shu haftada
+        </p>
+    </div>
+
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Hafta faolligi</p>
+        <p class="text-2xl md:text-3xl font-extrabold text-secondary">{{ students.active_week }}</p>
+        <p class="text-xs mt-2 text-slate-500">dars yoki test qilganlar</p>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+
+    {% comment %} ─── Tushum grafigi ─── {% endcomment %}
+    <div class="lg:col-span-2 glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="font-bold">Oxirgi 6 oy tushumi</h2>
+            <a href="{% url 'panel:finance' %}" class="text-xs text-primary hover:underline">Batafsil &rarr;</a>
+        </div>
+
+        {% if series %}
+            <div class="flex items-end justify-between gap-2 h-40">
+                {% for row in series %}
+                    <div class="flex-1 flex flex-col items-center gap-2 group">
+                        <span class="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                            {{ row.total_display }}
+                        </span>
+                        <div class="w-full bg-slate-800/60 rounded-t-lg relative" style="height:100%">
+                            <div class="absolute bottom-0 w-full rounded-t-lg bg-gradient-to-t from-primary to-secondary transition-all"
+                                 style="height: {{ row.height_percent }}%"></div>
+                        </div>
+                        <span class="text-[10px] text-slate-500">{{ row.label }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-slate-500 text-sm py-10 text-center">Hali to'lov yo'q.</p>
+        {% endif %}
+    </div>
+
+    {% comment %} ─── Obuna holati ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <h2 class="font-bold mb-5">Obunalar</h2>
+        <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Faol</span>
+                <span class="font-bold text-emerald-400">{{ subscribers.active }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Tez orada tugaydi</span>
+                <span class="font-bold text-amber-400">{{ subscribers.expiring_soon }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Tugagan</span>
+                <span class="font-bold text-red-400">{{ subscribers.expired }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-white/5">
+                <span class="text-slate-400">Kutayotgan so'rov</span>
+                <span class="font-bold">{{ requests.total }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Shu oy bepul berilgan</span>
+                <span class="font-bold text-slate-300">{{ granted.total }}</span>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-white/5 space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Darslar</span>
+                <span class="font-bold">{{ content.lessons }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Sertifikatlar</span>
+                <span class="font-bold">{{ content.certificates }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">AI Mentor (30 kun)</span>
+                <span class="font-bold">{{ mentor.month }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mt-6">
+
+    {% comment %} ─── Javob kutayotganlar ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold">Javob kutayotgan to'lovlar</h2>
+            <a href="{% url 'panel:payments' %}" class="text-xs text-primary hover:underline">Hammasi &rarr;</a>
+        </div>
+
+        {% if awaiting %}
+            <div class="overflow-x-auto -mx-2">
+                <table class="data w-full text-sm">
+                    <tbody>
+                    {% for req in awaiting %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'panel:student_detail' req.user.id %}" class="hover:text-primary">
+                                    {{ req.user.username }}
+                                </a>
+                            </td>
+                            <td class="text-slate-400">{{ req.months }} oy</td>
+                            <td class="font-semibold">{{ req.amount_tiyin|money }}</td>
+                            <td class="text-slate-500 text-xs whitespace-nowrap">
+                                {{ req.receipt_sent_at|date:"d.m H:i" }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-slate-500 text-sm py-6 text-center">Javob kutayotgan to'lov yo'q.</p>
+        {% endif %}
+    </div>
+
+    {% comment %} ─── Oxirgi tushumlar ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold">Oxirgi to'lovlar</h2>
+            <a href="{% url 'panel:periods' %}" class="text-xs text-primary hover:underline">Jurnal &rarr;</a>
+        </div>
+
+        {% if recent_periods %}
+            <div class="overflow-x-auto -mx-2">
+                <table class="data w-full text-sm">
+                    <tbody>
+                    {% for period in recent_periods %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'panel:student_detail' period.subscription.user.id %}" class="hover:text-primary">
+                                    {{ period.subscription.user.username }}
+                                </a>
+                            </td>
+                            <td class="text-slate-400 text-xs">{{ period.get_payment_method_display }}</td>
+                            <td class="font-semibold text-emerald-400">{{ period.amount_tiyin|money }}</td>
+                            <td class="text-slate-500 text-xs whitespace-nowrap">
+                                {{ period.created_at|date:"d.m H:i" }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-slate-500 text-sm py-6 text-center">Hali to'lov yo'q.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

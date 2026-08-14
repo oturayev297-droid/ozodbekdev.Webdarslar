@@ -8,7 +8,11 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    # Django'ning standart paneli ZAXIRA yo'l sifatida qoladi: kundalik
+    # ish `/panel/` da, nozik holatlar (model darajasidagi tuzatish)
+    # esa shu yerda bajariladi.
     path('admin/', admin.site.urls),
+    path('panel/', include('panel.urls')),
     path('obuna/', include('billing.urls')),
     path('', include('core.urls')),
 ]

@@ -1,0 +1,116 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}Xabar yuborish{% endblock %}
+{% block heading %}Xabar yuborish{% endblock %}
+
+{% block content %}
+
+{% if not telegram_ready %}
+    <div class="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-sm text-red-300 leading-relaxed">
+        <b>Telegram bot sozlanmagan.</b>
+        Xabar yuborish uchun serverdagi <code class="font-mono">.env</code> faylida
+        <code class="font-mono">TELEGRAM_BOT_TOKEN</code> to'ldirilishi kerak.
+    </div>
+{% endif %}
+
+<div class="grid lg:grid-cols-3 gap-6">
+
+    {% comment %} ─── Yozish ─── {% endcomment %}
+    <div class="lg:col-span-2">
+        <form method="post" class="glass rounded-2xl p-6 space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Kimga</label>
+                <div class="space-y-2">
+                    {% for row in preview.rows %}
+                        <label class="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/50 border border-white/5 hover:border-white/15 cursor-pointer transition">
+                            <input type="radio" name="audience" value="{{ row.value }}" required
+                                   class="w-4 h-4 text-primary bg-slate-900 border-white/20">
+                            <span class="flex-1 text-sm">{{ row.label }}</span>
+                            <span class="text-sm font-bold {% if row.count %}text-primary{% else %}text-slate-600{% endif %}">
+                                {{ row.count }} ta
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5" for="body">Xabar matni</label>
+                <textarea id="body" name="body" rows="8" required maxlength="{{ max_length }}"
+                          placeholder="Assalomu alaykum! Ertaga soat 19:00 da jonli dars bo'ladi."
+                          class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary resize-y"></textarea>
+                <p class="text-xs text-slate-500 mt-1.5">
+                    Eng ko'pi {{ max_length }} belgi. Matn Telegramga o'zgartirilmasdan
+                    yuboriladi — maxsus belgilar xavfsiz.
+                </p>
+            </div>
+
+            {% comment %}
+            Yuborish qaytarib bo'lmaydigan amal, shuning uchun tasdiq
+            so'raladi. Ogohlantirish matnida ANIQ raqam bo'lishi kerak —
+            "hammaga yuborilsinmi?" degan savol yetarli emas.
+            {% endcomment %}
+            <button onclick="return confirm('Xabar yuborilsinmi? Bu amalni qaytarib bo\'lmaydi.')"
+                    {% if not telegram_ready %}disabled{% endif %}
+                    class="w-full py-3 rounded-xl font-bold transition
+                    {% if telegram_ready %}bg-primary hover:bg-sky-400 text-slate-950{% else %}bg-white/5 text-slate-600 cursor-not-allowed{% endif %}">
+                Yuborish
+            </button>
+        </form>
+
+        <div class="glass rounded-2xl p-5 mt-5 text-xs text-slate-500 leading-relaxed">
+            <p class="mb-2">
+                <b class="text-slate-400">Faqat Telegrami ulanganlar oladi.</b>
+                Hozir {{ preview.total_students }} ta o'quvchidan
+                {{ preview.linked }} tasi ulangan,
+                {{ preview.unlinked }} tasi ulanmagan.
+            </p>
+            <p>
+                Katta ro'yxat darhol yuborib bo'linmaydi — yuborish
+                boshlanadi va qolgani navbatda qoladi. Navbatni
+                <code class="font-mono">manage.py send_panel_messages</code>
+                buyrug'i tugatadi (u kunlik vazifalar bilan birga ishlatiladi).
+            </p>
+        </div>
+    </div>
+
+    {% comment %} ─── Tarix ─── {% endcomment %}
+    <div>
+        <h2 class="font-bold mb-4">Yuborilganlar</h2>
+
+        {% if page_obj %}
+            <div class="space-y-3">
+                {% for message in page_obj %}
+                    <a href="{% url 'panel:message_detail' message.pk %}"
+                       class="block glass rounded-xl p-4 hover:bg-white/5 transition">
+                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <span class="text-xs text-slate-400">{{ message.get_audience_display }}</span>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full
+                                {% if message.status == 'DONE' %}bg-emerald-500/20 text-emerald-300
+                                {% elif message.status == 'FAILED' %}bg-red-500/20 text-red-300
+                                {% else %}bg-amber-500/20 text-amber-300{% endif %}">
+                                {{ message.delivered }}/{{ message.total }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-300 line-clamp-2">{{ message.body|truncatechars:90 }}</p>
+                        <p class="text-[11px] text-slate-600 mt-2">
+                            {{ message.created_at|date:"d.m.Y H:i" }}
+                            {% if message.sent_by %} &middot; {{ message.sent_by.username }}{% endif %}
+                        </p>
+                    </a>
+                {% endfor %}
+            </div>
+
+            {% include 'panel/includes/pagination.html' %}
+        {% else %}
+            <div class="glass rounded-2xl p-8 text-center">
+                <span class="material-icons-round text-3xl text-slate-700">outgoing_mail</span>
+                <p class="text-slate-500 text-sm mt-2">Hali xabar yuborilmagan.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

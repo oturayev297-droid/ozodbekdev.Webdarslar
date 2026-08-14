@@ -1,0 +1,171 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}Pul aylanmasi{% endblock %}
+{% block heading %}Pul aylanmasi{% endblock %}
+
+{% block content %}
+
+{% comment %}
+MUHIM: bu sahifadagi barcha raqamlar FAQAT tasdiqlangan to'lovlardan.
+Bepul berilgan davrlar (ADMIN_GRANT, TRIAL) tushum EMAS va alohida
+ko'rsatiladi. Buni ekranda ham yozib qo'yamiz, aks holda kimdir
+raqamlarni noto'g'ri tushunib qoladi.
+{% endcomment %}
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Shu oy</p>
+        <p class="text-2xl font-extrabold">{{ revenue_month.total_display }}</p>
+        <p class="text-xs mt-2 text-slate-500">{{ revenue_month.count }} ta to'lov</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">{{ months }} oy jami</p>
+        <p class="text-2xl font-extrabold text-emerald-400">{{ series_total }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">O'rtacha to'lov</p>
+        <p class="text-2xl font-extrabold">{{ revenue_month.average_tiyin|money }}</p>
+        <p class="text-xs mt-2 text-slate-500">shu oy bo'yicha</p>
+    </div>
+    <div class="glass rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-wider text-slate-500 mb-2">Kutayotgan</p>
+        <p class="text-2xl font-extrabold text-amber-400">{{ requests.receipt_uploaded.total_tiyin|money }}</p>
+        <p class="text-xs mt-2 text-slate-500">
+            {{ requests.receipt_uploaded.count }} ta chek — hali tushum emas
+        </p>
+    </div>
+</div>
+
+{% comment %} ─── Oylar grafigi ─── {% endcomment %}
+<div class="glass rounded-2xl p-6 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h2 class="font-bold">Oylar kesimida</h2>
+        <div class="flex gap-1 text-xs">
+            <a href="?months=6" class="px-3 py-1.5 rounded-lg {% if months == 6 %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">6 oy</a>
+            <a href="?months=12" class="px-3 py-1.5 rounded-lg {% if months == 12 %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">12 oy</a>
+            <a href="?months=24" class="px-3 py-1.5 rounded-lg {% if months == 24 %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">24 oy</a>
+        </div>
+    </div>
+
+    <div class="flex items-end gap-1.5 h-52 overflow-x-auto pb-1">
+        {% for row in series %}
+            <div class="flex-1 min-w-[28px] flex flex-col items-center gap-2 group">
+                <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition whitespace-nowrap font-semibold">
+                    {{ row.total_display }}
+                </span>
+                <div class="w-full bg-slate-800/50 rounded-t relative flex-1">
+                    <div class="absolute bottom-0 w-full rounded-t bg-gradient-to-t from-primary to-secondary"
+                         style="height: {{ row.height_percent }}%"></div>
+                </div>
+                <span class="text-[9px] text-slate-500 whitespace-nowrap">{{ row.label }}</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+
+    {% comment %} ─── To'lov usullari ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <h2 class="font-bold mb-1">To'lov usullari</h2>
+        <p class="text-xs text-slate-500 mb-5">Butun davr bo'yicha</p>
+
+        {% if methods_all %}
+            <div class="space-y-4">
+                {% for row in methods_all %}
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-1.5">
+                            <span class="text-slate-300">{{ row.label }}</span>
+                            <span class="font-semibold">{{ row.total_display }}
+                                <span class="text-slate-500 font-normal text-xs">({{ row.count }})</span>
+                            </span>
+                        </div>
+                        <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+                            <div class="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+                                 style="width: {{ row.percent }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-slate-500 text-sm py-6 text-center">Hali to'lov yo'q.</p>
+        {% endif %}
+    </div>
+
+    {% comment %} ─── Tushum bo'lmagan davrlar ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <h2 class="font-bold mb-1">Bepul berilgan davrlar</h2>
+        <p class="text-xs text-slate-500 mb-5">
+            Bular tushumga <span class="text-slate-400">KIRMAYDI</span>, lekin xarajat hisoblanadi
+        </p>
+
+        <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Sinov muddati (butun davr)</span>
+                <span class="font-bold">{{ granted.trial }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-400">Admin bepul bergan</span>
+                <span class="font-bold">{{ granted.admin_grant }}</span>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-white/5">
+            <h3 class="font-bold text-sm mb-4">Kutayotgan so'rovlar</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Yangi so'rov</span>
+                    <span class="font-bold">{{ requests.requested.count }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400">Karta berilgan</span>
+                    <span class="font-bold">{{ requests.card_issued.count }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-400">Chek yuborilgan (javob kutmoqda)</span>
+                    <span class="font-bold text-amber-400">{{ requests.receipt_uploaded.count }}</span>
+                </div>
+            </div>
+            <a href="{% url 'panel:payments' %}"
+               class="mt-4 inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                To'lov so'rovlariga o'tish &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="glass rounded-2xl p-6 mt-6">
+    <h2 class="font-bold mb-4">Obunachilar holati</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+        <div class="p-4 rounded-xl bg-white/5">
+            <p class="text-2xl font-extrabold">{{ subscribers.total }}</p>
+            <p class="text-xs text-slate-500 mt-1">Jami</p>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-500/10">
+            <p class="text-2xl font-extrabold text-emerald-400">{{ subscribers.active }}</p>
+            <p class="text-xs text-slate-500 mt-1">Faol</p>
+        </div>
+        <div class="p-4 rounded-xl bg-amber-500/10">
+            <p class="text-2xl font-extrabold text-amber-400">{{ subscribers.expiring_soon }}</p>
+            <p class="text-xs text-slate-500 mt-1">7 kunda tugaydi</p>
+        </div>
+        <div class="p-4 rounded-xl bg-red-500/10">
+            <p class="text-2xl font-extrabold text-red-400">{{ subscribers.expired }}</p>
+            <p class="text-xs text-slate-500 mt-1">Tugagan</p>
+        </div>
+        <div class="p-4 rounded-xl bg-white/5">
+            <p class="text-2xl font-extrabold text-slate-400">{{ subscribers.never_paid }}</p>
+            <p class="text-xs text-slate-500 mt-1">Hech to'lamagan</p>
+        </div>
+    </div>
+</div>
+
+<p class="text-xs text-slate-600 mt-6 leading-relaxed max-w-3xl">
+    Hisobot obuna davrlari jurnalidan olinadi. Summa to'lov paytida
+    muzlatib yozilgan qiymatdan hisoblanadi — tarif narxi keyin
+    o'zgarsa ham o'tgan oylarning raqamlari o'zgarmaydi. Oylar
+    Toshkent vaqti bo'yicha bo'linadi.
+</p>
+
+{% endblock %}

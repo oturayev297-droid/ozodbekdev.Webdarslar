@@ -1,0 +1,149 @@
+{% comment %}
+Panel karkasi.
+
+DIQQAT: bu yerda {# ... #} ko'p qatorli izoh ISHLATILMAYDI. Django'da u
+faqat BIR QATORLIK — ko'p qatorga yozilsa qolgan qatorlar sahifada
+matn bo'lib chiqib qoladi. Har doim {% comment %} ishlatiladi.
+{% endcomment %}
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}Panel{% endblock %} | Nexus boshqaruv</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: { extend: { colors: {
+                primary: "#0ea5e9", secondary: "#2dd4bf",
+                background: "#020617", surface: "#0f172a",
+            } } }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(30px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .nav-item.active {
+            background: rgba(14, 165, 233, 0.14);
+            color: #38bdf8;
+            border-left-color: #0ea5e9;
+        }
+        table.data th {
+            font-weight: 600; font-size: .72rem; letter-spacing: .06em;
+            text-transform: uppercase; color: #64748b;
+        }
+        table.data td, table.data th { padding: .7rem .9rem; text-align: left; }
+        table.data tbody tr { border-top: 1px solid rgba(255,255,255,.05); }
+        table.data tbody tr:hover { background: rgba(255,255,255,.02); }
+    </style>
+</head>
+<body class="bg-background text-slate-100 min-h-screen">
+
+<div class="flex min-h-screen">
+
+    {% comment %} ─── Yon menyu ─── {% endcomment %}
+    <aside class="hidden lg:flex w-64 shrink-0 flex-col glass border-r border-white/5 sticky top-0 h-screen">
+        <a href="{% url 'panel:dashboard' %}" class="flex items-center gap-3 px-6 h-20 border-b border-white/5">
+            <span class="w-9 h-9 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
+                <span class="material-icons-round text-xl">dashboard</span>
+            </span>
+            <span>
+                <span class="block font-extrabold tracking-tight leading-none">Nexus</span>
+                <span class="block text-[11px] text-slate-500 tracking-widest uppercase">Boshqaruv</span>
+            </span>
+        </a>
+
+        <nav class="flex-1 overflow-y-auto py-4 text-sm">
+            {% include 'panel/includes/nav.html' %}
+        </nav>
+
+        <div class="border-t border-white/5 p-4">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="w-9 h-9 rounded-full bg-secondary/20 text-secondary flex items-center justify-center font-bold">
+                    {{ user.username|first|upper }}
+                </span>
+                <span class="min-w-0">
+                    <span class="block text-sm font-semibold truncate">{{ user.username }}</span>
+                    <span class="block text-[11px] text-slate-500">
+                        {% if user.is_superuser %}Bosh admin{% else %}Xodim{% endif %}
+                    </span>
+                </span>
+            </div>
+            {% comment %}
+            Chiqish ATAYLAB forma (POST): oddiy havola bo'lsa, begona
+            saytdagi <img src="/panel/logout/"> adminni chiqarib
+            yuborardi.
+            {% endcomment %}
+            <form method="post" action="{% url 'panel:logout' %}">
+                {% csrf_token %}
+                <button class="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 hover:bg-red-500/15 hover:text-red-400 text-slate-400 transition text-sm">
+                    <span class="material-icons-round text-base">logout</span> Chiqish
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="flex-1 min-w-0 flex flex-col">
+
+        {% comment %} ─── Yuqori panel (mobil menyu shu yerda) ─── {% endcomment %}
+        <header class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
+            <div class="flex items-center gap-3 min-w-0">
+                <button onclick="document.getElementById('mobileNav').classList.toggle('hidden')"
+                        class="lg:hidden w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <h1 class="font-bold text-lg md:text-xl truncate">{% block heading %}{% endblock %}</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'landing' %}" target="_blank"
+                   class="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary px-3 py-2 rounded-lg hover:bg-white/5 transition">
+                    <span class="material-icons-round text-sm">open_in_new</span> Saytni ko'rish
+                </a>
+                <a href="/admin/" target="_blank"
+                   class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 px-3 py-2 rounded-lg hover:bg-white/5 transition">
+                    Django admin
+                </a>
+            </div>
+        </header>
+
+        <div id="mobileNav" class="hidden lg:hidden glass border-b border-white/5 py-3 text-sm">
+            {% include 'panel/includes/nav.html' %}
+            <form method="post" action="{% url 'panel:logout' %}" class="px-4 pt-3">
+                {% csrf_token %}
+                <button class="w-full py-2 rounded-xl bg-white/5 text-slate-400 text-sm">Chiqish</button>
+            </form>
+        </div>
+
+        <main class="flex-1 p-4 md:p-8">
+            {% if messages %}
+                <div class="space-y-2 mb-6">
+                    {% for message in messages %}
+                        <div class="flex items-start gap-3 px-4 py-3 rounded-xl border text-sm
+                            {% if message.tags == 'error' %}bg-red-500/10 border-red-500/30 text-red-300
+                            {% elif message.tags == 'warning' %}bg-amber-500/10 border-amber-500/30 text-amber-300
+                            {% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-300{% endif %}">
+                            <span class="material-icons-round text-base mt-px">
+                                {% if message.tags == 'error' %}error_outline{% else %}check_circle_outline{% endif %}
+                            </span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

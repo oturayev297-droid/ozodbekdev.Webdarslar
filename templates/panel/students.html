@@ -1,0 +1,107 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}O'quvchilar{% endblock %}
+{% block heading %}O'quvchilar{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <a href="?" class="glass rounded-2xl p-4 hover:bg-white/5 transition">
+        <p class="text-2xl font-extrabold">{{ counts.total }}</p>
+        <p class="text-xs text-slate-500 mt-1">Obunasi bor</p>
+    </a>
+    <a href="?state=active" class="glass rounded-2xl p-4 hover:bg-white/5 transition {% if state == 'active' %}border-emerald-500/40{% endif %}">
+        <p class="text-2xl font-extrabold text-emerald-400">{{ counts.active }}</p>
+        <p class="text-xs text-slate-500 mt-1">Faol</p>
+    </a>
+    <a href="?state=expired" class="glass rounded-2xl p-4 hover:bg-white/5 transition {% if state == 'expired' %}border-red-500/40{% endif %}">
+        <p class="text-2xl font-extrabold text-red-400">{{ counts.expired }}</p>
+        <p class="text-xs text-slate-500 mt-1">Tugagan</p>
+    </a>
+    <a href="?state=telegram" class="glass rounded-2xl p-4 hover:bg-white/5 transition {% if state == 'telegram' %}border-primary/40{% endif %}">
+        <p class="text-2xl font-extrabold text-primary">
+            <span class="material-icons-round text-2xl align-middle">send</span>
+        </p>
+        <p class="text-xs text-slate-500 mt-1">Telegrami ulanganlar</p>
+    </a>
+</div>
+
+<form method="get" class="flex flex-wrap items-center gap-2 mb-5">
+    <input name="q" value="{{ q }}" placeholder="Login, email yoki F.I.SH."
+           class="flex-1 min-w-[200px] bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+    <input type="hidden" name="state" value="{{ state }}">
+    <button class="px-5 py-2.5 rounded-xl bg-primary text-slate-950 font-bold text-sm">Qidirish</button>
+    {% if q or state %}
+        <a href="{% url 'panel:students' %}" class="px-4 py-2.5 rounded-xl bg-white/5 text-slate-400 text-sm hover:text-slate-100 transition">Tozalash</a>
+    {% endif %}
+</form>
+
+{% if page_obj %}
+    <div class="glass rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="data w-full text-sm">
+                <thead>
+                <tr class="border-b border-white/5">
+                    <th>O'quvchi</th>
+                    <th>Obuna</th>
+                    <th>Darslar</th>
+                    <th>Testlar</th>
+                    <th>Telegram</th>
+                    <th>Ro'yxatdan o'tgan</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'panel:student_detail' student.id %}" class="font-semibold hover:text-primary">
+                                {{ student.profile.full_name|default:student.username }}
+                            </a>
+                            <span class="block text-xs text-slate-500">
+                                {{ student.username }}{% if student.email %} &middot; {{ student.email }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="whitespace-nowrap">
+                            {% if student.subscription %}
+                                {% if student.subscription.current_period_end and student.subscription.current_period_end > now %}
+                                    <span class="text-emerald-400">
+                                        {{ student.subscription.current_period_end|tashkent_date }} gacha
+                                    </span>
+                                {% elif student.subscription.current_period_end %}
+                                    <span class="text-red-400">
+                                        {{ student.subscription.current_period_end|tashkent_date }} da tugagan
+                                    </span>
+                                {% else %}
+                                    <span class="text-slate-500">Muddat yo'q</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-slate-600">Obuna ochilmagan</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ student.completed }}</td>
+                        <td>{{ student.quizzes }}</td>
+                        <td>
+                            {% if student.profile.telegram_chat_id %}
+                                <span class="material-icons-round text-base text-primary">check_circle</span>
+                            {% else %}
+                                <span class="text-slate-700">&mdash;</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-slate-500 text-xs whitespace-nowrap">{{ student.date_joined|date:"d.m.Y" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'panel/includes/pagination.html' %}
+{% else %}
+    <div class="glass rounded-2xl p-12 text-center">
+        <span class="material-icons-round text-4xl text-slate-700">person_search</span>
+        <p class="text-slate-500 mt-3">O'quvchi topilmadi.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

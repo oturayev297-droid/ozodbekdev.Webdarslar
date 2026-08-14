@@ -1,0 +1,101 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}Xabar #{{ message.pk }}{% endblock %}
+{% block heading %}Xabar #{{ message.pk }}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'panel:messages' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-5 transition">
+    <span class="material-icons-round text-base">arrow_back</span> Xabarlar
+</a>
+
+<div class="grid lg:grid-cols-3 gap-6">
+
+    <div class="lg:col-span-2 space-y-6">
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-3">Matn</h2>
+            <p class="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{{ message.body }}</p>
+        </div>
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Oluvchilar</h2>
+            <div class="overflow-x-auto">
+                <table class="data w-full text-sm">
+                    <thead><tr class="border-b border-white/5">
+                        <th>O'quvchi</th><th>Holat</th><th>Vaqt</th><th>Izoh</th>
+                    </tr></thead>
+                    <tbody>
+                    {% for delivery in deliveries %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'panel:student_detail' delivery.user.id %}" class="hover:text-primary">
+                                    {{ delivery.user.username }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if delivery.state == 'SENT' %}
+                                    <span class="text-emerald-400">Yuborildi</span>
+                                {% elif delivery.state == 'FAILED' %}
+                                    <span class="text-red-400">Xato</span>
+                                {% else %}
+                                    <span class="text-amber-400">Navbatda</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-slate-500 text-xs whitespace-nowrap">
+                                {{ delivery.sent_at|date:"d.m.Y H:i"|default:"—" }}
+                            </td>
+                            <td class="text-slate-500 text-xs">{{ delivery.error|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass rounded-2xl p-6 h-fit">
+        <h2 class="font-bold mb-4">Ma'lumot</h2>
+        <dl class="space-y-3 text-sm">
+            <div class="flex justify-between gap-3">
+                <dt class="text-slate-500">Auditoriya</dt>
+                <dd class="text-right">{{ message.get_audience_display }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+                <dt class="text-slate-500">Yuborgan</dt>
+                <dd>{{ message.sent_by.username|default:"—" }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+                <dt class="text-slate-500">Boshlangan</dt>
+                <dd>{{ message.created_at|date:"d.m.Y H:i" }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+                <dt class="text-slate-500">Tugagan</dt>
+                <dd>{{ message.finished_at|date:"d.m.Y H:i"|default:"—" }}</dd>
+            </div>
+        </dl>
+
+        <div class="mt-5 pt-5 border-t border-white/5 grid grid-cols-3 gap-2 text-center">
+            <div>
+                <p class="text-xl font-extrabold text-emerald-400">{{ message.delivered }}</p>
+                <p class="text-[11px] text-slate-500">Yetkazildi</p>
+            </div>
+            <div>
+                <p class="text-xl font-extrabold text-red-400">{{ message.failed }}</p>
+                <p class="text-[11px] text-slate-500">Xato</p>
+            </div>
+            <div>
+                <p class="text-xl font-extrabold text-amber-400">{{ message.pending_count }}</p>
+                <p class="text-[11px] text-slate-500">Navbatda</p>
+            </div>
+        </div>
+
+        {% if message.pending_count %}
+            <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
+                Navbatda qolganlar <code class="font-mono">manage.py send_panel_messages</code>
+                buyrug'i ishlaganda yuboriladi.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

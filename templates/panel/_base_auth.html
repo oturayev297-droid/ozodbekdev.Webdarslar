@@ -1,0 +1,81 @@
+{% comment %}
+Kirish sahifalari uchun karkas — yon menyusiz.
+
+NEGA ALOHIDA: asosiy karkasda menyu bor va u `user.username` ni
+ko'rsatadi. Login sahifasida foydalanuvchi hali yo'q — o'sha karkasni
+ishlatish bo'sh menyu chiqarardi.
+{% endcomment %}
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}Kirish{% endblock %} | Nexus boshqaruv</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script>
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+            primary: "#0ea5e9", secondary: "#2dd4bf",
+            background: "#020617", surface: "#0f172a",
+        } } } }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; }
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(14,165,233,.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14,165,233,.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
+        }
+        .field {
+            width: 100%; background: rgba(2, 6, 23, .6);
+            border: 1px solid rgba(255,255,255,.1); border-radius: .75rem;
+            padding: .8rem 1rem; color: #f1f5f9; outline: none; transition: .15s;
+        }
+        .field:focus { border-color: #0ea5e9; box-shadow: 0 0 0 1px #0ea5e9; }
+    </style>
+</head>
+<body class="bg-background text-slate-100 min-h-screen flex items-center justify-center p-4">
+<div class="fixed inset-0 grid-bg pointer-events-none"></div>
+
+<div class="relative w-full max-w-md">
+    <div class="text-center mb-8">
+        <span class="inline-flex w-14 h-14 rounded-2xl bg-primary/15 text-primary items-center justify-center mb-4">
+            <span class="material-icons-round text-3xl">{% block icon %}shield{% endblock %}</span>
+        </span>
+        <h1 class="text-2xl font-extrabold tracking-tight">{% block heading %}Boshqaruv paneli{% endblock %}</h1>
+        <p class="text-sm text-slate-500 mt-1">{% block subheading %}Faqat xodimlar uchun{% endblock %}</p>
+    </div>
+
+    <div class="glass rounded-2xl p-6 md:p-8">
+        {% if messages %}
+            <div class="space-y-2 mb-5">
+                {% for message in messages %}
+                    <div class="flex items-start gap-2.5 px-3.5 py-3 rounded-xl border text-sm
+                        {% if message.tags == 'error' %}bg-red-500/10 border-red-500/30 text-red-300
+                        {% else %}bg-emerald-500/10 border-emerald-500/30 text-emerald-300{% endif %}">
+                        <span class="material-icons-round text-base mt-px">
+                            {% if message.tags == 'error' %}error_outline{% else %}check_circle_outline{% endif %}
+                        </span>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <p class="text-center text-xs text-slate-600 mt-6">
+        <a href="{% url 'landing' %}" class="hover:text-slate-400 transition">&larr; Saytga qaytish</a>
+    </p>
+</div>
+</body>
+</html>

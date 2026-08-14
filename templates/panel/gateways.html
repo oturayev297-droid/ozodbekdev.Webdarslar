@@ -1,0 +1,62 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}Payme / Click{% endblock %}
+{% block heading %}To'lov tizimlari{% endblock %}
+
+{% block content %}
+
+<p class="text-sm text-slate-500 mb-5 leading-relaxed max-w-3xl">
+    Payme va Click yuborgan tranzaksiyalar. Bu yerdan hech narsa
+    o'zgartirilmaydi — jadval faqat tekshirish uchun. To'lov tizimi bir
+    so'rovni takror yuborsa ham ikkinchi yozuv yaratilmaydi.
+</p>
+
+<div class="flex flex-wrap gap-1.5 mb-5 text-sm">
+    <a href="?" class="px-4 py-2 rounded-lg {% if not provider %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Hammasi</a>
+    {% for value, label in providers %}
+        <a href="?provider={{ value }}" class="px-4 py-2 rounded-lg {% if provider == value %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">{{ label }}</a>
+    {% endfor %}
+</div>
+
+<div class="glass rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="data w-full text-sm">
+            <thead><tr class="border-b border-white/5">
+                <th>Vaqt</th><th>Tizim</th><th>Tashqi ID</th><th>O'quvchi</th>
+                <th>Summa</th><th>Holat</th>
+            </tr></thead>
+            <tbody>
+            {% for tx in page_obj %}
+                <tr>
+                    <td class="text-slate-500 text-xs whitespace-nowrap">{{ tx.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="font-semibold">{{ tx.get_provider_display }}</td>
+                    <td class="font-mono text-xs text-slate-400">{{ tx.external_id }}</td>
+                    <td>
+                        <a href="{% url 'panel:student_detail' tx.payment_request.user.id %}" class="hover:text-primary">
+                            {{ tx.payment_request.user.username }}
+                        </a>
+                    </td>
+                    <td class="font-semibold">{{ tx.amount_tiyin|money }}</td>
+                    <td>
+                        <span class="px-2 py-0.5 rounded-full text-[11px]
+                            {% if tx.state == 2 %}bg-emerald-500/20 text-emerald-300
+                            {% elif tx.state == 1 %}bg-amber-500/20 text-amber-300
+                            {% else %}bg-red-500/20 text-red-300{% endif %}">
+                            {{ tx.get_state_display }}
+                        </span>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="text-center text-slate-500 py-10">
+                    Tranzaksiya yo'q. Payme va Click hali ulanmagan bo'lishi mumkin.
+                </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'panel/includes/pagination.html' %}
+
+{% endblock %}

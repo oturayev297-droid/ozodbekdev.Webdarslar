@@ -1,0 +1,231 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}{{ student.username }}{% endblock %}
+{% block heading %}{{ student.profile.full_name|default:student.username }}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'panel:students' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-5 transition">
+    <span class="material-icons-round text-base">arrow_back</span> O'quvchilar ro'yxati
+</a>
+
+<div class="grid lg:grid-cols-3 gap-6">
+
+    {% comment %} ─── Chap ustun: holat va amallar ─── {% endcomment %}
+    <div class="space-y-6">
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Hisob</h2>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between gap-3">
+                    <dt class="text-slate-500">Login</dt>
+                    <dd class="font-semibold">{{ student.username }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <dt class="text-slate-500">Email</dt>
+                    <dd class="text-right break-all">{{ student.email|default:"—" }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <dt class="text-slate-500">Ro'yxatdan o'tgan</dt>
+                    <dd>{{ student.date_joined|date:"d.m.Y" }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <dt class="text-slate-500">Oxirgi kirish</dt>
+                    <dd>{{ student.last_login|date:"d.m.Y H:i"|default:"—" }}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                    <dt class="text-slate-500">Telegram</dt>
+                    <dd>
+                        {% if student.profile.telegram_chat_id %}
+                            <span class="text-primary">ulangan</span>
+                        {% else %}
+                            <span class="text-slate-600">ulanmagan</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Obuna holati</h2>
+            <div class="p-4 rounded-xl mb-4
+                {% if state.active %}bg-emerald-500/10{% else %}bg-red-500/10{% endif %}">
+                <p class="font-bold {% if state.active %}text-emerald-400{% else %}text-red-400{% endif %}">
+                    {{ state_label }}
+                </p>
+                {% if state.current_period_end %}
+                    <p class="text-xs text-slate-400 mt-1">
+                        {{ state.end_display }}
+                        {% if state.days_left >= 0 %} &middot; {{ state.days_left }} kun qoldi{% endif %}
+                    </p>
+                {% endif %}
+                {% if state.in_hold %}
+                    <p class="text-xs text-amber-400 mt-2">
+                        Kutish rejimi: chek yuborilgan, tasdiq kutilmoqda.
+                    </p>
+                {% elif state.in_grace %}
+                    <p class="text-xs text-amber-400 mt-2">
+                        Muhlat davri — muddat tugagan, lekin kirish hali ochiq.
+                    </p>
+                {% endif %}
+            </div>
+
+            {% comment %}
+            Bepul kun berish `ADMIN_GRANT` sifatida yoziladi — demak
+            TUSHUM HISOBOTIGA KIRMAYDI. Buni tugmaning yonida aytib
+            qo'yamiz, aks holda "pul qayerda" degan savol tug'ilardi.
+            {% endcomment %}
+            <form method="post" action="{% url 'panel:student_grant' student.id %}" class="space-y-3">
+                {% csrf_token %}
+                <div class="flex gap-2">
+                    <input name="days" type="number" min="1" max="365" value="7" required
+                           class="w-24 bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary">
+                    <input name="note" placeholder="Sabab (ixtiyoriy)"
+                           class="flex-1 min-w-0 bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary">
+                </div>
+                <button class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                    Bepul kun berish
+                </button>
+            </form>
+            <p class="text-[11px] text-slate-600 mt-3 leading-relaxed">
+                Bepul berilgan kunlar tushum hisobotiga kirmaydi
+                (manba: «Admin bepul berdi»).
+            </p>
+        </div>
+
+        {% comment %}
+        Shaxsiy xabar. Telegrami ulanmagan bo'lsa forma umuman
+        ko'rsatilmaydi — tugmani bosib "yuborilmadi" degan xatoni olishdan
+        ko'ra, sababi oldindan ko'rinib turgani yaxshi.
+        {% endcomment %}
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Shaxsiy xabar</h2>
+            {% if student.profile.telegram_chat_id %}
+                <form method="post" action="{% url 'panel:messages' %}" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="audience" value="ONE">
+                    <input type="hidden" name="target_user" value="{{ student.id }}">
+                    <textarea name="body" rows="4" required
+                              placeholder="Xabar matni..."
+                              class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary resize-y"></textarea>
+                    <button onclick="return confirm('Xabar yuborilsinmi?')"
+                            class="w-full py-2.5 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 text-sm font-bold transition">
+                        Telegramga yuborish
+                    </button>
+                </form>
+            {% else %}
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Bu o'quvchining Telegrami ulanmagan, shuning uchun
+                    xabar yuborib bo'lmaydi. U profilidagi havola orqali
+                    o'zi ulashi kerak.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% comment %} ─── O'ng ustun: tarix ─── {% endcomment %}
+    <div class="lg:col-span-2 space-y-6">
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">To'lov so'rovlari</h2>
+            {% if requests %}
+                <div class="overflow-x-auto">
+                    <table class="data w-full text-sm">
+                        <thead><tr class="border-b border-white/5">
+                            <th>Sana</th><th>Muddat</th><th>Summa</th><th>Holat</th>
+                        </tr></thead>
+                        <tbody>
+                        {% for req in requests %}
+                            <tr>
+                                <td class="text-slate-400 whitespace-nowrap">{{ req.requested_at|date:"d.m.Y" }}</td>
+                                <td>{{ req.months }} oy</td>
+                                <td class="font-semibold">{{ req.amount_tiyin|money }}</td>
+                                <td>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px]
+                                        {% if req.status == 'CONFIRMED' %}bg-emerald-500/20 text-emerald-300
+                                        {% elif req.status == 'RECEIPT_UPLOADED' %}bg-amber-500/20 text-amber-300
+                                        {% elif req.status == 'REJECTED' or req.status == 'EXPIRED' %}bg-red-500/20 text-red-300
+                                        {% else %}bg-slate-600/30 text-slate-300{% endif %}">
+                                        {{ req.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-slate-500 text-sm py-4">To'lov so'rovi yo'q.</p>
+            {% endif %}
+        </div>
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-1">Obuna davrlari</h2>
+            <p class="text-xs text-slate-500 mb-4">O'zgartirib bo'lmaydigan moliyaviy jurnal</p>
+            {% if periods %}
+                <div class="overflow-x-auto">
+                    <table class="data w-full text-sm">
+                        <thead><tr class="border-b border-white/5">
+                            <th>Yozilgan</th><th>Manba</th><th>Summa</th><th>Tugash</th>
+                        </tr></thead>
+                        <tbody>
+                        {% for period in periods %}
+                            <tr>
+                                <td class="text-slate-400 whitespace-nowrap">{{ period.created_at|date:"d.m.Y" }}</td>
+                                <td>
+                                    {{ period.get_source_display }}
+                                    {% if period.payment_method %}
+                                        <span class="text-slate-500 text-xs">({{ period.get_payment_method_display }})</span>
+                                    {% endif %}
+                                </td>
+                                <td class="{% if period.is_revenue %}text-emerald-400 font-semibold{% else %}text-slate-600{% endif %}">
+                                    {% if period.amount_tiyin %}{{ period.amount_tiyin|money }}{% else %}bepul{% endif %}
+                                </td>
+                                <td class="whitespace-nowrap">{{ period.end_date|tashkent_date }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-slate-500 text-sm py-4">Davr yozuvi yo'q.</p>
+            {% endif %}
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="glass rounded-2xl p-6">
+                <h2 class="font-bold mb-4">Sertifikatlar</h2>
+                {% if certificates %}
+                    <ul class="space-y-2 text-sm">
+                        {% for cert in certificates %}
+                            <li class="flex items-center justify-between gap-3">
+                                <span class="truncate {% if cert.revoked_at %}line-through text-slate-600{% endif %}">
+                                    {{ cert.quiz_title }}
+                                </span>
+                                <span class="text-slate-500 text-xs shrink-0">{{ cert.score_percentage }}%</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-slate-500 text-sm">Sertifikat yo'q.</p>
+                {% endif %}
+            </div>
+
+            <div class="glass rounded-2xl p-6">
+                <h2 class="font-bold mb-4">Oxirgi AI Mentor savollari</h2>
+                {% if mentor %}
+                    <ul class="space-y-2 text-sm">
+                        {% for msg in mentor %}
+                            <li class="text-slate-400 truncate">{{ msg.question }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-slate-500 text-sm">Savol bermagan.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

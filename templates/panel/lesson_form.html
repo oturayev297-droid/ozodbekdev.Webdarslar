@@ -1,0 +1,114 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}{% if lesson %}Darsni tahrirlash{% else %}Yangi dars{% endif %}{% endblock %}
+{% block heading %}{% if lesson %}{{ lesson.title }}{% else %}Yangi dars{% endif %}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'panel:content' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-5 transition">
+    <span class="material-icons-round text-base">arrow_back</span> Darsliklar
+</a>
+
+{% comment %}
+`enctype` MAJBURIY: usiz video fayl umuman yuborilmaydi va forma
+"saqlandi" deb javob berib, faylni jimgina tashlab yuborardi.
+{% endcomment %}
+<form method="post" enctype="multipart/form-data" class="grid lg:grid-cols-3 gap-6">
+    {% csrf_token %}
+
+    <div class="lg:col-span-2 space-y-6">
+        <div class="glass rounded-2xl p-6 space-y-5">
+            {% for field in form %}
+                {% if field.name != 'is_free' and field.name != 'video_file' and field.name != 'video_url' %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-xs text-slate-500 mt-1.5">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="text-xs text-red-400 mt-1.5">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Video</h2>
+            {% for field in form %}
+                {% if field.name == 'video_file' or field.name == 'video_url' %}
+                    <div class="mb-4 last:mb-0">
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-xs text-slate-500 mt-1.5">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="text-xs text-red-400 mt-1.5">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
+                Yuklangan video to'g'ridan-to'g'ri ochilmaydi — u faqat
+                huquqi bor o'quvchiga maxsus manzil orqali uzatiladi.
+            </p>
+        </div>
+
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Kirish huquqi</h2>
+            {% for field in form %}
+                {% if field.name == 'is_free' %}
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        {{ field }}
+                        <span class="text-sm">
+                            <span class="block font-medium text-slate-200">{{ field.label }}</span>
+                            <span class="block text-xs text-slate-500 mt-0.5">{{ field.help_text }}</span>
+                        </span>
+                    </label>
+                    {% for error in field.errors %}
+                        <p class="text-xs text-red-400 mt-1.5">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if quiz %}
+            <div class="glass rounded-2xl p-6">
+                <h2 class="font-bold mb-3">Test</h2>
+                <p class="text-sm text-slate-300 mb-1">{{ quiz.title }}</p>
+                <p class="text-xs mb-4">
+                    {% if quiz.is_published %}
+                        <span class="text-emerald-400">Nashr qilingan</span>
+                    {% else %}
+                        <span class="text-slate-500">Qoralama — o'quvchi ko'rmaydi</span>
+                    {% endif %}
+                    {% if quiz.is_generated %}
+                        <span class="text-slate-600">&middot; model generatsiya qilgan</span>
+                    {% endif %}
+                </p>
+                <a href="{% url 'panel:quizzes' %}" class="text-xs text-primary hover:underline">Testlar bo'limi &rarr;</a>
+            </div>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-300">
+                {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <button class="w-full py-3 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 font-bold transition">
+            Saqlash
+        </button>
+    </div>
+</form>
+
+{% endblock %}

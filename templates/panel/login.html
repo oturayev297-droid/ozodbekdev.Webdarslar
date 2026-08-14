@@ -1,0 +1,48 @@
+{% extends 'panel/_base_auth.html' %}
+
+{% block title %}Kirish{% endblock %}
+{% block icon %}shield{% endblock %}
+{% block heading %}Boshqaruv paneli{% endblock %}
+{% block subheading %}Faqat xodimlar uchun{% endblock %}
+
+{% block content %}
+<form method="post" class="space-y-4">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div>
+        <label class="block text-sm text-slate-400 mb-1.5" for="username">Login</label>
+        <input class="field" id="username" name="username" required autofocus
+               autocomplete="username" value="{{ request.POST.username|default:'' }}">
+    </div>
+
+    <div>
+        <label class="block text-sm text-slate-400 mb-1.5" for="password">Parol</label>
+        <input class="field" id="password" name="password" type="password" required
+               autocomplete="current-password">
+    </div>
+
+    <button class="w-full py-3 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 font-bold transition">
+        Kirish
+    </button>
+</form>
+
+<p class="text-center text-sm text-slate-500 mt-5">
+    <a href="{% url 'panel:forgot_password' %}" class="text-primary hover:underline">Parolni unutdingizmi?</a>
+</p>
+
+{% comment %}
+Qulflanganda tushuntirish: xodim "parolim buzildimi" deb o'ylamasin.
+Qulf paytidagi urinishlar YOZILMAYDI, demak muddatni uzaytirmaydi —
+buni aytib qo'yish kerak, aks holda odam qo'rqib urinishni to'xtatadi
+yoki aksincha, panika bilan parolni almashtira boshlaydi.
+{% endcomment %}
+{% if locked %}
+    <div class="mt-5 pt-5 border-t border-white/5 text-xs text-slate-500 leading-relaxed">
+        Ketma-ket noto'g'ri urinishlardan keyin kirish vaqtincha to'xtatiladi.
+        Kutish vaqtidagi urinishlar hisobga olinmaydi va
+        <span class="text-slate-400">muddatni uzaytirmaydi</span> —
+        shunchaki ko'rsatilgan vaqt o'tishini kuting.
+    </div>
+{% endif %}
+{% endblock %}

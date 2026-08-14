@@ -14,7 +14,8 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **AI Mentor** — Claude API'ga ulangan haqiqiy o'qituvchi chat
 - **Kod muharriri** — brauzerda **Python** (Pyodide) va JavaScript
 - **Brute-force himoyasi** — login urinishlari cheklovi
-- **Admin panel** — kontent, o'quvchilar, to'lovlar va sertifikatlar
+- **Boshqaruv paneli** (`/panel/`) — hisobotlar, pul aylanmasi, darslik joylash,
+  xabar yuborish va kuzatish, o'z kirishi va parol tiklashi bilan
 
 ## Tez boshlash
 
@@ -51,6 +52,13 @@ billing/               obuna va to'lov
   gateways/click.py    Click SHOP API (prepare / complete)
   gateway_links.py     to'lov sahifasiga havola qurish
   admin.py             to'lovlarni ko'rib chiqish paneli
+panel/                 boshqaruv paneli (/panel/)
+  auth.py              xodim kirishi, chiqish, parol tiklash
+  reports.py           hisobotlar — FAQAT o'qiydi, hech narsa o'zgartirmaydi
+  messaging.py         Telegramga xabar yuborish (navbat bilan)
+  views.py             sahifalar — biznes mantiqni billing dan CHAQIRADI
+  forms.py             dars va modul formalari
+  context.py           menyudagi hisoblagichlar
 stitch_backend/        Django proyekt sozlamalari
 templates/             HTML shablonlar (Tailwind CDN)
 media/lesson_videos/   dars videolari (git ga tushmaydi, ~5 GB)
@@ -233,6 +241,51 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
     va sertifikatni ma'nosiz qiladi.
 27. **Matn yetarli bo'lmasa savol generatsiya qilinmaydi** — model
     sarlavhadan taxmin qilgan savol darsga mos kelmaydi.
+28. **Panel biznes mantiqni takrorlamaydi.** To'lovni tasdiqlash, obunani
+    uzaytirish, sinov berish — hammasi `billing.payment_requests` va
+    `billing.services` orqali chaqiriladi. Ikki nusxa bo'lsa qaysi biri
+    to'g'ri ekani bilinmay qoladi.
+29. **Panel `is_staff` talab qiladi va huquq har so'rovda tekshiriladi.**
+    Kirgan, lekin huquqsiz foydalanuvchi 403 oladi — login sahifasiga
+    qaytarilmaydi, aks holda to'g'ri parol bilan cheksiz aylanardi.
+30. **Panel kirishida xodimlik OSHKOR QILINMAYDI.** Parol xato bo'lsa ham,
+    hisob xodim bo'lmasa ham xabar bir xil. Aks holda panel "qaysi hisob
+    admin" degan savolga javob beradigan asbobga aylanardi.
+31. **Tushum hisoboti faqat `source=PAYMENT` davrlaridan.** `ADMIN_GRANT`
+    va `TRIAL` — bu pul emas; qo'shilsa oylik tushum o'ylab topilgan
+    raqamga aylanadi.
+32. **Aylanma sanasi — `created_at`** (pul kelgan payt), `start_date` emas.
+    Oylar Toshkent vaqti bo'yicha bo'linadi.
+
+## Boshqaruv paneli
+
+`/panel/` — kundalik ish uchun. Django'ning standart `/admin/` paneli
+zaxira yo'l sifatida qoladi (model darajasidagi tuzatishlar uchun).
+
+| Bo'lim | Nima qiladi |
+|---|---|
+| Bosh sahifa | Oylik tushum, faol obunachilar, javob kutayotgan to'lovlar |
+| Pul aylanmasi | Oylar grafigi, to'lov usullari kesimi, bepul berilganlar |
+| To'lov so'rovlari | Karta berish, tasdiqlash, rad etish (sabab majburiy) |
+| Obuna jurnali | O'zgartirilmaydigan moliyaviy tarix |
+| Payme / Click | Tranzaksiyalar — faqat ko'rish |
+| O'quvchilar | Ro'yxat, holat, bepul kun berish, shaxsiy xabar |
+| Darsliklar | Modul va dars qo'shish, video yuklash, bepul/pullik |
+| Testlar | Qoralamalarni ko'rib chiqib nashr qilish |
+| Xabar yuborish | Telegramga guruh yoki shaxsiy xabar |
+| Kuzatish | Kirish urinishlari, AI Mentor, sertifikatlar |
+
+Xodim yaratish:
+
+```bash
+python manage.py createsuperuser
+# yoki mavjud hisobga huquq berish:
+python manage.py shell -c "from django.contrib.auth.models import User; u=User.objects.get(username='NOM'); u.is_staff=True; u.save()"
+```
+
+Parolni tiklash `/panel/forgot-password/` da — o'quvchinikidan alohida
+sahifa, lekin ichida bir xil modul ishlaydi (kod uzunligi, muddati va
+urinishlar soni bir joyda turadi).
 
 ## Testlar
 
@@ -243,6 +296,7 @@ python manage.py test core.tests_phase3  # cheklov, sertifikat, muharrir
 python manage.py test billing.tests_gateways  # Payme / Click
 python manage.py test core.tests_mentor       # AI Mentor
 python manage.py test core.tests_generate_quizzes  # savol generatsiyasi
+python manage.py test panel                   # boshqaruv paneli
 ```
 
 ## Hali qilinmagan

@@ -1,0 +1,132 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}To'lov so'rovlari{% endblock %}
+{% block heading %}To'lov so'rovlari{% endblock %}
+
+{% block content %}
+
+{% if awaiting %}
+    <div class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200/80 leading-relaxed">
+        <b class="text-amber-300">{{ awaiting }} ta so'rovda o'quvchi pulni yuborgan.</b>
+        Ular ro'yxatning tepasida turadi. Tasdiqlanmaguncha obuna uzaymaydi —
+        chekni tekshirib, «Tasdiqlash» tugmasini bosing.
+    </div>
+{% endif %}
+
+{% comment %} ─── Filtr ─── {% endcomment %}
+<form method="get" class="flex flex-wrap items-center gap-2 mb-5">
+    <input name="q" value="{{ q }}" placeholder="Login yoki email bo'yicha qidirish"
+           class="flex-1 min-w-[200px] bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+    <select name="status" class="bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+        <option value="open" {% if status == 'open' %}selected{% endif %}>Ochiq so'rovlar</option>
+        <option value="" {% if status == '' %}selected{% endif %}>Hammasi</option>
+        {% for value, label in statuses %}
+            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button class="px-5 py-2.5 rounded-xl bg-primary text-slate-950 font-bold text-sm">Ko'rish</button>
+</form>
+
+{% if page_obj %}
+    <div class="space-y-3">
+        {% for req in page_obj %}
+            <div class="glass rounded-2xl p-5 {% if req.status == 'RECEIPT_UPLOADED' %}border-amber-500/30{% endif %}">
+
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a href="{% url 'panel:student_detail' req.user.id %}" class="font-bold hover:text-primary">
+                                {{ req.user.username }}
+                            </a>
+                            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold
+                                {% if req.status == 'RECEIPT_UPLOADED' %}bg-amber-500/20 text-amber-300
+                                {% elif req.status == 'CONFIRMED' %}bg-emerald-500/20 text-emerald-300
+                                {% elif req.status == 'REJECTED' or req.status == 'EXPIRED' %}bg-red-500/20 text-red-300
+                                {% else %}bg-slate-600/30 text-slate-300{% endif %}">
+                                {{ req.get_status_display }}
+                            </span>
+                            <span class="text-xs text-slate-600">#{{ req.pk }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ req.user.email|default:"email yo'q" }}
+                            &middot; so'ralgan {{ req.requested_at|date:"d.m.Y H:i" }}
+                            {% if req.receipt_sent_at %}
+                                &middot; <span class="text-amber-400">chek {{ req.receipt_sent_at|date:"d.m.Y H:i" }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="text-right">
+                        <p class="text-xl font-extrabold">{{ req.amount_tiyin|money }}</p>
+                        <p class="text-xs text-slate-500">{{ req.months }} oy</p>
+                    </div>
+                </div>
+
+                {% if req.admin_note %}
+                    <p class="text-xs text-slate-400 bg-white/5 rounded-lg px-3 py-2 mb-4">
+                        <b class="text-slate-500">Izoh:</b> {{ req.admin_note }}
+                    </p>
+                {% endif %}
+
+                {% comment %}
+                Amallar FAQAT ochiq so'rovlarda ko'rinadi. Yopilgan
+                so'rovga tugma qo'yilsa, uni bosgan odam xato xabar olardi
+                va "tizim ishlamayapti" degan xulosaga kelardi.
+                {% endcomment %}
+                {% if req.status == 'REQUESTED' or req.status == 'CARD_ISSUED' or req.status == 'RECEIPT_UPLOADED' %}
+                    <div class="flex flex-wrap gap-2 pt-4 border-t border-white/5">
+
+                        {% if req.status == 'REQUESTED' %}
+                            <form method="post" action="{% url 'panel:payment_action' req.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="issue_card">
+                                <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                <button class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                                    1) Karta berish
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'panel:payment_action' req.pk %}"
+                              class="flex flex-wrap items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="confirm">
+                            <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                            <select name="payment_method"
+                                    class="bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary">
+                                {% for value, label in methods %}
+                                    <option value="{{ value }}" {% if value == 'CARD_TRANSFER' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition">
+                                Tasdiqlash — obunani uzaytiradi
+                            </button>
+                        </form>
+
+                        <form method="post" action="{% url 'panel:payment_action' req.pk %}"
+                              class="flex flex-wrap items-center gap-2 flex-1 min-w-[260px]">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                            <input name="note" required placeholder="Rad etish sababi (majburiy)"
+                                   class="flex-1 min-w-[140px] bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-500">
+                            <button class="px-4 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 text-sm font-semibold transition">
+                                Rad etish
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include 'panel/includes/pagination.html' %}
+{% else %}
+    <div class="glass rounded-2xl p-12 text-center">
+        <span class="material-icons-round text-4xl text-slate-700">inbox</span>
+        <p class="text-slate-500 mt-3">Bu filtr bo'yicha so'rov topilmadi.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}Testlar{% endblock %}
+{% block heading %}Testlar{% endblock %}
+
+{% block content %}
+
+{% if draft_count %}
+    <div class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-sm text-slate-300 leading-relaxed">
+        <b>{{ draft_count }} ta test qoralamada.</b>
+        Qoralamani o'quvchi ko'rmaydi. Savollarni o'qib chiqing va to'g'ri
+        javoblar joyida ekaniga ishonch hosil qilgach nashr qiling —
+        model generatsiya qilgan savollar ham xato bo'lishi mumkin.
+    </div>
+{% endif %}
+
+<div class="flex flex-wrap gap-1.5 mb-5 text-sm">
+    <a href="?" class="px-4 py-2 rounded-lg {% if not state %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Hammasi</a>
+    <a href="?state=draft" class="px-4 py-2 rounded-lg {% if state == 'draft' %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Qoralama</a>
+    <a href="?state=published" class="px-4 py-2 rounded-lg {% if state == 'published' %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Nashr qilingan</a>
+    <a href="?state=generated" class="px-4 py-2 rounded-lg {% if state == 'generated' %}bg-primary text-slate-950 font-bold{% else %}bg-white/5 text-slate-400 hover:text-slate-100{% endif %} transition">Model tuzgan</a>
+</div>
+
+{% if page_obj %}
+    <div class="space-y-3">
+        {% for quiz in page_obj %}
+            <div class="glass rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-semibold">{{ quiz.title }}</span>
+                        {% if quiz.is_published %}
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold">Nashrda</span>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded-full bg-slate-600/30 text-slate-300 text-[11px] font-semibold">Qoralama</span>
+                        {% endif %}
+                        {% if quiz.is_generated %}
+                            <span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[11px] font-semibold">Model tuzgan</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">
+                        {{ quiz.lesson.module.category.name }} / {{ quiz.lesson.title }}
+                        &middot; {{ quiz.question_count }} ta savol
+                        &middot; {{ quiz.time_limit }} daqiqa
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="/admin/core/quiz/{{ quiz.pk }}/change/" target="_blank"
+                       class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-sm text-slate-300 transition">
+                        Savollarni ko'rish
+                    </a>
+
+                    <form method="post" action="{% url 'panel:quiz_publish' quiz.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                        {% if quiz.is_published %}
+                            <input type="hidden" name="publish" value="0">
+                            <button class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-sm text-slate-400 transition">
+                                Nashrdan olish
+                            </button>
+                        {% else %}
+                            <input type="hidden" name="publish" value="1">
+                            <button {% if not quiz.question_count %}disabled{% endif %}
+                                class="px-4 py-2 rounded-xl text-sm font-bold transition
+                                {% if quiz.question_count %}bg-emerald-500 hover:bg-emerald-400 text-slate-950{% else %}bg-white/5 text-slate-600 cursor-not-allowed{% endif %}">
+                                {% if quiz.question_count %}Nashr qilish{% else %}Savoli yo'q{% endif %}
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include 'panel/includes/pagination.html' %}
+{% else %}
+    <div class="glass rounded-2xl p-12 text-center">
+        <span class="material-icons-round text-4xl text-slate-700">quiz</span>
+        <p class="text-slate-500 mt-3">Test topilmadi.</p>
+        <p class="text-slate-600 text-sm mt-1 max-w-md mx-auto leading-relaxed">
+            Dars matnlaridan test generatsiya qilish uchun serverda
+            <code class="font-mono text-slate-500">manage.py generate_quizzes</code>
+            buyrug'ini ishlating.
+        </p>
+    </div>
+{% endif %}
+
+{% endblock %}

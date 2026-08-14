@@ -1,0 +1,30 @@
+{% comment %}
+Sahifalash.
+
+DIQQAT: havolalarda mavjud GET parametrlari SAQLANADI. Aks holda
+filtrlangan ro'yxatda 2-sahifaga o'tilganda filtr yo'qolib, butunlay
+boshqa ma'lumot chiqardi.
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="flex items-center justify-between gap-4 mt-6 text-sm">
+    <p class="text-slate-500">
+        {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} sahifa
+        <span class="text-slate-600">&middot; jami {{ page_obj.paginator.count }} ta</span>
+    </p>
+
+    <div class="flex gap-1.5">
+        {% if page_obj.has_previous %}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"
+               class="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition">
+                &larr; Oldingi
+            </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}"
+               class="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition">
+                Keyingi &rarr;
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
