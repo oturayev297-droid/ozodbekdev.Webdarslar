@@ -117,7 +117,23 @@ class Challenge(models.Model):
         ('O\'rtacha', 'O\'rtacha'),
         ('Qiyin', 'Qiyin'),
     ]
-    
+
+    class Language(models.TextChoices):
+        PYTHON = 'python', "Python"
+        JAVASCRIPT = 'javascript', "JavaScript"
+
+    #: Topshiriq qaysi tilda yechiladi.
+    #:
+    #: DEFAULT PYTHON: platforma asosan Python o'rgatadi va muharrirdagi
+    #: fayl "practice.py" deb ataladi. Ilgari muharrir tildan qat'i nazar
+    #: faqat JavaScript `eval()` qilardi — Python kodini yozib bo'lmasdi.
+    language = models.CharField(
+        max_length=20,
+        choices=Language.choices,
+        default=Language.PYTHON,
+        verbose_name="Til",
+    )
+
     title = models.CharField(max_length=200)
     description = models.TextField(help_text="Topshiriq matni (HTML/Markdown qo'llab-quvvatlaydi)")
     initial_code = models.TextField(default="// Kodni shu yerga yozing...", help_text="Muharrirdagi dastlabki kod")
@@ -137,6 +153,14 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=255, blank=True)
     bio = models.TextField(blank=True)
     level = models.PositiveIntegerField(default=1)
+
+    #: Telegram chat ID. Bo'sh bo'lsa xabarnomalar faqat emailga ketadi.
+    #: Bir martalik havola orqali ulanadi — telefon raqami so'ralmaydi.
+    telegram_chat_id = models.CharField(
+        max_length=32, blank=True, db_index=True,
+        verbose_name="Telegram chat ID",
+        help_text="Bir martalik havola orqali avtomatik to'ldiriladi",
+    )
 
     def __str__(self):
         return self.user.username
@@ -171,6 +195,98 @@ class NewStudent(Profile):
         proxy = True
         verbose_name = "Yangi O'quvchi (Buyurtma)"
         verbose_name_plural = "Yangi O'quvchilar (Buyurtmalar)"
+
+
+class Certificate(models.Model):
+    """
+    Sertifikat.
+
+    NEGA JADVAL KERAK: sertifikatni "80%+ ball olganlarga" deb har safar
+    QuizResult dan hisoblash mumkin edi — lekin unda tashqi tekshirish
+    imkoni bo'lmasdi va natija keyin o'zgarsa (masalan test qayta
+    topshirilib ball tushsa) allaqachon berilgan sertifikat "yo'qolib"
+    qolardi. Berilgan sertifikat — o'zgarmas fakt.
+
+    NARX/BALL MUZLATILADI: `score_percentage` shu yerga KO'CHIRILADI va
+    QuizResult ga bog'lanib o'qilmaydi.
+    """
+
+    #: Tashqi tekshirish uchun ochiq identifikator. Ketma-ket ID
+    #: ISHLATILMAYDI: /verify/1, /verify/2 deb yurib boshqalarning
+    #: sertifikatlarini sanab chiqib bo'lardi.
+    code = models.CharField(max_length=32, unique=True, db_index=True)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certificates')
+    quiz = models.ForeignKey('Quiz', on_delete=models.PROTECT, related_name='certificates')
+
+    #: Berilgan paytdagi qiymatlar — keyin o'zgarmaydi
+    score_percentage = models.PositiveIntegerField()
+    full_name = models.CharField(max_length=255, blank=True)
+    quiz_title = models.CharField(max_length=200)
+    category_name = models.CharField(max_length=100, blank=True)
+
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    #: Admin bekor qilishi mumkin (masalan aldash aniqlangan bo'lsa).
+    #: O'chirilmaydi — bekor qilingan sertifikat ham tarix.
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    revoke_reason = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Sertifikat"
+        verbose_name_plural = "Sertifikatlar"
+        ordering = ['-issued_at']
+        unique_together = ('user', 'quiz')
+
+    def __str__(self):
+        return f"{self.code} — {self.full_name or self.user.username}"
+
+    @property
+    def is_valid(self) -> bool:
+        return self.revoked_at is None
+
+    @property
+    def holder_name(self) -> str:
+        return self.full_name or self.user.username
+
+
+class LoginAttempt(models.Model):
+    """
+    Login urinishi jurnali — brute-force cheklovi shundan hisoblanadi.
+
+    `username` ATAYLAB FK emas: mavjud bo'lmagan nom bilan qilingan
+    urinishlarni ham sanash kerak, aks holda hujumchi tasodifiy nomlar
+    yozib IP cheklovidan qutulib ketardi.
+    """
+
+    class Purpose(models.TextChoices):
+        LOGIN = 'LOGIN', "Tizimga kirish"
+        RESET = 'RESET', "Parolni tiklash"
+
+    username = models.CharField(max_length=150, db_index=True)
+    ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)
+    successful = models.BooleanField(default=False)
+    #: Cheklov turlari ARALASHMASLIGI kerak: parol tiklash so'rovi login
+    #: hisoblagichini to'ldirib, foydalanuvchini kirishdan mahrum qilmasin.
+    purpose = models.CharField(
+        max_length=10, choices=Purpose.choices, default=Purpose.LOGIN, db_index=True
+    )
+    user_agent = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Login urinishi"
+        verbose_name_plural = "Login urinishlari"
+        ordering = ['-created_at']
+        indexes = [
+            # Cheklov aynan shu ustunlar bo'yicha sanaydi
+            models.Index(fields=['purpose', 'username', 'successful', '-created_at']),
+            models.Index(fields=['purpose', 'ip', 'successful', '-created_at']),
+        ]
+
+    def __str__(self):
+        holat = "muvaffaqiyatli" if self.successful else "xato"
+        return f"{self.get_purpose_display()}: {self.username}@{self.ip} — {holat}"
 
 
 class PasswordReset(models.Model):

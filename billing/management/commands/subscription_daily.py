@@ -17,7 +17,7 @@ import logging
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 
-from billing import dates
+from billing import dates, telegram
 from billing.models import Subscription
 from billing.payment_requests import expire_stale_requests
 from billing.services import get_plan
@@ -78,7 +78,9 @@ class Command(BaseCommand):
             if sub.last_reminder_days_left is not None and sub.last_reminder_days_left <= threshold:
                 continue
 
-            if not sub.user.email:
+            # Telegram ham, email ham yo'q bo'lsa xabar bermay bo'lmaydi
+            has_telegram = bool(telegram.user_chat_id(sub.user))
+            if not sub.user.email and not has_telegram:
                 stats['no_email'] += 1
                 continue
 
@@ -101,6 +103,20 @@ class Command(BaseCommand):
         ))
 
     def _send_reminder(self, sub, left, plan) -> bool:
+        """
+        Eslatma yuboradi. Kamida bitta kanal ishlasa True qaytaradi —
+        aks holda `last_reminder_days_left` yozilmay, ertaga qayta
+        urinib ko'riladi.
+        """
+        sent = telegram.notify_expiring(
+            sub.user, left, sub.current_period_end, plan.grace_days
+        )
+        sent_email = self._send_email(sub, left, plan)
+        return sent or sent_email
+
+    def _send_email(self, sub, left, plan) -> bool:
+        if not sub.user.email:
+            return False
         end = dates.format_date(sub.current_period_end)
 
         if left == 0:

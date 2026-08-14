@@ -96,10 +96,86 @@
                     </button>
                 </div>
             </form>
+
+            <!-- ── Telegram ulash ── -->
+            <div class="mt-10 pt-10 border-t border-white/5">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                        <span class="material-icons-round text-sky-400">send</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Telegram</h3>
+                        <p class="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-lg">
+                            To'lov rekvizitlari, tasdiq javobi va obuna eslatmalari Telegramga keladi.
+                            Telefon raqamingiz so'ralmaydi.
+                        </p>
+                    </div>
+                </div>
+
+                {% if profile.telegram_chat_id %}
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+                    <div class="flex items-center gap-3">
+                        <span class="material-icons-round text-emerald-400 text-lg">check_circle</span>
+                        <p class="text-sm font-bold text-emerald-400">Telegram ulangan</p>
+                    </div>
+                    <form action="{% url 'billing:telegram_unlink' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="text-[10px] font-black text-red-500/60 hover:text-red-500 uppercase tracking-widest transition-colors">
+                            Ulanishni uzish
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-4">
+                    <button type="button" onclick="linkTelegram(this)"
+                            class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-sky-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg shadow-sky-500/20 disabled:opacity-60">
+                        Telegramni ulash
+                    </button>
+                    <div id="tg-result" class="hidden space-y-3">
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Quyidagi havolani bosing — bot hisobingizni avtomatik taniydi.
+                            Havola 24 soat amal qiladi.
+                        </p>
+                        <a id="tg-link" href="#" target="_blank" rel="noopener"
+                           class="block px-5 py-4 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-400 font-bold text-sm break-all hover:bg-sky-500/15 transition-all"></a>
+                    </div>
+                    <p id="tg-error" class="hidden text-xs text-red-400 font-bold"></p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </main>
 
     <script>
+        function linkTelegram(btn) {
+            btn.disabled = true;
+            btn.textContent = 'Tayyorlanmoqda...';
+
+            const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch("{% url 'billing:telegram_link' %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': token, 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.error || 'Xatolik');
+                const link = document.getElementById('tg-link');
+                link.href = data.url;
+                link.textContent = data.url;
+                document.getElementById('tg-result').classList.remove('hidden');
+                btn.textContent = 'Yangi havola olish';
+                btn.disabled = false;
+            })
+            .catch(err => {
+                console.error(err);
+                const box = document.getElementById('tg-error');
+                box.textContent = 'Havola olinmadi. Birozdan so\'ng qayta urinib ko\'ring.';
+                box.classList.remove('hidden');
+                btn.textContent = 'Telegramni ulash';
+                btn.disabled = false;
+            });
+        }
+
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();

@@ -384,6 +384,41 @@ class SubscriptionPeriod(models.Model):
         return self.source == PeriodSource.PAYMENT
 
 
+class TelegramLinkToken(models.Model):
+    """
+    Telegram hisobini ulash uchun bir martalik havola.
+
+    NEGA KERAK: o'quvchi ro'yxatdan o'tganda telefon raqami so'ralmaydi,
+    demak botdagi "Raqamimni ulashish" tugmasi uni topa olmaydi. Panel
+    bir martalik havola beradi (`t.me/bot?start=<kod>`), o'quvchi uni
+    bosadi, bot kodni tanib hisobni bog'laydi. Raqam umuman kerak emas.
+
+    Kodning O'ZI saqlanmaydi — faqat SHA-256 xeshi (parol tiklash kabi).
+    Havola Telegram tarixida qolib ketadi, baza esa tayyor kalitlar
+    ro'yxatiga aylanmasligi kerak.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='telegram_tokens'
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField(db_index=True)
+    #: Bir marta ishlatiladi
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Telegram ulash kodi"
+        verbose_name_plural = "Telegram ulash kodlari"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'used_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} — {self.created_at:%d.%m.%Y %H:%M}"
+
+
 class AdminSetting(models.Model):
     """
     Admin sozlamalari (kalit-qiymat).

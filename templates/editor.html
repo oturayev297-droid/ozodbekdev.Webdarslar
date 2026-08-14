@@ -102,9 +102,15 @@
          data-challenge-title="{% if current_challenge %}{{ current_challenge.title }}{% endif %}"
          data-challenge-description="{% if current_challenge %}{{ current_challenge.description|striptags|truncatechars:500 }}{% endif %}"
          data-challenge-difficulty="{% if current_challenge %}{{ current_challenge.difficulty }}{% endif %}"
+         data-language="{% if current_challenge %}{{ current_challenge.language }}{% else %}python{% endif %}"
          class="hidden"></div>
-{# DIQQAT: solution_code ATAYLAB bu yerga chiqarilmaydi — HTML manbasida
-   to'g'ri javob turmasligi kerak. Kerak bo'lsa /editor/<id>/solution/ dan olinadi. #}
+{% comment %}
+DIQQAT: solution_code ATAYLAB bu yerga chiqarilmaydi — HTML manbasida
+to'g'ri javob turmasligi kerak. Kerak bo'lsa /editor/<id>/solution/ dan olinadi.
+
+`{# #}` ISHLATILMAYDI: u faqat bir qatorli izoh, ko'p qatorda matn
+sahifaga chiqib ketadi.
+{% endcomment %}
 
     <!-- Grid Background Layer -->
     <div class="fixed inset-0 grid-bg opacity-10 pointer-events-none -z-10"></div>
@@ -130,7 +136,10 @@
             <div class="hidden md:flex items-center gap-3 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
                 <span class="material-icons-round text-primary text-[14px]">school</span>
                 <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Challenge</span>
-                <span class="text-[10px] font-black text-white uppercase tracking-widest bg-primary/20 px-2 py-0.5 rounded">Lvl 1</span>
+                <span class="text-[10px] font-black text-white uppercase tracking-widest px-2 py-0.5 rounded
+                    {% if current_challenge.language == 'javascript' %}bg-yellow-500/25 text-yellow-300{% else %}bg-primary/25 text-primary{% endif %}">
+                    {% if current_challenge %}{{ current_challenge.get_language_display }}{% else %}Python{% endif %}
+                </span>
                 <span class="text-xs font-bold text-slate-200 truncate max-w-[150px]">{% if current_challenge %}{{ current_challenge.title }}{% else %}Select Task{% endif %}</span>
             </div>
         </div>
@@ -233,8 +242,8 @@
                 <nav class="h-11 shrink-0 bg-black/40 border-b border-white/5 flex items-center justify-between pl-4 pr-6">
                     <div class="flex h-full items-end gap-1">
                         <div class="h-9 px-6 bg-[#0d1117] border-t-2 border-primary rounded-t-lg flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-white shadow-xl">
-                            <span class="material-icons-round text-primary text-sm">javascript</span>
-                            index.js
+                            <span class="material-icons-round text-primary text-sm">code</span>
+                            {% if current_challenge.language == 'javascript' %}main.js{% else %}main.py{% endif %}
                             <span class="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse-slow"></span>
                         </div>
                         <div class="h-8 px-5 bg-white/2 hover:bg-white/5 rounded-t-lg flex items-center gap-2 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-all cursor-pointer">
@@ -249,10 +258,16 @@
                 </nav>
 
                 <!-- Active Editor Multi-Pane -->
-                <div class="flex-1 flex flex-col relative overflow-hidden">
-                    <div class="flex-1 flex relative">
+                <div class="flex-1 flex flex-col relative overflow-hidden min-h-0">
+                    {% comment %}
+                    min-h-0 MUHIM: flex elementning standart min-height:auto
+                    qiymati mazmun bo'yicha o'sishga ruxsat beradi. Usiz uzun
+                    kodda qator raqamlari ustuni cho'zilib, pastdagi terminalni
+                    ekrandan surib yuborardi.
+                    {% endcomment %}
+                    <div class="flex-1 flex relative min-h-0">
                         <!-- Line Numbers -->
-                        <div id="line-numbers" class="w-14 shrink-0 line-numbers pt-8 pb-8 pr-4 text-[13px] border-r border-white/5 opacity-50">
+                        <div id="line-numbers" class="w-14 shrink-0 line-numbers pt-8 pb-8 pr-4 text-[13px] border-r border-white/5 opacity-50 overflow-hidden">
                             <!-- Populated via script -->
                         </div>
                         
@@ -263,7 +278,9 @@
                             
                             <!-- Overlay HUD Elements -->
                             <div class="absolute bottom-4 right-4 lg:bottom-6 lg:right-8 flex items-center gap-2 opacity-30 lg:opacity-20 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                                <span class="hidden sm:inline text-[8px] lg:text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] whitespace-nowrap">Node.js Engine v20.x</span>
+                                <span class="hidden sm:inline text-[8px] lg:text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] whitespace-nowrap">
+                                    {% if current_challenge.language == 'javascript' %}JavaScript Engine{% else %}Python 3 &middot; Pyodide{% endif %}
+                                </span>
                                 <div class="h-1 w-12 lg:w-24 bg-white/5 rounded-full overflow-hidden shrink-0">
                                     <div class="h-full bg-primary/20 w-1/3"></div>
                                 </div>
@@ -295,11 +312,17 @@
                             
                             <div class="flex items-start gap-2 lg:gap-3 opacity-60">
                                 <span class="text-primary font-bold">INFO</span>
-                                <span class="text-slate-500">Initializing Nexus Engine backend connection...</span>
+                                <span class="text-slate-500">Muhit tayyorlanmoqda...</span>
                             </div>
                             <div class="flex items-start gap-2 lg:gap-3">
-                                <span class="text-secondary font-bold">OS</span>
-                                <span class="text-slate-300">Environment Ready. You are currently in an isolated Node.js container.</span>
+                                <span class="text-secondary font-bold">ENV</span>
+                                <span class="text-slate-300">
+                                    {% if current_challenge.language == 'javascript' %}
+                                        JavaScript brauzeringizda ishlaydi. Kodingiz serverga yuborilmaydi.
+                                    {% else %}
+                                        Python brauzeringizda ishlaydi (Pyodide). Kodingiz serverga yuborilmaydi.
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="flex items-start gap-2 lg:gap-3 terminal-text">
                                 <span class="text-white font-black opacity-40">></span>
@@ -565,27 +588,110 @@
             }
         }
 
-        function runCode() {
-            const code = editor.value;
-            logToConsole('Dastur ishga tushirilmoqda. Iltimos kuting...', 'output');
-            
-            setTimeout(() => {
-                try {
-                    const originalLog = console.log;
-                    console.log = (msg) => logToConsole(msg, 'output', true);
-                    
-                    const result = eval(code);
-                    
-                    console.log = originalLog;
-                    logToConsole('Ijro muvaffaqiyatli yakunlandi.', 'success');
-                    
-                    if (result !== undefined) {
-                      logToConsole(`Qaytarilgan qiymat: ${JSON.stringify(result)}`);
+        // ═══════════════════════════════════════════════════════════
+        // Kodni ishga tushirish
+        // ═══════════════════════════════════════════════════════════
+        //
+        // Python brauzerda Pyodide (CPython -> WebAssembly) orqali
+        // ishlaydi. Server umuman ishtirok etmaydi — bu ataylab:
+        //   * begona kodni serverda ijro etish jiddiy xavf bo'lardi
+        //     (sandbox, vaqt/xotira cheklovi, tarmoq izolyatsiyasi kerak);
+        //   * brauzerda ishlaganda o'quvchi kodi hech qayerga ketmaydi.
+        //
+        // Pyodide ~10 MB, shuning uchun SAHIFA OCHILGANDA EMAS, faqat
+        // birinchi marta "Ishga tushirish" bosilganda yuklanadi.
+
+        const LANGUAGE = meta.dataset.language || 'python';
+        const PYODIDE_VERSION = '0.26.4';
+
+        let pyodideReady = null;   // Promise, faqat bir marta yaratiladi
+        let pyodide = null;
+
+        function loadPyodideOnce() {
+            if (pyodideReady) return pyodideReady;
+
+            pyodideReady = new Promise((resolve, reject) => {
+                logToConsole('Python muhiti yuklanmoqda (birinchi marta ~10 MB)...', 'output');
+
+                const script = document.createElement('script');
+                script.src = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.js`;
+                script.onerror = () => reject(new Error('Python muhitini yuklab bo\'lmadi. Internetni tekshiring.'));
+                script.onload = async () => {
+                    try {
+                        pyodide = await loadPyodide({
+                            indexURL: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`,
+                        });
+                        // print() va xatolar konsolimizga yo'naltiriladi
+                        pyodide.setStdout({ batched: (text) => logToConsole(text, 'output', true) });
+                        pyodide.setStderr({ batched: (text) => logToConsole(text, 'error', true) });
+                        resolve(pyodide);
+                    } catch (e) {
+                        reject(e);
                     }
-                } catch (e) {
-                    logToConsole(e.message, 'error');
+                };
+                document.head.appendChild(script);
+            });
+
+            // Yiqilsa keyingi urinishda qaytadan yuklashga ruxsat beramiz
+            pyodideReady.catch(() => { pyodideReady = null; });
+            return pyodideReady;
+        }
+
+        async function runPython(code) {
+            const py = await loadPyodideOnce();
+            try {
+                await py.runPythonAsync(code);
+                logToConsole('Ijro muvaffaqiyatli yakunlandi.', 'success');
+            } catch (e) {
+                // Pyodide to'liq Python traceback beradi — oxirgi qatori
+                // eng foydali xabar
+                const lines = String(e.message || e).trim().split('\n');
+                logToConsole(lines[lines.length - 1], 'error');
+            }
+        }
+
+        function runJavaScript(code) {
+            const originalLog = console.log;
+            try {
+                console.log = (...args) => logToConsole(args.join(' '), 'output', true);
+                const result = eval(code);
+                logToConsole('Ijro muvaffaqiyatli yakunlandi.', 'success');
+                if (result !== undefined) {
+                    logToConsole(`Qaytarilgan qiymat: ${JSON.stringify(result)}`);
                 }
-            }, 600);
+            } catch (e) {
+                logToConsole(e.message, 'error');
+            } finally {
+                // `finally` MUHIM: kod xato bersa ham console.log tiklanishi
+                // kerak, aks holda sahifadagi boshqa skriptlar buziladi.
+                console.log = originalLog;
+            }
+        }
+
+        let running = false;
+
+        async function runCode() {
+            if (running) return;
+            running = true;
+
+            const runBtn = document.querySelector('[onclick="runCode()"]');
+            if (runBtn) runBtn.disabled = true;
+
+            const code = editor.value;
+            logToConsole('Dastur ishga tushirilmoqda...', 'output');
+
+            try {
+                if (LANGUAGE === 'python') {
+                    await runPython(code);
+                } else {
+                    runJavaScript(code);
+                }
+            } catch (e) {
+                logToConsole(String(e.message || e), 'error');
+            } finally {
+                running = false;
+                if (runBtn) runBtn.disabled = false;
+            }
         }
 
         editor.addEventListener('keydown', function(e) {

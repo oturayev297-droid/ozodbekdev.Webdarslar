@@ -31,6 +31,11 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('profile/', views.profile, name='profile'),
 
+    # Sertifikatlar
+    path('certificates/', views.my_certificates, name='my_certificates'),
+    path('certificates/<str:code>/pdf/', views.certificate_pdf, name='certificate_pdf'),
+    path('verify/', views.verify_certificate, name='verify_certificate'),
+
     # Parolni tiklash
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/', views.reset_password, name='reset_password'),

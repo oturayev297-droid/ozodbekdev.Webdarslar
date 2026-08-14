@@ -18,7 +18,7 @@ from datetime import timedelta
 
 from django.db import IntegrityError, transaction
 
-from . import dates
+from . import dates, telegram
 from .models import (
     OPEN_STATUSES,
     PaymentMethod,
@@ -95,6 +95,13 @@ def create_request(user, months) -> PaymentRequest:
         "[OBUNA] %s: to'lov so'rovi #%s (%s oy, %s tiyin)",
         user.username, created.pk, months, amount_tiyin,
     )
+
+    # Xabarnoma asosiy amalni YIQITMAYDI: telegram.py hech qachon xato
+    # tashlamaydi, lekin tranzaksiya commit bo'lgandan keyin yuborilishi
+    # kerak — aks holda rollback bo'lsa mavjud bo'lmagan so'rov haqida
+    # xabar ketardi.
+    transaction.on_commit(lambda: telegram.notify_request_created(created))
+
     return created
 
 
@@ -155,6 +162,12 @@ def mark_receipt_sent(user, source=None) -> PaymentRequest:
         "[OBUNA] To'lov so'rovi #%s: chek yuborildi (%s), kutish rejimi",
         open_request.pk, source,
     )
+
+    hold_days = get_plan().pending_hold_days
+    transaction.on_commit(
+        lambda: telegram.notify_receipt_sent(open_request, hold_days)
+    )
+
     return open_request
 
 
@@ -181,6 +194,10 @@ def issue_card(request_id, admin) -> PaymentRequest:
     req.save(update_fields=['status', 'card_issued_at', 'reviewed_by_admin', 'updated_at'])
 
     logger.info("[OBUNA] So'rov #%s: karta berildi (admin=%s)", req.pk, admin)
+
+    cards = get_cards()
+    transaction.on_commit(lambda: telegram.notify_card_issued(req, cards))
+
     return req
 
 
@@ -225,6 +242,11 @@ def confirm_request(request_id, admin, payment_method=None, amount_tiyin=None, n
         req.save(update_fields=['status', 'confirmed_at', 'reviewed_by_admin', 'updated_at'])
 
     logger.info("[OBUNA] So'rov #%s tasdiqlandi (admin=%s)", request_id, admin)
+
+    telegram.notify_confirmed(
+        req.user, req.months, result.period.amount_tiyin, result.current_period_end
+    )
+
     return result
 
 
@@ -252,6 +274,9 @@ def reject_request(request_id, admin, reason) -> PaymentRequest:
     req.save(update_fields=['status', 'rejected_at', 'reviewed_by_admin', 'admin_note', 'updated_at'])
 
     logger.info("[OBUNA] So'rov #%s rad etildi (admin=%s): %s", req.pk, admin, note)
+
+    transaction.on_commit(lambda: telegram.notify_rejected(req.user, note))
+
     return req
 
 

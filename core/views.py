@@ -22,9 +22,11 @@ from urllib.parse import quote
 from billing.gating import can_access_lesson, can_access_quiz, paywall
 from billing.services import get_state
 
+from . import certificates, lockout
 from . import password_reset as pwreset
 from .models import (
     Category,
+    Certificate,
     Challenge,
     Choice,
     Lesson,
@@ -231,8 +233,10 @@ def dashboard(request):
     completed_lessons_count = UserProgress.objects.filter(
         user=request.user, is_completed=True
     ).count()
-    certificates_count = QuizResult.objects.filter(
-        user=request.user, score_percentage__gte=80
+    # Haqiqiy berilgan sertifikatlar. Ilgari bu QuizResult dan har safar
+    # qayta hisoblanardi — natija keyin o'zgarsa raqam ham o'zgarib ketardi.
+    certificates_count = Certificate.objects.filter(
+        user=request.user, revoked_at__isnull=True
     ).count()
 
     total_quiz_score = sum(
@@ -462,7 +466,7 @@ def submit_quiz(request, quiz_id):
         ).first()
 
         if result is None:
-            QuizResult.objects.create(
+            result = QuizResult.objects.create(
                 user=request.user,
                 quiz=quiz,
                 score_percentage=score_percentage,
@@ -494,6 +498,10 @@ def submit_quiz(request, quiz_id):
         "Quiz submit: user=%s quiz=%s score=%s%%", request.user.username, quiz.id, score_percentage
     )
 
+    # Sertifikat 80%+ da beriladi. Tranzaksiyadan TASHQARIDA: sertifikat
+    # berilmasa ham natija saqlanib qolishi kerak.
+    certificate = certificates.issue_for_result(result)
+
     return JsonResponse({
         'success': True,
         'score': score_percentage,
@@ -501,6 +509,9 @@ def submit_quiz(request, quiz_id):
         'total': total_questions,
         'new_level': new_level,
         'leveled_up': new_level > old_level,
+        'certificate_url': (
+            reverse('certificate_pdf', args=[certificate.code]) if certificate else None
+        ),
     })
 
 
@@ -575,8 +586,19 @@ def user_login(request):
     if request.method == 'POST':
         username = (request.POST.get('username') or '').strip()
         password = request.POST.get('password') or ''
+        ip = lockout.client_ip(request)
+
+        # DARVOZA: parolni tekshirishdan OLDIN. Qulflangan bo'lsa urinish
+        # yozilmaydi ham — aks holda hujumchi urinib turib qulfni cheksiz
+        # uzaytirardi va haqiqiy egasi hech qachon kira olmasdi.
+        locked, retry_after, _ = lockout.check_locked(username, ip)
+        if locked:
+            messages.error(request, lockout.lockout_message(retry_after))
+            return render(request, 'login.html', {'locked': True}, status=429)
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            lockout.record_success(request, user)
             login(request, user)
             next_url = request.GET.get('next') or request.POST.get('next')
             if next_url and next_url.startswith('/') and not next_url.startswith('//'):
@@ -584,7 +606,16 @@ def user_login(request):
             if user.is_staff:
                 return redirect('/admin/')
             return redirect('dashboard')
-        logger.warning("Muvaffaqiyatsiz login urinishi: %s", username)
+
+        lockout.record_failure(request, username)
+
+        # Oxirgi urinish chegaraga yetgan bo'lsa darhol xabar beramiz —
+        # foydalanuvchi nima bo'lganini tushunsin
+        locked, retry_after, _ = lockout.check_locked(username, ip)
+        if locked:
+            messages.error(request, lockout.lockout_message(retry_after))
+            return render(request, 'login.html', {'locked': True}, status=429)
+
         messages.error(request, 'Login yoki parol noto\'g\'ri.')
 
     return render(request, 'login.html')
@@ -594,6 +625,81 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('landing')
+
+
+# ==========================================================================
+# Sertifikatlar
+# ==========================================================================
+
+
+@login_required
+def my_certificates(request):
+    """O'quvchining sertifikatlari."""
+    items = (
+        Certificate.objects.filter(user=request.user)
+        .select_related('quiz')
+        .order_by('-issued_at')
+    )
+    return render(request, 'certificates.html', {
+        'certificates': items,
+        'pass_score': certificates.PASS_SCORE,
+    })
+
+
+@login_required
+def certificate_pdf(request, code):
+    """
+    Sertifikat PDF si.
+
+    Faqat EGASI yoki admin yuklab oladi. Ommaviy tekshirish uchun
+    alohida sahifa bor (`verify_certificate`) — u PDF bermaydi, chunki
+    kodni bilgan har kim boshqaning hujjatini yuklab olmasligi kerak.
+    """
+    certificate = get_object_or_404(
+        Certificate.objects.select_related('quiz', 'user'), code=code
+    )
+    if certificate.user_id != request.user.id and not request.user.is_staff:
+        raise Http404("Sertifikat topilmadi")
+
+    verify_url = request.build_absolute_uri(
+        reverse('verify_certificate') + f'?code={certificate.code}'
+    )
+    pdf = certificates.build_pdf(certificate, verify_url=verify_url)
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="{certificates.filename_for(certificate)}"'
+    )
+    return response
+
+
+def verify_certificate(request):
+    """
+    Sertifikatni tekshirish — OMMAVIY sahifa, login talab qilmaydi.
+
+    Ish beruvchi kodni kiritib hujjat haqiqiyligini ko'radi. Faqat
+    tasdiqlash uchun zarur ma'lumot ko'rsatiladi: ism, kurs, ball, sana
+    va amaldaligi. Email, foydalanuvchi nomi va boshqa shaxsiy
+    ma'lumotlar chiqarilmaydi.
+    """
+    code = (request.GET.get('code') or '').strip().upper()
+    certificate = None
+    searched = bool(code)
+
+    if searched:
+        certificate = (
+            Certificate.objects.select_related('quiz')
+            .filter(code=code)
+            .first()
+        )
+        if certificate is None:
+            logger.info("[SERTIFIKAT] Tekshirish: kod topilmadi (%s)", code[:40])
+
+    return render(request, 'verify_certificate.html', {
+        'code': code,
+        'certificate': certificate,
+        'searched': searched,
+    })
 
 
 # ==========================================================================
@@ -608,6 +714,16 @@ def forgot_password(request):
 
     if request.method == 'POST':
         email = request.POST.get('email', '')
+        ip = lockout.client_ip(request)
+
+        # Cheklovsiz bu begonaning pochtasiga xat yuborish vositasi bo'lardi
+        throttled, retry_after = lockout.check_reset_throttle(ip)
+        if throttled:
+            messages.error(request, lockout.reset_throttle_message(retry_after))
+            return render(request, 'forgot_password.html', status=429)
+
+        lockout.record_reset_request(request, email)
+
         # Javob email bor-yo'qligidan qat'i nazar bir xil
         message = pwreset.request_reset(email)
         messages.success(request, message)

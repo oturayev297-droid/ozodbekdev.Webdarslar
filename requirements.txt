@@ -20,5 +20,11 @@ whitenoise==6.8.2
 # --- Rasm bilan ishlash (ImageField uchun majburiy) ---
 pillow==10.3.0
 
+# --- Telegram xabarnomalar ---
+requests==2.32.4
+
+# --- PDF sertifikatlar ---
+reportlab==5.0.0
+
 # --- Production server ---
 gunicorn==23.0.0

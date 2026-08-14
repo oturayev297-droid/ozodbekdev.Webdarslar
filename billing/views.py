@@ -2,14 +2,17 @@
 
 import json
 import logging
+import secrets
 
+from django.conf import settings as dj_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import dates, payment_requests
+from . import dates, payment_requests, telegram
 from .models import PeriodSource, ReceiptSource, RequestStatus
 from .services import BillingError, STATUS_LABELS, get_plan, get_state
 
@@ -117,6 +120,77 @@ def cancel_request(request):
         messages.success(request, "So'rov bekor qilindi.")
 
     return redirect('billing:plans')
+
+
+@login_required
+@require_POST
+def telegram_link(request):
+    """Telegram hisobini ulash uchun bir martalik havola beradi."""
+    url = telegram.create_link_token(request.user)
+    return JsonResponse({'success': True, 'url': url})
+
+
+@login_required
+@require_POST
+def telegram_unlink(request):
+    """Ulanishni uzadi."""
+    profile = request.user.profile
+    profile.telegram_chat_id = ''
+    profile.save(update_fields=['telegram_chat_id'])
+    messages.success(request, "Telegram ulanishi uzildi.")
+    return redirect('profile')
+
+
+@csrf_exempt
+@require_POST
+def telegram_webhook(request, secret):
+    """
+    Telegram dan keladigan yangilanishlar.
+
+    MAXFIY MANZIL: URL ichidagi `secret` `.env` dagi qiymat bilan
+    solishtiriladi. Mos kelmasa 404 — endpoint borligi ham bilinmaydi.
+    Busiz har kim bot nomidan soxta `/start` yuborib begona hisobni
+    o'ziga bog'lab olardi.
+
+    `csrf_exempt` ATAYLAB: so'rov Telegram serveridan keladi, sessiya
+    va CSRF tokeni yo'q. Himoya maxfiy manzil va token xeshi orqali.
+    """
+    expected = getattr(dj_settings, 'TELEGRAM_WEBHOOK_SECRET', '')
+    if not expected or not secrets.compare_digest(str(secret), expected):
+        raise Http404()
+
+    try:
+        update = json.loads(request.body or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': True})  # Telegram qayta yubormasin
+
+    message = update.get('message') or {}
+    chat_id = (message.get('chat') or {}).get('id')
+    text = (message.get('text') or '').strip()
+
+    if chat_id and text.startswith('/start'):
+        parts = text.split(maxsplit=1)
+        token = parts[1] if len(parts) > 1 else ''
+        user = telegram.consume_link_token(token, chat_id) if token else None
+
+        if user:
+            name = getattr(getattr(user, 'profile', None), 'full_name', '') or user.username
+            telegram.send(
+                chat_id,
+                f"✅ <b>Hisob ulandi</b>\n\nSalom, {name}!\n\n"
+                f"Endi to'lov rekvizitlari, tasdiq javobi va obuna "
+                f"eslatmalari shu yerga keladi."
+            )
+        else:
+            telegram.send(
+                chat_id,
+                "Havola eskirgan yoki allaqachon ishlatilgan.\n\n"
+                "Saytdagi profil sahifasidan yangi havola oling."
+            )
+
+    # Telegram HAR DOIM 200 kutadi — aks holda yangilanishni qayta-qayta
+    # yuboraveradi.
+    return JsonResponse({'ok': True})
 
 
 @login_required

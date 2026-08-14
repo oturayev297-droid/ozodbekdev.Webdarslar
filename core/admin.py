@@ -1,8 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.sites import AlreadyRegistered
+from django.urls import reverse
 from django.db.models import Count, Q
 from django.utils.html import format_html
-from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress
+from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress, LoginAttempt, Certificate
 
 # Helper function to safely register models
 def safe_register(model, admin_class=None):
@@ -44,9 +45,21 @@ except admin.sites.NotRegistered:
     pass
 @admin.register(Challenge)
 class ChallengeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'difficulty', 'order')
-    list_filter = ('difficulty',)
+    list_display = ('title', 'language', 'difficulty', 'order')
+    list_filter = ('language', 'difficulty')
     search_fields = ('title', 'description')
+    list_editable = ('order',)
+    fieldsets = (
+        ("Asosiy", {'fields': ('title', 'language', 'difficulty', 'order')}),
+        ("Topshiriq", {'fields': ('description', 'initial_code')}),
+        ("Yechim", {
+            'fields': ('solution_code',),
+            'description': (
+                "Yechim sahifa HTML iga <b>chiqarilmaydi</b> — uni faqat "
+                "<code>/editor/&lt;id&gt;/solution/</code> so'ralganda beriladi."
+            ),
+        }),
+    )
 
 # Lesson
 try:
@@ -169,3 +182,143 @@ class NewStudentAdmin(admin.ModelAdmin):
         percentage = int((completed_lessons / total_lessons) * 100)
         return f"{percentage}%"
     get_progress.short_description = 'O\'zlashtirish Foizi'
+
+
+# Login urinishlari — faqat o'qish uchun jurnal
+try:
+    admin.site.unregister(LoginAttempt)
+except admin.sites.NotRegistered:
+    pass
+@admin.register(LoginAttempt)
+class LoginAttemptAdmin(admin.ModelAdmin):
+    """
+    Xavfsizlik jurnali. Qo'lda o'zgartirilmaydi — qulflash mantig'i
+    aynan shu yozuvlardan hisoblanadi, ularni tahrirlash cheklovni
+    aylanib o'tish yo'li bo'lardi.
+    """
+
+    list_display = ('created_at', 'purpose', 'username', 'ip', 'result', 'short_agent')
+    list_filter = ('purpose', 'successful', 'created_at')
+    search_fields = ('username', 'ip')
+    date_hierarchy = 'created_at'
+
+    @admin.display(description="Natija", ordering='successful')
+    def result(self, obj):
+        if obj.successful:
+            return format_html(
+                '<span style="background:#10b981;color:#fff;padding:2px 8px;'
+                'border-radius:10px;font-size:11px;font-weight:700">OK</span>'
+            )
+        return format_html(
+            '<span style="background:#ef4444;color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">XATO</span>'
+        )
+
+    @admin.display(description="Brauzer")
+    def short_agent(self, obj):
+        return (obj.user_agent[:60] + '...') if len(obj.user_agent) > 60 else obj.user_agent
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+# Sertifikatlar
+try:
+    admin.site.unregister(Certificate)
+except admin.sites.NotRegistered:
+    pass
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    """
+    Berilgan sertifikatlar. Qo'lda YARATILMAYDI va o'zgartirilmaydi —
+    ular test natijasidan avtomatik chiqadi.
+
+    Bekor qilish mumkin (aldash aniqlansa), lekin o'chirib bo'lmaydi:
+    bekor qilingan sertifikat ham tarix, va tekshirish sahifasi uni
+    "bekor qilingan" deb ko'rsatishi kerak. O'chirilsa "topilmadi"
+    chiqib, sabab noma'lum bo'lib qolardi.
+    """
+
+    list_display = ('code', 'holder', 'quiz_title', 'score_percentage', 'issued_at', 'status')
+    list_filter = ('category_name', 'issued_at')
+    search_fields = ('code', 'full_name', 'user__username', 'user__email', 'quiz_title')
+    date_hierarchy = 'issued_at'
+    actions = ['action_revoke', 'action_restore']
+
+    readonly_fields = (
+        'code', 'user', 'quiz', 'score_percentage', 'full_name', 'quiz_title',
+        'category_name', 'issued_at', 'revoked_at', 'status', 'verify_link', 'notice',
+    )
+    fields = (
+        'notice', 'code', 'verify_link', 'status', 'user', 'full_name',
+        'quiz', 'quiz_title', 'category_name', 'score_percentage',
+        'issued_at', 'revoked_at', 'revoke_reason',
+    )
+
+    @admin.display(description="Diqqat")
+    def notice(self, obj):
+        return format_html(
+            "Bekor qilish uchun <b>Bekor qilish sababi</b> ni to'ldirib saqlang, "
+            "so'ng ro'yxatdan <i>\"Bekor qilish\"</i> amalini tanlang.<br>"
+            "Sertifikatdagi ball ATAYLAB o'zgarmaydi — test qayta topshirilsa ham "
+            "berilgan hujjat qayta yozilmaydi."
+        )
+
+    @admin.display(description="Egasi", ordering='full_name')
+    def holder(self, obj):
+        url = reverse('admin:auth_user_change', args=[obj.user_id])
+        return format_html('<a href="{}">{}</a>', url, obj.holder_name)
+
+    @admin.display(description="Tekshirish havolasi")
+    def verify_link(self, obj):
+        url = f"{reverse('verify_certificate')}?code={obj.code}"
+        return format_html('<a href="{}" target="_blank">{}</a>', url, url)
+
+    @admin.display(description="Holat")
+    def status(self, obj):
+        if obj.is_valid:
+            return format_html(
+                '<span style="background:#10b981;color:#fff;padding:2px 8px;'
+                'border-radius:10px;font-size:11px;font-weight:700">AMALDA</span>'
+            )
+        return format_html(
+            '<span style="background:#ef4444;color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">BEKOR</span>'
+        )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'quiz')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.action(description="Bekor qilish (sabab to'ldirilgan bo'lishi kerak)")
+    def action_revoke(self, request, queryset):
+        from django.utils import timezone as tz
+        done = 0
+        for cert in queryset:
+            if not cert.revoke_reason.strip():
+                self.message_user(
+                    request,
+                    f"{cert.code}: avval \"Bekor qilish sababi\" ni to'ldiring.",
+                    level=messages.ERROR,
+                )
+                continue
+            if cert.revoked_at:
+                continue
+            cert.revoked_at = tz.now()
+            cert.save(update_fields=['revoked_at'])
+            done += 1
+        if done:
+            self.message_user(request, f"{done} ta sertifikat bekor qilindi.")
+
+    @admin.action(description="Bekor qilishni qaytarish")
+    def action_restore(self, request, queryset):
+        count = queryset.filter(revoked_at__isnull=False).update(revoked_at=None)
+        self.message_user(request, f"{count} ta sertifikat tiklandi.")

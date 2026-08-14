@@ -21,6 +21,9 @@ env = environ.Env(
     EMAIL_HOST_USER=(str, ""),
     EMAIL_HOST_PASSWORD=(str, ""),
     DEFAULT_FROM_EMAIL=(str, ""),
+    TELEGRAM_BOT_TOKEN=(str, ""),
+    TELEGRAM_BOT_USERNAME=(str, ""),
+    TELEGRAM_ADMIN_CHAT_IDS=(list, []),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -191,6 +194,26 @@ if EMAIL_CONFIGURED:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# --------------------------------------------------------------------------
+# Telegram — to'lov xabarnomalari
+# --------------------------------------------------------------------------
+#
+# Token bo'sh bo'lsa MOCK rejim: hech qayerga so'rov ketmaydi, xabar
+# matni logga yoziladi. Bot @BotFather orqali yaratiladi.
+#
+# TELEGRAM_ADMIN_CHAT_IDS — to'lov so'rovlari haqida xabar oladigan
+# adminlar. O'z chat ID ingizni bilish uchun botga /start yozing va
+# logga qarang, yoki @userinfobot dan so'rang.
+
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN").strip()
+TELEGRAM_BOT_USERNAME = env("TELEGRAM_BOT_USERNAME").strip().lstrip('@')
+TELEGRAM_ADMIN_CHAT_IDS = [str(x).strip() for x in env("TELEGRAM_ADMIN_CHAT_IDS") if str(x).strip()]
+
+#: Webhook manzilidagi maxfiy qism — tashqi so'rovlar bot nomidan
+#: soxta xabar yubora olmasligi uchun. Bo'sh bo'lsa webhook yopiq.
+TELEGRAM_WEBHOOK_SECRET = env.str("TELEGRAM_WEBHOOK_SECRET", default="")
 
 
 # --------------------------------------------------------------------------

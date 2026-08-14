@@ -7,10 +7,13 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **73 video dars** 4 yo'nalishda (Python 15, Django 13, React 15, JavaScript 30)
 - **Obuna tizimi** — qo'lda tasdiqlanadigan to'lov, 1/3/6/12 oy
 - **Testlar** — server tomonda tekshiriladigan, natijasi soxtalashtirilmaydigan
+- **PDF sertifikat** — 80%+ ballda avtomatik, ommaviy tekshirish kodi bilan
 - **O'zlashtirish nazorati** — dars tugatish, level tizimi, haftalik faollik
 - **Parolni tiklash** — emailga 6 xonali kod
-- **Kod muharriri** — brauzerda JavaScript topshiriqlari
-- **Admin panel** — kontent, o'quvchilar va to'lovlarni boshqarish
+- **Telegram xabarnomalar** — to'lov rekvizitlari, tasdiq, muddat eslatmalari
+- **Kod muharriri** — brauzerda **Python** (Pyodide) va JavaScript
+- **Brute-force himoyasi** — login urinishlari cheklovi
+- **Admin panel** — kontent, o'quvchilar, to'lovlar va sertifikatlar
 
 ## Tez boshlash
 
@@ -32,6 +35,8 @@ core/                  kontent va autentifikatsiya
   models.py            Category -> Module -> Lesson -> Quiz -> Question -> Choice
   views.py             sahifalar va API endpointlari
   password_reset.py    6 xonali kod bilan parol tiklash
+  lockout.py           login urinishlari cheklovi (brute-force himoyasi)
+  certificates.py      PDF sertifikat generatsiyasi va tekshirish
   admin.py             kontent admin paneli
 billing/               obuna va to'lov
   models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
@@ -39,6 +44,7 @@ billing/               obuna va to'lov
   services.py          obunani uzaytirish (YAGONA yo'l) va holat
   payment_requests.py  to'lov so'rovi oqimi
   gating.py            kontent darvozasi (bepul dars / obuna)
+  telegram.py          xabarnomalar va hisobni ulash
   admin.py             to'lovlarni ko'rib chiqish paneli
 stitch_backend/        Django proyekt sozlamalari
 templates/             HTML shablonlar (Tailwind CDN)
@@ -71,7 +77,26 @@ Kunlik vazifalar (cron): so'rovlarni kuydirish va 7/3/0 kunlik eslatmalar.
 
 ```bash
 python manage.py subscription_daily
+python manage.py prune_login_attempts
 ```
+
+## Sertifikatlar
+
+Testda **80%+** ball olinganda sertifikat avtomatik beriladi (`certificates.PASS_SCORE`).
+Har birida tasodifiy tekshirish kodi bor — ish beruvchi `/verify/` sahifasida
+kodni kiritib haqiqiyligini ko'radi (login talab qilinmaydi).
+
+PDF diskda **saqlanmaydi** — har so'rovda `reportlab` bilan qayta chiziladi.
+Mazmun `Certificate` yozuvida muzlatilgan, PDF esa uning ko'rinishi.
+
+## Kod muharriri
+
+Python brauzerda **Pyodide** (CPython -> WebAssembly) orqali ishlaydi —
+server ishtirok etmaydi. Kod hech qayerga yuborilmaydi va serverda begona
+kod ijro etilmaydi. Pyodide ~10 MB, shuning uchun sahifa ochilganda emas,
+faqat birinchi "Ishga tushirish" bosilganda yuklanadi.
+
+Topshiriq tili `Challenge.language` da (`python` yoki `javascript`).
 
 ## Muhim qoidalar
 
@@ -97,21 +122,33 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 10. **`ADMIN_GRANT` tushum hisobotiga kirmaydi** — faqat `PAYMENT`.
 11. **Parol tiklash kodi bazada xeshlangan** (SHA-256), bir marta ishlaydi,
     5 urinishdan keyin kuyadi, javob email bor-yo'qligidan qat'i nazar bir xil.
+12. **`confirm_reset` butun funksiya `@transaction.atomic` BO'LMASLIGI kerak** —
+    bo'lsa xato ko'tarilganda `attempts++` orqaga qaytarilib, brute-force
+    himoyasi butunlay o'chib qolardi.
+13. **Login qulfi davomida yangi urinish yozilmaydi** — aks holda hujumchi
+    urinib turib qulfni cheksiz uzaytirardi va haqiqiy egasi kira olmasdi.
+14. **`X-Forwarded-For` dan OXIRGI qiymat olinadi** — nginx o'zi ko'rgan
+    manzilni oxiriga qo'shadi, chapdagilar klientdan kelgan va soxta bo'lishi mumkin.
+15. **Sertifikat kodi tasodifiy**, ketma-ket ID emas — aks holda `/verify/1`,
+    `/verify/2` deb butun bazani sanab chiqib bo'lardi.
+16. **Berilgan sertifikat qayta yozilmaydi** — test qayta topshirilib ball
+    oshsa ham hujjatdagi ball o'zgarmaydi.
+17. **`telegram.py` dagi hech bir funksiya xato tashlamaydi** — xabarnoma
+    yuborilmagani uchun tasdiqlangan to'lov bekor bo'lib qolmasligi kerak.
+18. **Ko'p qatorli `{# #}` ISHLATILMAYDI** — u faqat bir qatorli izoh,
+    ko'p qatorda matn sahifaga chiqib ketadi. `{% comment %}` ishlatiladi.
 
 ## Testlar
 
 ```bash
-python manage.py test          # hammasi
-python manage.py test billing  # faqat obuna
+python manage.py test                  # hammasi
+python manage.py test billing          # obuna va to'lov
+python manage.py test core.tests_phase3  # cheklov, sertifikat, muharrir
 ```
 
-## Hali qilinmagan (3-bosqich)
+## Hali qilinmagan
 
 - Click / Payme avtomatik integratsiyasi (`external_tx_id` maydoni tayyor)
-- Telegram bot orqali xabarnomalar (hozir faqat email)
-- PDF sertifikat generatsiyasi
-- Login urinishlarini cheklash (django-axes)
 - Videolarni CDN / S3 ga ko'chirish
 - 66 darsga test yaratish (hozir 7 test bor)
-- Kod muharririga Python qo'llab-quvvatlashi
 - "AI Mentor" ni haqiqiy AI ga ulash (hozir qattiq kodlangan javoblar)

@@ -173,6 +173,9 @@ Javobsiz to'lov so'rovlarini kuydiradi va 7/3/0 kun qolganda eslatma yuboradi.
 ```cron
 # Har kuni Toshkent vaqti bilan 09:00 da
 0 9 * * *  cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py subscription_daily >> logs/cron.log 2>&1
+
+# Eski login urinishlari yozuvlarini tozalash (jadval cheksiz o'smasin)
+30 3 * * * cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py prune_login_attempts >> logs/cron.log 2>&1
 ```
 
 Avval quruq sinab ko'ring: `python manage.py subscription_daily --dry-run`
@@ -191,7 +194,36 @@ yaratilishi shart.
 python manage.py shell -c "from django.core.mail import send_mail; send_mail('Sinov','Ishladi',None,['siz@gmail.com'])"
 ```
 
-## 8. Backup
+## 8. Telegram bot
+
+1. [@BotFather](https://t.me/BotFather) da bot yarating, tokenni oling.
+2. `.env` ga yozing:
+
+```
+TELEGRAM_BOT_TOKEN=123456789:AAE...
+TELEGRAM_BOT_USERNAME=ozodbekweb_bot
+TELEGRAM_ADMIN_CHAT_IDS=123456789
+TELEGRAM_WEBHOOK_SECRET=uzun-tasodifiy-satr
+```
+
+Chat ID ingizni bilish uchun [@userinfobot](https://t.me/userinfobot) ga yozing.
+
+3. Webhook ni ro'yxatdan o'tkazing (HTTPS majburiy):
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook"   -d "url=https://sizning-domen.uz/obuna/telegram/hook/<TELEGRAM_WEBHOOK_SECRET>/"
+```
+
+Manzildagi maxfiy qism busiz har kim bot nomidan soxta `/start` yuborib
+begona hisobni o'ziga bog'lab olardi.
+
+Token bo'sh bo'lsa tizim **mock rejimda** ishlaydi: xabarlar faqat logga
+yoziladi, to'lov oqimi buzilmaydi.
+
+O'quvchi profil sahifasidan bir martalik havola oladi va bosadi — telefon
+raqami so'ralmaydi.
+
+## 9. Backup
 
 ```bash
 # Baza
@@ -201,6 +233,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 9. Loglar
+## 10. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).
