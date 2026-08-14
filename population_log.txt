@@ -1,0 +1,9 @@
+Starting population...
+Deleted old data: (17, {'core.Lesson': 9, 'core.Module': 4, 'core.Category': 4})
+Created Python with slug python
+Created Django with slug django
+Created React with slug react
+Created JavaScript with slug javascript
+Final Category count: 4
+Final Lesson count: 4
+DONE

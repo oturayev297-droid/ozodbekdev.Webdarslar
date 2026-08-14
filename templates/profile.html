@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Nexus Profile | Identity Manager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0ea5e9",
+                        "secondary": "#2dd4bf",
+                        "background": "#020617",
+                        "surface": "#0f172a",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; }
+        .glass-2 {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .input-nexus {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .input-nexus:focus {
+            background: rgba(14, 165, 233, 0.05);
+            border-color: #0ea5e9;
+        }
+    </style>
+</head>
+<body class="bg-background text-slate-100 min-h-screen">
+    <nav class="h-20 border-b border-white/5 glass-2 sticky top-0 z-50 px-8 flex items-center justify-between">
+        <a href="{% url 'dashboard' %}" class="flex items-center gap-3 text-slate-400 hover:text-white transition-all group">
+            <span class="material-icons-round group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            <span class="text-xs font-black uppercase tracking-[0.3em] italic">Return to Command Center</span>
+        </a>
+        <div class="flex items-center gap-4">
+            <span class="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Identity Manager</span>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-12 px-4 md:py-24 md:px-6">
+        <div class="glass-2 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 border border-white/5 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -z-10"></div>
+            
+            <form action="{% url 'profile' %}" method="POST" enctype="multipart/form-data" class="space-y-12">
+                {% csrf_token %}
+                
+                <!-- Avatar Section -->
+                <div class="flex flex-col items-center gap-8">
+                    <div class="relative group">
+                        <div class="absolute inset-0 bg-primary/20 rounded-[2.5rem] blur-xl transition-all"></div>
+                        <div class="relative w-48 h-48 rounded-[2.5rem] bg-gradient-to-tr from-primary to-secondary p-[2px]">
+                            <div class="w-full h-full rounded-[2.4rem] bg-background-dark overflow-hidden">
+                                <img id="preview" src="{% if profile.image %}{{ profile.image.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=0ea5e9&color=fff&size=200{% endif %}" class="w-full h-full object-cover" alt="Avatar">
+                            </div>
+                        </div>
+                        <label for="image-upload" class="absolute bottom-2 right-2 w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-xl shadow-primary/30">
+                            <span class="material-icons-round">photo_camera</span>
+                            <input type="file" id="image-upload" name="image" class="hidden" accept="image/*" onchange="previewImage(this)">
+                        </label>
+                    </div>
+                    <div class="text-center">
+                        <h1 class="text-4xl font-black text-white tracking-tighter italic">{{ user.username }}</h1>
+                        <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2 italic">User Identity Initialization</p>
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Designation</label>
+                        <input type="text" name="full_name" value="{{ profile.full_name }}" class="w-full input-nexus px-6 py-4 rounded-2xl outline-none text-white text-sm font-bold" placeholder="Ismingizni kiriting">
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Biographical Data</label>
+                        <input type="text" name="bio" value="{{ profile.bio }}" class="w-full input-nexus px-6 py-4 rounded-2xl outline-none text-white text-sm font-bold" placeholder="Kasbingiz yoki qiziqishingiz">
+                    </div>
+                </div>
+
+                <div class="pt-8 border-t border-white/5 flex justify-center">
+                    <button type="submit" class="px-16 py-5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-2xl font-black uppercase tracking-[0.3em] text-xs hover:scale-105 transition-all shadow-2xl shadow-primary/20 italic">
+                        Update Identity
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

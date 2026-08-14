@@ -1,0 +1,560 @@
+import json
+import logging
+import mimetypes
+import os
+from datetime import timedelta
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db import transaction
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
+from .models import (
+    Category,
+    Challenge,
+    Choice,
+    Lesson,
+    Profile,
+    Project,
+    Quiz,
+    QuizResult,
+    UserProgress,
+)
+
+logger = logging.getLogger(__name__)
+
+
+# ==========================================================================
+# Ochiq sahifalar
+# ==========================================================================
+
+def landing(request):
+    return render(request, 'landing.html')
+
+
+# ==========================================================================
+# Darslar
+# ==========================================================================
+
+@login_required
+def lessons(request, lesson_id=None):
+    """Darslar sahifasi. Kontent faqat tizimga kirganlar uchun."""
+    course_data = {}
+
+    category_colors = {
+        'python': 'blue',
+        'django': 'green',
+        'react': 'indigo',
+        'javascript': 'yellow',
+    }
+
+    # Bitta so'rovda foydalanuvchining tugatgan darslari (N+1 muammosi hal qilindi)
+    completed_ids = set(
+        UserProgress.objects.filter(user=request.user, is_completed=True)
+        .values_list('lesson_id', flat=True)
+    )
+
+    categories = Category.objects.all().prefetch_related('modules__lessons')
+
+    for category in categories:
+        cat_slug = category.slug.lower()
+        lessons_list = []
+
+        all_lessons = []
+        for module in category.modules.all().order_by('order'):
+            all_lessons.extend(module.lessons.all().order_by('order'))
+
+        completed_count = 0
+        for lesson in all_lessons:
+            is_completed = lesson.id in completed_ids
+            if is_completed:
+                completed_count += 1
+
+            # Video endi to'g'ridan-to'g'ri /media/ dan emas, himoyalangan
+            # endpoint orqali uzatiladi.
+            if lesson.video_file:
+                video_url = f'/lessons/{lesson.id}/video/'
+            else:
+                video_url = lesson.video_url or ''
+
+            lessons_list.append({
+                'id': lesson.id,
+                'title': lesson.title,
+                'description': (lesson.theory[:100] + '...') if lesson.theory else 'Tavsif yo\'q',
+                'videoUrl': video_url,
+                'code': lesson.practice_code,
+                'full_theory': lesson.theory,
+                'completed': is_completed,
+            })
+
+        course_data[cat_slug] = {
+            'name': category.name,
+            'color': category_colors.get(cat_slug, 'blue'),
+            'totalLessons': len(all_lessons),
+            'completedLessons': completed_count,
+            'lessons': lessons_list,
+        }
+
+    context = {
+        'course_data_json': json.dumps(course_data, cls=DjangoJSONEncoder),
+        'initial_lesson_id': lesson_id or '',
+    }
+    return render(request, 'lessons.html', context)
+
+
+@login_required
+def lesson_video(request, lesson_id):
+    """
+    Dars videosini faqat tizimga kirgan foydalanuvchiga uzatadi.
+
+    Productionda (USE_X_ACCEL_REDIRECT=True) fayl nginx tomonidan uzatiladi —
+    Django faqat ruxsatni tekshiradi va sarlavha qaytaradi. Bu 5 GB video
+    uchun yagona to'g'ri yechim.
+    """
+    from django.conf import settings
+
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    if not lesson.video_file:
+        raise Http404("Bu darsda video yo'q")
+
+    if settings.USE_X_ACCEL_REDIRECT:
+        response = HttpResponse()
+        # nginx da: location /protected/ { internal; alias /path/to/media/; }
+        response['X-Accel-Redirect'] = f'/protected/{lesson.video_file.name}'
+        response['Content-Type'] = (
+            mimetypes.guess_type(lesson.video_file.name)[0] or 'application/octet-stream'
+        )
+        del response['Content-Length']
+        return response
+
+    # Lokal ishlab chiqish uchun (sekin, faqat development)
+    try:
+        return FileResponse(lesson.video_file.open('rb'), content_type='video/mp4')
+    except FileNotFoundError:
+        logger.error("Video fayl diskda topilmadi: %s", lesson.video_file.name)
+        raise Http404("Video fayl topilmadi")
+
+
+@login_required
+@require_POST
+def complete_lesson(request, lesson_id):
+    """Darsni 'tugatildi' deb belgilaydi. Dashboard statistikasi shundan oziqlanadi."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    progress, created = UserProgress.objects.get_or_create(
+        user=request.user,
+        lesson=lesson,
+        defaults={'is_completed': True, 'completed_at': timezone.now()},
+    )
+    if not created and not progress.is_completed:
+        progress.is_completed = True
+        progress.completed_at = timezone.now()
+        progress.save(update_fields=['is_completed', 'completed_at'])
+
+    total_completed = UserProgress.objects.filter(
+        user=request.user, is_completed=True
+    ).count()
+
+    return JsonResponse({
+        'success': True,
+        'lesson_id': lesson.id,
+        'completed': True,
+        'total_completed': total_completed,
+    })
+
+
+# ==========================================================================
+# Dashboard
+# ==========================================================================
+
+@login_required
+def dashboard(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    tech_progress = {'python': 0, 'django': 0, 'javascript': 0, 'react': 0}
+
+    latest_quizzes = (
+        QuizResult.objects.filter(user=request.user)
+        .select_related('quiz')
+        .order_by('-completed_at')[:5]
+    )
+
+    completed_lessons_count = UserProgress.objects.filter(
+        user=request.user, is_completed=True
+    ).count()
+    certificates_count = QuizResult.objects.filter(
+        user=request.user, score_percentage__gte=80
+    ).count()
+
+    total_quiz_score = sum(
+        r.score_percentage for r in QuizResult.objects.filter(user=request.user)
+    )
+    code_points = (profile.level * 150) + (completed_lessons_count * 25) + total_quiz_score
+
+    for category in Category.objects.all():
+        slug = category.slug.lower()
+        if slug not in tech_progress and slug != 'nodejs':
+            continue
+        mapped_slug = 'javascript' if slug == 'nodejs' else slug
+
+        total_lessons = Lesson.objects.filter(module__category=category).count()
+        total_quizzes = Quiz.objects.filter(lesson__module__category=category).count()
+
+        completed_lessons = UserProgress.objects.filter(
+            user=request.user,
+            lesson__module__category=category,
+            is_completed=True,
+        ).count()
+        completed_quizzes = QuizResult.objects.filter(
+            user=request.user,
+            quiz__lesson__module__category=category,
+            score_percentage__gte=50,
+        ).count()
+
+        combined_total = total_lessons + total_quizzes
+        if combined_total > 0:
+            combined_completed = completed_lessons + completed_quizzes
+            tech_progress[mapped_slug] = int((combined_completed / combined_total) * 100)
+
+    # Haftalik faollik (endi Asia/Tashkent vaqt zonasida)
+    today = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+    current_week_activity = []
+    current_week_total = 0
+    previous_week_total = 0
+
+    for i in range(6, -1, -1):
+        day_start = today - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+        d_q = QuizResult.objects.filter(
+            user=request.user, completed_at__gte=day_start, completed_at__lt=day_end
+        ).count()
+        d_l = UserProgress.objects.filter(
+            user=request.user,
+            completed_at__gte=day_start,
+            completed_at__lt=day_end,
+            is_completed=True,
+        ).count()
+        total = d_q + d_l
+        current_week_activity.append(total)
+        current_week_total += total
+
+    for i in range(13, 6, -1):
+        day_start = today - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+        d_q = QuizResult.objects.filter(
+            user=request.user, completed_at__gte=day_start, completed_at__lt=day_end
+        ).count()
+        d_l = UserProgress.objects.filter(
+            user=request.user,
+            completed_at__gte=day_start,
+            completed_at__lt=day_end,
+            is_completed=True,
+        ).count()
+        previous_week_total += (d_q + d_l)
+
+    if previous_week_total > 0:
+        activity_growth = int(
+            ((current_week_total - previous_week_total) / previous_week_total) * 100
+        )
+    elif current_week_total > 0:
+        activity_growth = 100
+    else:
+        activity_growth = 0
+
+    max_act = max(current_week_activity) or 1
+    activity_bars = [
+        max(15, int((val / max_act) * 100)) if val > 0 else 5
+        for val in current_week_activity
+    ]
+
+    latest_lesson = Lesson.objects.order_by('-created_at').first()
+
+    return render(request, 'dashboard.html', {
+        'profile': profile,
+        'latest_lesson': latest_lesson,
+        'latest_quizzes': latest_quizzes,
+        'tech_progress': tech_progress,
+        'completed_lessons_count': completed_lessons_count,
+        'certificates_count': certificates_count,
+        'code_points': code_points,
+        'activity_bars': activity_bars,
+        'activity_growth': activity_growth,
+    })
+
+
+# ==========================================================================
+# Kod muharriri va loyihalar
+# ==========================================================================
+
+@login_required
+def editor(request, challenge_id=None):
+    challenges = Challenge.objects.all().order_by('order')
+    current_challenge = None
+    if challenge_id:
+        current_challenge = get_object_or_404(Challenge, id=challenge_id)
+    elif challenges.exists():
+        current_challenge = challenges.first()
+
+    context = {
+        'challenges': challenges,
+        'current_challenge': current_challenge,
+        'next_challenge': (
+            challenges.filter(order__gt=current_challenge.order).first()
+            if current_challenge else None
+        ),
+    }
+    return render(request, 'editor.html', context)
+
+
+@login_required
+def challenge_solution(request, challenge_id):
+    """Yechimni faqat so'ralganda beradi — HTML manbasida ochiq turmaydi."""
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    return JsonResponse({'solution': challenge.solution_code or ''})
+
+
+@login_required
+def projects(request):
+    projects_list = Project.objects.all().order_by('order')
+    for project in projects_list:
+        project.tech_list = [
+            t.strip() for t in (project.tech_stack or '').split(',') if t.strip()
+        ]
+    return render(request, 'projects.html', {'projects': projects_list})
+
+
+# ==========================================================================
+# Testlar
+# ==========================================================================
+
+@login_required
+def quizzes(request):
+    quiz_list = Quiz.objects.all().select_related('lesson__module__category')
+    return render(request, 'quizzes.html', {
+        'quizzes': quiz_list,
+        'categories': Category.objects.all(),
+    })
+
+
+@login_required
+def quiz_detail(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    questions = quiz.questions.all().prefetch_related('choices')
+    return render(request, 'quiz_detail.html', {
+        'quiz': quiz,
+        'questions': questions,
+    })
+
+
+@login_required
+@require_POST
+def submit_quiz(request, quiz_id):
+    """
+    Ballni SERVER hisoblaydi.
+
+    Klient faqat {"answers": {"<question_id>": <choice_id>, ...}} yuboradi.
+    To'g'ri javoblar HTML ga umuman chiqmaydi, shuning uchun natijani
+    soxtalashtirib bo'lmaydi.
+    """
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+
+    try:
+        payload = json.loads(request.body or '{}')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Noto\'g\'ri format'}, status=400)
+
+    answers = payload.get('answers') or {}
+    if not isinstance(answers, dict):
+        return JsonResponse({'success': False, 'error': 'Noto\'g\'ri javoblar'}, status=400)
+
+    question_ids = list(quiz.questions.values_list('id', flat=True))
+    total_questions = len(question_ids)
+    if total_questions == 0:
+        return JsonResponse({'success': False, 'error': 'Testda savol yo\'q'}, status=400)
+
+    # Faqat shu testga tegishli to'g'ri variantlar
+    correct_choice_ids = set(
+        Choice.objects.filter(
+            question__quiz=quiz, is_correct=True
+        ).values_list('id', flat=True)
+    )
+
+    correct_count = 0
+    for qid in question_ids:
+        chosen = answers.get(str(qid), answers.get(qid))
+        if chosen is None:
+            continue
+        try:
+            chosen = int(chosen)
+        except (TypeError, ValueError):
+            continue
+        if chosen in correct_choice_ids:
+            correct_count += 1
+
+    score_percentage = round((correct_count / total_questions) * 100)
+
+    with transaction.atomic():
+        result = QuizResult.objects.select_for_update().filter(
+            user=request.user, quiz=quiz
+        ).first()
+
+        if result is None:
+            QuizResult.objects.create(
+                user=request.user,
+                quiz=quiz,
+                score_percentage=score_percentage,
+                correct_count=correct_count,
+                total_questions=total_questions,
+                attempts=1,
+            )
+        else:
+            result.attempts += 1
+            # Eng yaxshi natija saqlanadi
+            if score_percentage > result.score_percentage:
+                result.score_percentage = score_percentage
+                result.correct_count = correct_count
+                result.total_questions = total_questions
+            result.save()
+
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        old_level = profile.level
+        passed_exams = QuizResult.objects.filter(
+            user=request.user, score_percentage__gte=50
+        ).count()
+        new_level = 1 + passed_exams
+
+        if new_level != old_level:
+            profile.level = new_level
+            profile.save(update_fields=['level'])
+
+    logger.info(
+        "Quiz submit: user=%s quiz=%s score=%s%%", request.user.username, quiz.id, score_percentage
+    )
+
+    return JsonResponse({
+        'success': True,
+        'score': score_percentage,
+        'correct': correct_count,
+        'total': total_questions,
+        'new_level': new_level,
+        'leveled_up': new_level > old_level,
+    })
+
+
+# ==========================================================================
+# Autentifikatsiya
+# ==========================================================================
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+        email = (request.POST.get('email') or '').strip().lower()
+        password = request.POST.get('password') or ''
+        password2 = request.POST.get('password2') or ''
+        full_name = (request.POST.get('full_name') or '').strip()
+
+        form_data = {'username': username, 'email': email, 'full_name': full_name}
+
+        if not username or not password:
+            messages.error(request, 'Foydalanuvchi nomi va parol majburiy.')
+            return render(request, 'register.html', form_data)
+
+        if len(username) < 3:
+            messages.error(request, 'Foydalanuvchi nomi kamida 3 ta belgidan iborat bo\'lsin.')
+            return render(request, 'register.html', form_data)
+
+        if password2 and password != password2:
+            messages.error(request, 'Parollar mos kelmadi.')
+            return render(request, 'register.html', form_data)
+
+        if User.objects.filter(username__iexact=username).exists():
+            messages.error(request, 'Ushbu foydalanuvchi nomi band.')
+            return render(request, 'register.html', form_data)
+
+        if email and User.objects.filter(email__iexact=email).exists():
+            messages.error(request, 'Bu email allaqachon ro\'yxatdan o\'tgan.')
+            return render(request, 'register.html', form_data)
+
+        try:
+            validate_password(password)
+        except ValidationError as exc:
+            for msg in exc.messages:
+                messages.error(request, msg)
+            return render(request, 'register.html', form_data)
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.full_name = full_name
+        profile.save(update_fields=['full_name'])
+
+        login(request, user)
+        logger.info("Yangi ro'yxatdan o'tish: %s", username)
+        return redirect('dashboard')
+
+    return render(request, 'register.html')
+
+
+def user_login(request):
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('/admin/')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+        password = request.POST.get('password') or ''
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+                return redirect(next_url)
+            if user.is_staff:
+                return redirect('/admin/')
+            return redirect('dashboard')
+        logger.warning("Muvaffaqiyatsiz login urinishi: %s", username)
+        messages.error(request, 'Login yoki parol noto\'g\'ri.')
+
+    return render(request, 'login.html')
+
+
+@require_POST
+def user_logout(request):
+    logout(request)
+    return redirect('landing')
+
+
+@login_required
+def profile(request):
+    user_profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        if image:
+            if image.size > 3 * 1024 * 1024:
+                messages.error(request, 'Rasm hajmi 3 MB dan oshmasin.')
+                return render(request, 'profile.html', {'profile': user_profile})
+            ext = os.path.splitext(image.name)[1].lower()
+            if ext not in ('.jpg', '.jpeg', '.png', '.webp'):
+                messages.error(request, 'Faqat JPG, PNG yoki WEBP rasm yuklang.')
+                return render(request, 'profile.html', {'profile': user_profile})
+            user_profile.image = image
+
+        user_profile.full_name = request.POST.get('full_name', user_profile.full_name)
+        user_profile.bio = request.POST.get('bio', user_profile.bio)
+        user_profile.save()
+        messages.success(request, 'Profil yangilandi.')
+        return redirect('dashboard')
+
+    return render(request, 'profile.html', {'profile': user_profile})

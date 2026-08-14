@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Nexus Gate | Identity Initialization</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0ea5e9",
+                        "secondary": "#2dd4bf",
+                        "background": "#020617",
+                        "surface": "#0f172a",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass-gate {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .nexus-grid {
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        .input-nexus {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .input-nexus:focus {
+            background: rgba(14, 165, 233, 0.05);
+            border-color: #0ea5e9;
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.1);
+        }
+
+        @keyframes scan {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100%); }
+        }
+        .scan-line {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, rgba(14, 165, 233, 0.1), transparent);
+            animation: scan 6s linear infinite;
+        }
+
+        .portal-glow {
+            filter: blur(120px);
+            opacity: 0.2;
+            animation: pulse-glow 4s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { opacity: 0.15; transform: scale(0.9); }
+            to { opacity: 0.3; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="bg-background text-slate-100 min-h-screen overflow-y-auto flex items-center justify-center p-4 sm:p-6 md:p-8">
+    <div class="fixed inset-0 nexus-grid pointer-events-none z-0"></div>
+    <div class="absolute top-1/2 left-1/4 -translate-y-1/2 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-primary rounded-full portal-glow pointer-events-none z-0"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-secondary rounded-full portal-glow pointer-events-none z-0"></div>
+    
+    <div class="w-full max-w-lg glass-gate rounded-[2rem] md:rounded-[3rem] p-6 sm:p-8 md:p-12 lg:p-16 space-y-8 md:space-y-12 relative z-10 shrink-0">
+        <!-- Logo -->
+        <div class="flex items-center justify-center mb-6 md:mb-8">
+            {% url "landing" as landing_url %}
+            <a href="{{ landing_url }}" class="flex flex-col items-center gap-4 group">
+                <div class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-tr from-primary to-secondary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 group-hover:rotate-[360deg] transition-transform duration-1000">
+                    <span class="material-icons-round text-white text-2xl md:text-3xl">terminal</span>
+                </div>
+                <div class="flex flex-col items-center text-center">
+                    <span class="text-xl md:text-2xl font-black tracking-tighter text-white uppercase italic leading-none">Ozodbek.web</span>
+                    <span class="text-[8px] md:text-[10px] font-black text-primary/60 tracking-[0.4em] uppercase mt-2">Quantum Identity</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="space-y-2 md:space-y-4 text-center">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tighter italic leading-tight">Initialize Identity</h2>
+            <p class="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-widest leading-relaxed">Yangi profil yaratish</p>
+        </div>
+
+        {% if messages %}
+        <div class="space-y-4">
+            {% for message in messages %}
+            <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center italic">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form action="{% url 'register' %}" method="POST" class="space-y-6 md:space-y-8">
+            {% csrf_token %}
+            <div class="space-y-4 md:space-y-6">
+                <div class="space-y-2 md:space-y-3">
+                    <label class="font-mono text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-between">
+                        Full Designation
+                        <span class="text-primary italic">Required</span>
+                    </label>
+                    <input class="w-full input-nexus px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl outline-none text-white text-xs md:text-sm font-bold placeholder:text-slate-700" 
+                           type="text" 
+                           name="full_name"
+                           value="{{ full_name|default:'' }}"
+                           placeholder="To'liq ismingizni kiriting" required/>
+                </div>
+
+                <div class="space-y-2 md:space-y-3">
+                    <label class="font-mono text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-between">
+                        User Identity Handle
+                        <span class="text-primary italic">Username</span>
+                    </label>
+                    <input class="w-full input-nexus px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl outline-none text-white text-xs md:text-sm font-bold placeholder:text-slate-700" 
+                           type="text" 
+                           name="username"
+                           value="{{ username|default:'' }}"
+                           minlength="3"
+                           placeholder="Foydalanuvchi nomi" required/>
+                </div>
+
+                <div class="space-y-2 md:space-y-3">
+                    <label class="font-mono text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-between">
+                        Communication ID
+                        <span class="text-slate-700 italic">Optional</span>
+                    </label>
+                    <input class="w-full input-nexus px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl outline-none text-white text-xs md:text-sm font-bold placeholder:text-slate-700" 
+                           type="email" 
+                           name="email"
+                           value="{{ email|default:'' }}"
+                           placeholder="example@identity.sys"/>
+                </div>
+
+                <div class="space-y-2 md:space-y-3">
+                    <label class="font-mono text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-between">
+                        Secure Token
+                        <span class="text-slate-700 italic">Encrypted</span>
+                    </label>
+                    <input class="w-full input-nexus px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl outline-none text-white text-xs md:text-sm font-bold placeholder:text-slate-700"
+                           type="password"
+                           name="password"
+                           minlength="8"
+                           autocomplete="new-password"
+                           placeholder="Parol yarating (kamida 8 belgi)" required/>
+                    <p class="text-[8px] md:text-[9px] text-slate-600 font-bold tracking-wide pl-1">
+                        Kamida 8 belgi. Faqat raqamlardan yoki juda oddiy so'zdan iborat bo'lmasin.
+                    </p>
+                </div>
+
+                <div class="space-y-2 md:space-y-3">
+                    <label class="font-mono text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-between">
+                        Confirm Token
+                        <span class="text-primary italic">Repeat</span>
+                    </label>
+                    <input class="w-full input-nexus px-4 py-3 md:px-6 md:py-5 rounded-xl md:rounded-2xl outline-none text-white text-xs md:text-sm font-bold placeholder:text-slate-700"
+                           type="password"
+                           name="password2"
+                           minlength="8"
+                           autocomplete="new-password"
+                           placeholder="Parolni qayta kiriting" required/>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-2 md:pt-4">
+                <button type="submit" 
+                        class="w-full py-4 md:py-6 bg-primary text-white rounded-xl md:rounded-[1.5rem] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 relative group overflow-hidden">
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                    <span class="relative z-10 italic">Initialize Identity</span>
+                </button>
+                
+                <p class="text-center">
+                    <span class="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">Profilingiz bormi?</span>
+                    <a href="{% url 'login' %}" class="text-[8px] md:text-[10px] font-black text-primary uppercase tracking-widest ml-1 md:ml-2 hover:underline italic">Authorize Here</a>
+                </p>
+            </div>
+        </form>
+
+        <!-- Footer Stats Mockup -->
+        <div class="grid grid-cols-2 gap-4 opacity-30 mt-6 md:mt-0">
+            <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full w-2/3 bg-secondary"></div>
+            </div>
+            <div class="h-1 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full w-1/2 bg-primary"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

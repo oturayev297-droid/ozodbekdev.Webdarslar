@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Ozodbek.web Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0ea5e9",
+                        "secondary": "#2dd4bf",
+                        "accent": "#6366f1",
+                        "background-dark": "#030712",
+                        "surface-dark": "#0f172a",
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+        
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #030712;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .glass-2 {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-border {
+            position: relative;
+        }
+        .glass-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .grid-bg {
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+
+        .card-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 selection:bg-primary/30">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-500 glass-2 border-b border-white/5" id="main-nav">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            {% url "landing" as landing_url %}
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='{{ landing_url }}';">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-primary blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 group-hover:rotate-[360deg] transition-transform duration-700 relative z-10">
+                        <span class="material-icons-round text-white text-xl">terminal</span>
+                    </div>
+                </div>
+                <div class="flex flex-col text-left">
+                    <span class="text-lg font-black tracking-tighter text-white uppercase italic leading-none">Ozodbek.web</span>
+                    <span class="text-[7px] font-bold text-primary/60 tracking-[0.3em] uppercase mt-1">Backend Academy</span>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center gap-10">
+                <a href="{% url 'landing' %}#features" class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all relative group">
+                    <span class="relative z-10">Imkoniyatlar</span>
+                    <div class="absolute bottom-[-10px] left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                </a>
+                <a href="{% url 'landing' %}#sections" class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all relative group">
+                    <span class="relative z-10">Bo'limlar</span>
+                    <div class="absolute bottom-[-10px] left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                </a>
+                <div class="w-[1px] h-6 bg-white/10 mx-2"></div>
+            </div>
+
+            <!-- Profile & Mobile Actions -->
+            <div class="flex items-center gap-4">
+                 <a href="{% url 'profile' %}" class="group relative p-[1px] rounded-full overflow-hidden transition-all">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-25 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="relative px-3 py-1.5 md:px-4 md:py-1.5 bg-black/40 backdrop-blur-md ring-1 ring-white/10 rounded-full flex items-center gap-3 transition-colors group-hover:bg-black/60">
+                        <span class="text-sm font-bold text-slate-200 group-hover:text-white transition-colors hidden md:block">{% if user.is_authenticated %}{{ user.username }}{% else %}Mehmon{% endif %}</span>
+                        <img src="{% if user.is_authenticated and user.profile.image %}{{ user.profile.image.url }}{% else %}https://ui-avatars.com/api/?name={% if user.is_authenticated %}{{ user.username }}{% else %}Guest{% endif %}&background=0ea5e9&color=fff{% endif %}" class="w-6 h-6 rounded-full border border-white/10 object-cover" alt="Avatar">
+                    </div>
+                </a>
+                {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post" class="hidden md:block">{% csrf_token %}<button type="submit" class="text-[10px] font-black text-red-500/60 hover:text-red-500 transition-all uppercase tracking-widest">Logout</button></form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="fixed inset-0 -z-10 grid-bg opacity-30"></div>
+
+    <div class="flex h-screen overflow-hidden pt-24">
+        <!-- Sidebar -->
+        <aside class="w-20 lg:w-72 glass-2 border-r border-white/5 flex flex-col transition-all duration-300 z-20">
+            <nav class="flex-1 overflow-y-auto py-8 space-y-3 px-4">
+                <a href="#" class="flex items-center gap-4 px-4 py-4 rounded-2xl bg-primary/10 text-primary border border-primary/20 transition-all group">
+                    <span class="material-icons-round">dashboard</span>
+                    <span class="font-bold text-sm lg:block hidden">Asosiy Panel</span>
+                </a>
+                <a href="{% url 'lessons' %}" class="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                    <span class="material-icons-round">school</span>
+                    <span class="font-bold text-sm lg:block hidden">Darslar</span>
+                </a>
+                <a href="{% url 'projects' %}" class="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                    <span class="material-icons-round">workspace_premium</span>
+                    <span class="font-bold text-sm lg:block hidden">Loyihalar</span>
+                </a>
+                <a href="{% url 'editor' %}" class="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                    <span class="material-icons-round">code</span>
+                    <span class="font-bold text-sm lg:block hidden">Muharrir</span>
+                </a>
+                <a href="{% url 'quizzes' %}" class="flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                    <span class="material-icons-round">bolt</span>
+                    <span class="font-bold text-sm lg:block hidden">Testlar</span>
+                </a>
+            </nav>
+            <div class="p-6 border-t border-white/5">
+                <a href="{% url 'landing' %}" class="flex items-center gap-4 px-4 py-4 rounded-2xl text-rose-400 hover:bg-rose-500/10 transition-all group">
+                    <span class="material-icons-round">logout</span>
+                    <span class="font-bold text-sm lg:block hidden">Chiqish</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col lg:flex-row gap-10 mb-16 items-start">
+                    <!-- Profile Card -->
+                    <div class="flex-1 glass-2 glass-border p-10 rounded-[3rem] card-reveal">
+                        <div class="flex items-center gap-8 mb-10">
+                            {% url "profile" as profile_url %}
+                            <div class="relative group cursor-pointer" onclick="window.location.href='{{ profile_url }}';">
+                                <div class="absolute inset-0 bg-primary/20 rounded-[2rem] blur-xl group-hover:bg-primary/40 transition-all"></div>
+                                <div class="relative w-32 h-32 rounded-[2rem] bg-gradient-to-tr from-primary to-secondary p-[1px]">
+                                    <img src="{% if user.is_authenticated and user.profile.image %}{{ user.profile.image.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'User' }}&background=0ea5e9&color=fff{% endif %}" class="w-full h-full rounded-[2rem] border-4 border-background-dark object-cover" alt="Avatar">
+                                </div>
+                                <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-2xl border-4 border-background-dark flex items-center justify-center">
+                                    <span class="material-icons-round text-white text-sm">verified_user</span>
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-[2rem]">
+                                    <span class="material-icons-round text-white">edit</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 class="text-4xl font-black text-white mb-2">{% if user.is_authenticated and user.profile.full_name %}{{ user.profile.full_name }}{% else %}{{ user.username }}{% endif %}</h1>
+                                <p class="text-slate-400 font-medium">{% if user.is_authenticated and user.profile.bio %}{{ user.profile.bio }}{% else %}Full-stack Developer Student{% endif %}</p>
+                                <div class="flex items-center gap-4 mt-6">
+                                    <span class="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-bold uppercase tracking-wider">Lvl {{ profile.level|default:1 }}</span>
+                                    {% if result.score_percentage >= 80 %}
+                                    <span class="px-4 py-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wider">Top 5%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-6 pt-10 border-t border-white/5">
+                            <div class="text-center">
+                                <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-2">O'tilgan darslar</p>
+                                <p class="text-2xl font-black text-white">{{ completed_lessons_count|default:0 }}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-2">Sertifikatlar</p>
+                                <p class="text-2xl font-black text-white">{{ certificates_count|default:0 }}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-2">Kod ballari</p>
+                                <p class="text-2xl font-black text-white">{{ code_points|default:0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stats -->
+                    <div class="w-full lg:w-96 space-y-6">
+                        <div class="glass-2 p-8 rounded-[2.5rem] card-reveal" style="transition-delay: 0.1s">
+                            <div class="flex items-center justify-between mb-6">
+                                <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Haftalik Faollik</p>
+                                <span class="material-icons-round text-primary">analytics</span>
+                            </div>
+                            <div class="flex items-end gap-2 h-24 mb-6">
+                                {% for bar_val in activity_bars %}
+                                    <div class="flex-1 {% if forloop.last %}bg-primary{% else %}bg-white/5 hover:bg-white/10{% endif %} rounded-t-lg transition-all duration-1000" data-height="{{ bar_val }}"></div>
+                                {% endfor %}
+                            </div>
+                            <p class="text-sm text-slate-400 font-medium">O'tgan haftaga nisbatan 
+                                <span class="{% if activity_growth >= 0 %}text-emerald-500{% else %}text-red-500{% endif %} font-bold">
+                                    {% if activity_growth > 0 %}+{% endif %}{{ activity_growth }}%
+                                </span> yuksalish
+                            </p>
+                        </div>
+                        
+                        {% if latest_lesson %}
+                        <div class="glass-2 p-8 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-purple-600/20 border-primary/20 card-reveal" style="transition-delay: 0.2s">
+                            <h3 class="text-lg font-bold text-white mb-2">Yangi dars mavjud!</h3>
+                            <p class="text-xs text-slate-400 mb-6 font-mono text-primary uppercase tracking-widest">{{ latest_lesson.title }}</p>
+                            <p class="text-[10px] text-slate-500 mb-6 uppercase tracking-widest font-bold italic">{{ latest_lesson.module.title }} moduli ochiq</p>
+                            <a href="{% url 'lessons_detail' latest_lesson.id %}" class="block w-full text-center py-3 bg-white text-black font-black rounded-xl hover:scale-105 transition-all shadow-xl shadow-white/10">DAVOM ETISH</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quiz Results Section -->
+                {% if latest_quizzes %}
+                <div class="glass-2 p-10 rounded-[3rem] card-reveal mt-10" style="transition-delay: 0.3s">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl font-black text-white italic">So'nggi Yutuqlar</h2>
+                            <p class="text-xs text-slate-400 uppercase tracking-widest mt-1">Oxirgi ishlangan testlar</p>
+                        </div>
+                        <span class="material-icons-round text-primary text-3xl">emoji_events</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for result in latest_quizzes %}
+                        <div class="p-6 rounded-3xl border border-white/5 bg-white/5 relative group overflow-hidden transition-all hover:-translate-y-2 hover:bg-white/10 hover:border-primary/30">
+                            {% if result.score_percentage >= 80 %}
+                            <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {% elif result.score_percentage >= 50 %}
+                            <div class="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {% else %}
+                            <div class="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            {% endif %}
+                            
+                            <div class="relative z-10">
+                                <span class="text-[10px] font-black {% if result.score_percentage >= 80 %}text-primary{% elif result.score_percentage >= 50 %}text-secondary{% else %}text-red-400{% endif %} uppercase tracking-widest">{{ result.completed_at|date:"d M, H:i" }}</span>
+                                <h3 class="text-lg font-bold text-white mt-2 mb-4 truncate">{{ result.quiz.title }}</h3>
+                                
+                                <div class="flex justify-between items-end">
+                                    <div class="text-3xl font-black tabular-nums tracking-tighter">{{ result.score_percentage }}%</div>
+                                    <div class="h-2 w-1/2 bg-white/10 rounded-full overflow-hidden mb-2">
+                                        <div class="h-full {% if result.score_percentage >= 80 %}bg-primary{% elif result.score_percentage >= 50 %}bg-secondary{% else %}bg-red-400{% endif %} rounded-full transition-all duration-1000" data-width="{{ result.score_percentage }}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Technologies Grid -->
+                <div class="mb-12 card-reveal" style="transition-delay: 0.3s">
+                    <h2 class="text-2xl font-black text-white mb-10 tracking-tight">O'rganilayotgan Texnologiyalar</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Python -->
+                        <div class="glass-2 glass-border p-8 rounded-[2rem] transition-all duration-500 group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-icons-round text-6xl">code</span>
+                            </div>
+                            <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" class="w-8 h-8" alt="Python">
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Python</h3>
+                            <div class="w-full bg-white/5 h-1.5 rounded-full mb-4 overflow-hidden">
+                                <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" data-width="{{ tech_progress.python|default:0 }}"></div>
+                            </div>
+                            <p class="text-xs text-slate-400">{{ tech_progress.python|default:0 }}% o'zlashtirildi</p>
+                        </div>
+
+                        <!-- Django -->
+                        <div class="glass-2 glass-border p-8 rounded-[2rem] transition-all duration-500 group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-icons-round text-6xl">grid_view</span>
+                            </div>
+                            <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-plain.svg" class="w-8 h-8 invert" alt="Django">
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">Django</h3>
+                            <div class="w-full bg-white/5 h-1.5 rounded-full mb-4 overflow-hidden">
+                                <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000" data-width="{{ tech_progress.django|default:0 }}"></div>
+                            </div>
+                            <p class="text-xs text-slate-400">{{ tech_progress.django|default:0 }}% o'zlashtirildi</p>
+                        </div>
+
+                        <!-- Node.js -->
+                        <div class="glass-2 glass-border p-8 rounded-[2rem] transition-all duration-500 group relative overflow-hidden ring-2 ring-primary/30">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-icons-round text-6xl">javascript</span>
+                            </div>
+                            <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" class="w-8 h-8" alt="Node.js">
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2 font-mono">Node.js</h3>
+                            <div class="w-full bg-white/5 h-1.5 rounded-full mb-4 overflow-hidden">
+                                <div class="bg-primary h-full rounded-full transition-all duration-1000" data-width="{{ tech_progress.javascript|default:0 }}"></div>
+                            </div>
+                            <p class="text-xs text-slate-400 font-mono">{% if tech_progress.javascript > 0 %}Active Studying ({{ tech_progress.javascript|default:0 }}%){% else %}Boshlanmagan{% endif %}</p>
+                        </div>
+
+                        <!-- React -->
+                        <div class="glass-2 glass-border p-8 rounded-[2rem] transition-all duration-500 group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-icons-round text-6xl">layers</span>
+                            </div>
+                            <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" class="w-8 h-8" alt="React">
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">React.js</h3>
+                            <div class="w-full bg-white/5 h-1.5 rounded-full mb-4 overflow-hidden">
+                                <div class="bg-cyan-500 h-full rounded-full transition-all duration-1000" data-width="{{ tech_progress.react|default:0 }}"></div>
+                            </div>
+                            <p class="text-xs text-slate-400">{{ tech_progress.react|default:0 }}% o'zlashtirildi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Assistant Widget -->
+    <div id="ai-widget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
+        <div id="chat-window" class="hidden w-[350px] h-[550px] glass-2 rounded-2xl flex flex-col overflow-hidden shadow-2xl border border-primary/20 animate-fade-in origin-bottom-right transition-all duration-300 transform scale-95 opacity-0">
+            <div class="bg-gradient-to-r from-primary/20 to-purple-600/20 backdrop-blur-md p-4 border-b border-white/5 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 relative flex items-center justify-center">
+                        <div class="absolute inset-0 bg-cyan-500/30 rounded-full animate-ping"></div>
+                        <div class="relative w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center border border-white/20">
+                            <span class="material-icons-round text-white text-[10px] animate-pulse">auto_awesome</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">AI Mentor</h3>
+                        <p class="text-[10px] text-cyan-400 uppercase tracking-widest font-black">Online</p>
+                    </div>
+                </div>
+                <button id="close-chat" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+                <div class="flex gap-3">
+                    <div class="bg-white/5 p-3.5 rounded-2xl rounded-tl-none border border-white/5 text-sm text-slate-300 max-w-[85%]">
+                        👋 Salom! Dashboardda darslaringiz va yutuqlaringizni ko'rib turganimdan xursandman. Qanday yordam bera olaman?
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-black/20 border-t border-white/5">
+                <form id="chat-form" class="flex gap-2 relative">
+                    <input type="text" id="chat-input" placeholder="Savol yoziing..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500/50">
+                    <button type="submit" class="absolute right-2 top-1.5 bg-primary text-white w-8 h-8 rounded-lg flex items-center justify-center">
+                        <span class="material-icons-round text-sm">send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <button id="toggle-chat" class="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group relative z-50">
+            <div class="absolute inset-0 bg-primary opacity-20 animate-ping"></div>
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary to-purple-600 rounded-full"></div>
+            <span class="material-icons-round text-white text-3xl relative z-10 transition-transform duration-500 group-hover:rotate-12">auto_awesome</span>
+        </button>
+    </div>
+
+    <!-- Initialization Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply dynamic heights and widths safely
+            setTimeout(() => {
+                document.querySelectorAll('[data-width]').forEach(el => {
+                    el.style.width = el.getAttribute('data-width') + '%';
+                });
+                document.querySelectorAll('[data-height]').forEach(el => {
+                    el.style.height = el.getAttribute('data-height') + '%';
+                });
+            }, 100);
+            
+            // Floating UI Logic
+            const header = document.getElementById('main-header');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.card-reveal').forEach(el => observer.observe(el));
+
+            // Existing Chat Logic
+            const toggleBtn = document.getElementById('toggle-chat');
+            const closeBtn = document.getElementById('close-chat');
+            const chatWindow = document.getElementById('chat-window');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+
+            let isOpen = false;
+
+            function toggleChat() {
+                isOpen = !isOpen;
+                if (isOpen) {
+                    chatWindow.classList.remove('hidden');
+                    setTimeout(() => chatWindow.classList.remove('scale-95', 'opacity-0'), 10);
+                    chatInput.focus();
+                } else {
+                    chatWindow.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => chatWindow.classList.add('hidden'), 300);
+                }
+            }
+
+            toggleBtn.addEventListener('click', toggleChat);
+            closeBtn.addEventListener('click', toggleChat);
+            
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = chatInput.value.trim();
+                if (!text) return;
+                
+                const userDiv = document.createElement('div');
+                userDiv.className = 'flex gap-3 flex-row-reverse';
+                userDiv.innerHTML = `<div class="bg-primary p-3.5 rounded-2xl text-sm text-white max-w-[85%]">${text}</div>`;
+                chatMessages.appendChild(userDiv);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        });
+    </script>
+</body>
+</html>
