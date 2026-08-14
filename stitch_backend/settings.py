@@ -16,6 +16,11 @@ env = environ.Env(
     DJANGO_ALLOWED_HOSTS=(list, []),
     DATABASE_URL=(str, ""),
     USE_X_ACCEL_REDIRECT=(bool, False),
+    EMAIL_HOST=(str, "smtp.gmail.com"),
+    EMAIL_PORT=(int, 587),
+    EMAIL_HOST_USER=(str, ""),
+    EMAIL_HOST_PASSWORD=(str, ""),
+    DEFAULT_FROM_EMAIL=(str, ""),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -46,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'core',
+    'billing',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +78,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "billing.gating.subscription_context",
             ],
         },
     },
@@ -156,6 +163,34 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# --------------------------------------------------------------------------
+# Email — parolni tiklash kodlari uchun
+# --------------------------------------------------------------------------
+#
+# SMTP sozlanmagan bo'lsa CONSOLE rejimi: xat terminalga chiqadi,
+# tashqariga hech narsa ketmaydi. Lokal ishlab chiqishda kodni shu
+# yerdan o'qib olasiz.
+#
+# GMAIL UCHUN: oddiy hisob paroli ISHLAMAYDI. 2FA yoqilgan bo'lishi va
+# "App password" (16 belgi) yaratilishi shart:
+#   https://myaccount.google.com/apppasswords
+
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+# App password'da Google bo'shliq bilan ko'rsatadi — nusxalaganda ular qolib ketadi
+EMAIL_HOST_USER = env("EMAIL_HOST_USER").strip()
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD").replace(" ", "")
+EMAIL_USE_TLS = EMAIL_PORT == 587
+EMAIL_USE_SSL = EMAIL_PORT == 465
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL") or EMAIL_HOST_USER or "noreply@localhost"
+
+EMAIL_CONFIGURED = bool(EMAIL_HOST_USER and EMAIL_HOST_PASSWORD)
+if EMAIL_CONFIGURED:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # --------------------------------------------------------------------------

@@ -18,7 +18,8 @@ python manage.py runserver
 ## 2. Testlarni ishga tushirish
 
 ```bash
-python manage.py test core
+python manage.py test           # hammasi
+python manage.py test billing   # faqat obuna va to'lov
 ```
 
 ## 3. SQLite → PostgreSQL ko'chirish
@@ -143,7 +144,54 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-## 7. Backup
+## 7. Obuna tizimini sozlash
+
+Deploydan keyin bir marta:
+
+```bash
+# Tarif va bepul darslar
+python manage.py seed_billing --price 99000 --free-lessons 3
+```
+
+So'ng **admin panel → Admin sozlamalari** dan `subscription.cards` kalitiga
+karta rekvizitlarini kiriting. Qiymat — JSON massiv:
+
+```json
+[
+  {"number": "8600 1234 5678 9012", "holder": "OZODBEK T.", "bank": "Uzcard", "note": "Asosiy"},
+  {"number": "9860 1234 5678 9012", "holder": "OZODBEK T.", "bank": "Humo", "note": ""}
+]
+```
+
+Bu rekvizitlar sahifada turmaydi — faqat so'rovi **"Karta berildi"**
+holatidagi o'quvchi ko'radi.
+
+### Kunlik vazifa (cron)
+
+Javobsiz to'lov so'rovlarini kuydiradi va 7/3/0 kun qolganda eslatma yuboradi.
+
+```cron
+# Har kuni Toshkent vaqti bilan 09:00 da
+0 9 * * *  cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py subscription_daily >> logs/cron.log 2>&1
+```
+
+Avval quruq sinab ko'ring: `python manage.py subscription_daily --dry-run`
+
+### Email (parolni tiklash va eslatmalar)
+
+`.env` da `EMAIL_HOST_USER` va `EMAIL_HOST_PASSWORD` bo'sh bo'lsa xatlar
+**terminalga** chiqadi — productionda bu parolni tiklashni ishlamas qiladi.
+
+Gmail uchun oddiy hisob paroli **ishlamaydi**: 2FA yoqilgan bo'lishi va
+[App password](https://myaccount.google.com/apppasswords) (16 belgi)
+yaratilishi shart.
+
+```bash
+# Tekshirish
+python manage.py shell -c "from django.core.mail import send_mail; send_mail('Sinov','Ishladi',None,['siz@gmail.com'])"
+```
+
+## 8. Backup
 
 ```bash
 # Baza
@@ -153,6 +201,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 8. Loglar
+## 9. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

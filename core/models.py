@@ -35,6 +35,18 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
 
+    #: Bepul dars — tizimga kirgan har kimga ochiq. Qolganlari obuna
+    #: talab qiladi.
+    #:
+    #: DEFAULT False (fail closed): yangi dars yopiq tug'iladi. Bayroqni
+    #: qo'yishni unutish kontentni bepul qilib qo'ymaydi. Bepul qilish
+    #: har doim ONGLI qaror bo'lishi kerak.
+    is_free = models.BooleanField(
+        default=False,
+        verbose_name="Bepul dars",
+        help_text="Belgilansa, obunasiz ham ochiq bo'ladi (tanishtiruv darsi)",
+    )
+
     def __str__(self):
         return self.title
 
@@ -159,3 +171,37 @@ class NewStudent(Profile):
         proxy = True
         verbose_name = "Yangi O'quvchi (Buyurtma)"
         verbose_name_plural = "Yangi O'quvchilar (Buyurtmalar)"
+
+
+class PasswordReset(models.Model):
+    """
+    Parolni tiklash kodi.
+
+    Kodning O'ZI saqlanmaydi — faqat SHA-256 xeshi. Baza qo'lga tushsa
+    ham tayyor tiklash kodlari ro'yxati bo'lmaydi.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_resets')
+
+    code_hash = models.CharField(max_length=64)
+    expires_at = models.DateTimeField(db_index=True)
+
+    #: Bir marta ishlatiladi: to'ldirilgach kod boshqa yaramaydi
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    #: Noto'g'ri urinishlar — 6 xonali kodni cheksiz taxmin qilishning
+    #: oldini oladi
+    attempts = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Parol tiklash kodi"
+        verbose_name_plural = "Parol tiklash kodlari"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'used_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} — {self.created_at:%d.%m.%Y %H:%M}"

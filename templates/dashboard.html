@@ -225,6 +225,54 @@
 
                     <!-- Tech Stats -->
                     <div class="w-full lg:w-96 space-y-6">
+
+                        <!-- Obuna holati -->
+                        {% if subscription_state %}
+                        <div class="glass-2 p-6 md:p-8 rounded-[2.5rem] card-reveal">
+                            <div class="flex items-center justify-between mb-5">
+                                <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Obuna</p>
+                                <span class="material-icons-round
+                                    {% if subscription_state.active %}text-emerald-400{% else %}text-slate-500{% endif %}">
+                                    {% if subscription_state.active %}verified{% else %}lock{% endif %}
+                                </span>
+                            </div>
+
+                            {% if subscription_state.active %}
+                                <p class="text-2xl font-black text-white tracking-tight">
+                                    {{ subscription_state.days_left }} kun
+                                </p>
+                                <p class="text-[11px] text-slate-500 font-bold mt-2">
+                                    {{ subscription_state.end_display }} gacha
+                                </p>
+                                {% if subscription_state.in_grace %}
+                                <p class="text-[11px] text-amber-400 font-bold mt-3 leading-relaxed">
+                                    Muddat tugadi — qo'shimcha muhlat ishlamoqda. Uzaytiring.
+                                </p>
+                                {% elif subscription_state.in_hold %}
+                                <p class="text-[11px] text-violet-400 font-bold mt-3 leading-relaxed">
+                                    To'lovingiz tekshirilmoqda.
+                                </p>
+                                {% elif subscription_state.days_left <= 7 %}
+                                <p class="text-[11px] text-amber-400 font-bold mt-3 leading-relaxed">
+                                    Tugashiga oz qoldi — hozir uzaytirsangiz qolgan kunlar yo'qolmaydi.
+                                </p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-lg font-black text-white tracking-tight">Obuna yo'q</p>
+                                <p class="text-[11px] text-slate-500 font-bold mt-2 leading-relaxed">
+                                    Bepul darslar ochiq. Qolganlari uchun obuna kerak.
+                                </p>
+                            {% endif %}
+
+                            <a href="{% url 'billing:plans' %}"
+                               class="mt-5 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl
+                                      {% if subscription_state.active %}bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white{% else %}bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90{% endif %}
+                                      font-black text-[10px] uppercase tracking-widest transition-all">
+                                {% if subscription_state.active %}Uzaytirish{% else %}Obuna bo'lish{% endif %}
+                            </a>
+                        </div>
+                        {% endif %}
+
                         <div class="glass-2 p-8 rounded-[2.5rem] card-reveal" style="transition-delay: 0.1s">
                             <div class="flex items-center justify-between mb-6">
                                 <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Haftalik Faollik</p>

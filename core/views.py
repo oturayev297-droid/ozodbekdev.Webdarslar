@@ -14,9 +14,15 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from urllib.parse import quote
 
+from billing.gating import can_access_lesson, can_access_quiz, paywall
+from billing.services import get_state
+
+from . import password_reset as pwreset
 from .models import (
     Category,
     Challenge,
@@ -62,6 +68,10 @@ def lessons(request, lesson_id=None):
         .values_list('lesson_id', flat=True)
     )
 
+    # Obuna holati BIR MARTA o'qiladi va 73 dars uchun qayta-qayta
+    # so'ralmaydi.
+    subscribed = get_state(request.user).active
+
     categories = Category.objects.all().prefetch_related('modules__lessons')
 
     for category in categories:
@@ -73,26 +83,45 @@ def lessons(request, lesson_id=None):
             all_lessons.extend(module.lessons.all().order_by('order'))
 
         completed_count = 0
+        free_count = 0
         for lesson in all_lessons:
             is_completed = lesson.id in completed_ids
             if is_completed:
                 completed_count += 1
+            if lesson.is_free:
+                free_count += 1
 
-            # Video endi to'g'ridan-to'g'ri /media/ dan emas, himoyalangan
-            # endpoint orqali uzatiladi.
-            if lesson.video_file:
-                video_url = f'/lessons/{lesson.id}/video/'
+            unlocked = lesson.is_free or subscribed
+
+            # QULFLANGAN DARSNING MAZMUNI UMUMAN YUBORILMAYDI.
+            # Sarlavha qoladi — o'quvchi nima sotib olayotganini ko'rsin —
+            # lekin nazariya, kod va video havolasi JSON ga tushmaydi.
+            # Faqat CSS bilan yashirish yetarli emas: sahifa manbasidan
+            # o'qib olinardi.
+            if unlocked:
+                if lesson.video_file:
+                    video_url = f'/lessons/{lesson.id}/video/'
+                else:
+                    video_url = lesson.video_url or ''
+                description = (lesson.theory[:100] + '...') if lesson.theory else "Tavsif yo'q"
+                code = lesson.practice_code
+                theory = lesson.theory
             else:
-                video_url = lesson.video_url or ''
+                video_url = ''
+                description = "Bu dars obuna bilan ochiladi."
+                code = ''
+                theory = ''
 
             lessons_list.append({
                 'id': lesson.id,
                 'title': lesson.title,
-                'description': (lesson.theory[:100] + '...') if lesson.theory else 'Tavsif yo\'q',
+                'description': description,
                 'videoUrl': video_url,
-                'code': lesson.practice_code,
-                'full_theory': lesson.theory,
+                'code': code,
+                'full_theory': theory,
                 'completed': is_completed,
+                'isFree': lesson.is_free,
+                'unlocked': unlocked,
             })
 
         course_data[cat_slug] = {
@@ -100,12 +129,14 @@ def lessons(request, lesson_id=None):
             'color': category_colors.get(cat_slug, 'blue'),
             'totalLessons': len(all_lessons),
             'completedLessons': completed_count,
+            'freeLessons': free_count,
             'lessons': lessons_list,
         }
 
     context = {
         'course_data_json': json.dumps(course_data, cls=DjangoJSONEncoder),
         'initial_lesson_id': lesson_id or '',
+        'subscribed': subscribed,
     }
     return render(request, 'lessons.html', context)
 
@@ -122,6 +153,11 @@ def lesson_video(request, lesson_id):
     from django.conf import settings
 
     lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    # DARVOZA: bepul dars hammaga, qolgani faol obunaga.
+    if not can_access_lesson(request.user, lesson):
+        return paywall(request, "Bu dars videosi obuna bilan ochiladi.")
+
     if not lesson.video_file:
         raise Http404("Bu darsda video yo'q")
 
@@ -148,6 +184,11 @@ def lesson_video(request, lesson_id):
 def complete_lesson(request, lesson_id):
     """Darsni 'tugatildi' deb belgilaydi. Dashboard statistikasi shundan oziqlanadi."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    # Ko'ra olmagan darsni tugatilgan deb belgilab bo'lmaydi — aks holda
+    # obunasiz odam o'zlashtirish foizini to'ldirib chiqardi.
+    if not can_access_lesson(request.user, lesson):
+        return paywall(request, "Bu dars obuna bilan ochiladi.")
 
     progress, created = UserProgress.objects.get_or_create(
         user=request.user,
@@ -338,15 +379,26 @@ def projects(request):
 @login_required
 def quizzes(request):
     quiz_list = Quiz.objects.all().select_related('lesson__module__category')
+
+    # Test darsdan huquqni meros oladi — o'z bayrog'i yo'q.
+    subscribed = get_state(request.user).active
+    for quiz in quiz_list:
+        quiz.unlocked = quiz.lesson.is_free or subscribed
+
     return render(request, 'quizzes.html', {
         'quizzes': quiz_list,
         'categories': Category.objects.all(),
+        'subscribed': subscribed,
     })
 
 
 @login_required
 def quiz_detail(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz = get_object_or_404(Quiz.objects.select_related('lesson'), id=quiz_id)
+
+    if not can_access_quiz(request.user, quiz):
+        return paywall(request, "Bu test obuna bilan ochiladi.")
+
     questions = quiz.questions.all().prefetch_related('choices')
     return render(request, 'quiz_detail.html', {
         'quiz': quiz,
@@ -364,7 +416,10 @@ def submit_quiz(request, quiz_id):
     To'g'ri javoblar HTML ga umuman chiqmaydi, shuning uchun natijani
     soxtalashtirib bo'lmaydi.
     """
-    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz = get_object_or_404(Quiz.objects.select_related('lesson'), id=quiz_id)
+
+    if not can_access_quiz(request.user, quiz):
+        return paywall(request, "Bu test obuna bilan ochiladi.")
 
     try:
         payload = json.loads(request.body or '{}')
@@ -470,6 +525,12 @@ def register(request):
             messages.error(request, 'Foydalanuvchi nomi va parol majburiy.')
             return render(request, 'register.html', form_data)
 
+        # Email endi MAJBURIY: parolni tiklash faqat shu orqali ishlaydi.
+        # Emailsiz hisob parolini unutsa, uni qaytarib bo'lmasdi.
+        if not email:
+            messages.error(request, 'Email majburiy — parolni tiklash uchun kerak.')
+            return render(request, 'register.html', form_data)
+
         if len(username) < 3:
             messages.error(request, 'Foydalanuvchi nomi kamida 3 ta belgidan iborat bo\'lsin.')
             return render(request, 'register.html', form_data)
@@ -482,7 +543,7 @@ def register(request):
             messages.error(request, 'Ushbu foydalanuvchi nomi band.')
             return render(request, 'register.html', form_data)
 
-        if email and User.objects.filter(email__iexact=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'Bu email allaqachon ro\'yxatdan o\'tgan.')
             return render(request, 'register.html', form_data)
 
@@ -533,6 +594,54 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('landing')
+
+
+# ==========================================================================
+# Parolni tiklash
+# ==========================================================================
+
+
+def forgot_password(request):
+    """1-qadam: emailga 6 xonali kod yuboriladi."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        email = request.POST.get('email', '')
+        # Javob email bor-yo'qligidan qat'i nazar bir xil
+        message = pwreset.request_reset(email)
+        messages.success(request, message)
+        return redirect(f"{reverse('reset_password')}?email={quote(email.strip().lower())}")
+
+    return render(request, 'forgot_password.html')
+
+
+def reset_password(request):
+    """2-qadam: kod va yangi parol."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    email = (request.GET.get('email') or request.POST.get('email') or '').strip()
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '')
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+
+        if password != password2:
+            messages.error(request, 'Parollar mos kelmadi.')
+            return render(request, 'reset_password.html', {'email': email})
+
+        try:
+            message = pwreset.confirm_reset(email, code, password)
+        except pwreset.ResetError as exc:
+            messages.error(request, exc.message)
+            return render(request, 'reset_password.html', {'email': email})
+
+        messages.success(request, message)
+        return redirect('login')
+
+    return render(request, 'reset_password.html', {'email': email})
 
 
 @login_required

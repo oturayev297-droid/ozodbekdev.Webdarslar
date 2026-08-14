@@ -9,6 +9,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('obuna/', include('billing.urls')),
     path('', include('core.urls')),
 ]
 

@@ -1,0 +1,35 @@
+{% extends "billing/_base_billing.html" %}
+{% block title %}Obuna kerak{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto text-center py-8 md:py-16">
+    <div class="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-[1.75rem] bg-primary/10 border border-primary/20 flex items-center justify-center mb-8">
+        <span class="material-icons-round text-primary text-4xl md:text-5xl">lock</span>
+    </div>
+
+    <h1 class="text-2xl md:text-4xl font-black text-white tracking-tighter italic mb-4">
+        Bu dars obuna bilan ochiladi
+    </h1>
+    <p class="text-sm md:text-base text-slate-400 leading-relaxed mb-10 max-w-lg mx-auto">
+        {{ message }}
+    </p>
+
+    {% if state and state.current_period_end %}
+    <div class="glass rounded-2xl p-5 mb-8 inline-block">
+        <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2">Oxirgi obunangiz</p>
+        <p class="text-sm font-bold text-slate-300">{{ state.end_display }} da tugagan</p>
+    </div>
+    {% endif %}
+
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="{% url 'billing:plans' %}"
+           class="px-8 py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary/90 hover:-translate-y-0.5 transition-all">
+            Obuna rasmiylashtirish
+        </a>
+        <a href="{% url 'lessons' %}"
+           class="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-black text-xs uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all">
+            Bepul darslarga qaytish
+        </a>
+    </div>
+</div>
+{% endblock %}

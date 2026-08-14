@@ -143,8 +143,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {% for quiz in quizzes %}
                         {% if quiz.lesson.module.category == category %}
-                        <a href="{% url 'quiz_detail' quiz.id %}" class="card-nexus p-6 md:p-8 lg:p-10 rounded-3xl lg:rounded-[3rem] glass-3 border border-white/5 relative overflow-hidden flex flex-col h-full group animate-float" data-anim-delay="{{ forloop.counter0 }}00">
+                        <a href="{% if quiz.unlocked %}{% url 'quiz_detail' quiz.id %}{% else %}{% url 'billing:plans' %}{% endif %}" class="card-nexus p-6 md:p-8 lg:p-10 rounded-3xl lg:rounded-[3rem] glass-3 border border-white/5 relative overflow-hidden flex flex-col h-full group animate-float{% if not quiz.unlocked %} opacity-60 hover:opacity-100{% endif %}" data-anim-delay="{{ forloop.counter0 }}00">
                             <div class="absolute -bottom-10 -right-10 w-32 h-32 lg:w-40 lg:h-40 bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-[50px] group-hover:bg-primary/30 transition-all duration-700"></div>
+
+                            {% if not quiz.unlocked %}
+                            <div class="absolute top-5 right-5 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-white/10 backdrop-blur-sm">
+                                <span class="material-icons-round text-slate-400 text-xs">lock</span>
+                                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Obuna</span>
+                            </div>
+                            {% elif quiz.lesson.is_free %}
+                            <div class="absolute top-5 right-5 z-20 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 backdrop-blur-sm">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-emerald-400">Bepul</span>
+                            </div>
+                            {% endif %}
                             
                             <div class="relative z-10 flex-1 space-y-6 lg:space-y-10">
                                 <div class="flex items-start justify-between">

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AlreadyRegistered
 from django.db.models import Count, Q
+from django.utils.html import format_html
 from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress
 
 # Helper function to safely register models
@@ -54,9 +55,37 @@ except admin.sites.NotRegistered:
     pass
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module', 'order')
-    list_filter = ('module__category', 'module')
+    list_display = ('title', 'module', 'order', 'is_free_badge', 'has_video')
+    list_filter = ('is_free', 'module__category', 'module')
     search_fields = ('title', 'theory')
+    list_editable = ('order',)
+    actions = ['make_free', 'make_paid']
+
+    @admin.display(description="Kirish", ordering='is_free', boolean=False)
+    def is_free_badge(self, obj):
+        if obj.is_free:
+            return format_html(
+                '<span style="background:#10b981;color:#fff;padding:2px 8px;'
+                'border-radius:10px;font-size:11px;font-weight:700">BEPUL</span>'
+            )
+        return format_html(
+            '<span style="background:#6366f1;color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">OBUNA</span>'
+        )
+
+    @admin.display(description="Video", boolean=True)
+    def has_video(self, obj):
+        return bool(obj.video_file or obj.video_url)
+
+    @admin.action(description="BEPUL qilish (obunasiz ochiq)")
+    def make_free(self, request, queryset):
+        count = queryset.update(is_free=True)
+        self.message_user(request, f"{count} ta dars bepul qilindi.")
+
+    @admin.action(description="OBUNA talab qilsin")
+    def make_paid(self, request, queryset):
+        count = queryset.update(is_free=False)
+        self.message_user(request, f"{count} ta dars obunaga o'tkazildi.")
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
