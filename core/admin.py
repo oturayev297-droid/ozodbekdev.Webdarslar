@@ -127,8 +127,77 @@ except admin.sites.NotRegistered:
     pass
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ('title', 'lesson', 'time_limit')
+    """
+    Testlar. Qoralamalar (`is_published=False`) o'quvchiga ko'rinmaydi —
+    `generate_quizzes` yozgan savollar shu holatda keladi.
+    """
+
+    list_display = ('title', 'lesson', 'state', 'question_count', 'time_limit', 'created_at')
+    list_filter = ('is_published', 'is_generated', 'lesson__module__category')
+    search_fields = ('title', 'lesson__title')
     inlines = [QuestionInline]
+    actions = ['action_publish', 'action_unpublish']
+    readonly_fields = ('is_generated', 'created_at', 'review_help')
+    fields = ('review_help', 'lesson', 'title', 'time_limit',
+              'is_published', 'is_generated', 'created_at')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'lesson__module__category'
+        ).annotate(_questions=Count('questions', distinct=True))
+
+    @admin.display(description="Tekshirish")
+    def review_help(self, obj):
+        if obj and obj.is_generated and not obj.is_published:
+            return format_html(
+                "<b style=\"color:#b45309\">Bu testni model yozgan va u hali "
+                "nashr qilinmagan.</b><br><br>"
+                "Nashr qilishdan oldin har savolni o'qib chiqing:<br>"
+                "&bull; savol darsda haqiqatan o'tilgan mavzugami?<br>"
+                "&bull; to'g'ri javob rostdan to'g'rimi?<br>"
+                "&bull; boshqa variantlar aniq noto'g'rimi?<br><br>"
+                "Tayyor bo'lsa ro'yxat sahifasidan «Nashr qilish» amalini tanlang."
+            )
+        return format_html(
+            "Qoralama qilish uchun <b>Nashr qilingan</b> belgisini olib tashlang — "
+            "o'quvchi testni ko'rmay qoladi."
+        )
+
+    @admin.display(description="Holat", ordering='is_published')
+    def state(self, obj):
+        if not obj.is_published:
+            label, color = ("QORALAMA (model)" if obj.is_generated else "QORALAMA"), '#f59e0b'
+        else:
+            label, color = "NASHRDA", '#10b981'
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">{}</span>',
+            color, label,
+        )
+
+    @admin.display(description="Savollar", ordering='_questions')
+    def question_count(self, obj):
+        return getattr(obj, '_questions', 0)
+
+    @admin.action(description="Nashr qilish (o'quvchiga ochiladi)")
+    def action_publish(self, request, queryset):
+        empty = [q.title for q in queryset if not q.questions.exists()]
+        if empty:
+            self.message_user(
+                request,
+                "Savoli yo'q testni nashr qilib bo'lmaydi: " + ", ".join(empty[:5]),
+                level=messages.ERROR,
+            )
+            queryset = queryset.exclude(questions__isnull=True)
+
+        count = queryset.update(is_published=True)
+        if count:
+            self.message_user(request, f"{count} ta test nashr qilindi.")
+
+    @admin.action(description="Nashrdan olish (qoralamaga qaytarish)")
+    def action_unpublish(self, request, queryset):
+        count = queryset.update(is_published=False)
+        self.message_user(request, f"{count} ta test qoralamaga qaytarildi.")
 
 # Project
 try:

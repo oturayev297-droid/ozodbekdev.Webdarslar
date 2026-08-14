@@ -380,9 +380,23 @@ def projects(request):
 # Testlar
 # ==========================================================================
 
+def _visible_quizzes(user):
+    """
+    O'quvchi ko'ra oladigan testlar.
+
+    Qoralama (nashr qilinmagan) testlar YASHIRILADI — `generate_quizzes`
+    yozgan savol tekshirilmaguncha o'quvchiga ko'rinmasligi kerak.
+    Xodimlar ko'radi, chunki ular aynan tekshirish uchun ochadi.
+    """
+    qs = Quiz.objects.select_related('lesson__module__category')
+    if user.is_staff:
+        return qs
+    return qs.filter(is_published=True)
+
+
 @login_required
 def quizzes(request):
-    quiz_list = Quiz.objects.all().select_related('lesson__module__category')
+    quiz_list = _visible_quizzes(request.user)
 
     # Test darsdan huquqni meros oladi — o'z bayrog'i yo'q.
     subscribed = get_state(request.user).active
@@ -398,7 +412,7 @@ def quizzes(request):
 
 @login_required
 def quiz_detail(request, quiz_id):
-    quiz = get_object_or_404(Quiz.objects.select_related('lesson'), id=quiz_id)
+    quiz = get_object_or_404(_visible_quizzes(request.user), id=quiz_id)
 
     if not can_access_quiz(request.user, quiz):
         return paywall(request, "Bu test obuna bilan ochiladi.")
@@ -420,7 +434,7 @@ def submit_quiz(request, quiz_id):
     To'g'ri javoblar HTML ga umuman chiqmaydi, shuning uchun natijani
     soxtalashtirib bo'lmaydi.
     """
-    quiz = get_object_or_404(Quiz.objects.select_related('lesson'), id=quiz_id)
+    quiz = get_object_or_404(_visible_quizzes(request.user), id=quiz_id)
 
     if not can_access_quiz(request.user, quiz):
         return paywall(request, "Bu test obuna bilan ochiladi.")

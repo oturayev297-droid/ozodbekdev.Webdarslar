@@ -132,6 +132,37 @@ Streaming ataylab ishlatilmagan: loyiha gunicorn'ning sinxron
 worker'larida ishlaydi va oqim butun javob davomida worker'ni band
 qilib turardi.
 
+## Test savollarini generatsiya qilish
+
+```bash
+python manage.py generate_quizzes --category python --limit 5
+python manage.py generate_quizzes --notes-dir ./dars_matnlari --lesson-id 34
+python manage.py generate_quizzes --lesson-id 34 --dry-run
+```
+
+**Natija har doim QORALAMA** (`is_published=False`) — o'quvchi uni
+ko'rmaydi. Admin panel -> Testlar -> o'qib chiqing -> "Nashr qilish".
+
+**Matn yetarli bo'lmasa buyruq ishlamaydi.** Model faqat berilgan
+matndan savol yoza oladi. Bu platformada darslarning mazmuni **videoda**,
+`theory` maydonida esa ko'pincha bir necha so'z. Shunday darsdan
+generatsiya qilinsa, model sarlavhadan taxmin qilib darsga mos
+kelmaydigan savollar yozadi.
+
+Shuning uchun matni `--min-theory` (standart 200 belgi) dan qisqa
+darslar o'tkazib yuboriladi. Uch yo'l bor:
+
+| Yo'l | Qachon |
+|---|---|
+| `theory` ni admin panelda to'ldirish | Eng yaxshisi — matn saytda ham foydali |
+| `--notes-dir ./papka` | Har dars uchun `<dars_id>.txt` yoki `.md` — video transkripti, konspekt, slayd matni |
+| `--allow-thin` | Majburlash. Sifat past bo'ladi, qatorma-qator tekshiring |
+
+Model javobining shakli **JSON sxema** bilan kafolatlanadi, lekin ma'no
+emas — buyruq har savolni qo'shimcha tekshiradi: aynan bitta to'g'ri
+javob, kerakli sondagi variant, takroriy va bo'sh variant yo'qligi.
+Yaroqsiz test **saqlanmaydi**.
+
 ## Kod muharriri
 
 Python brauzerda **Pyodide** (CPython -> WebAssembly) orqali ishlaydi —
@@ -197,6 +228,11 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 24. **AI Mentor suhbat tarixi serverda** — klientdan qabul qilinmaydi.
 25. **Model javobi serverda HTML ga aylantiriladi** — `_to_html` faqat
     kerakli teglarni chiqaradi, qolgani qochiriladi.
+26. **Generatsiya qilingan test QORALAMA bo'ladi** (`is_published=False`)
+    va o'quvchiga ko'rinmaydi. Tekshirilmagan savol o'quvchini chalg'itadi
+    va sertifikatni ma'nosiz qiladi.
+27. **Matn yetarli bo'lmasa savol generatsiya qilinmaydi** — model
+    sarlavhadan taxmin qilgan savol darsga mos kelmaydi.
 
 ## Testlar
 
@@ -206,12 +242,14 @@ python manage.py test billing          # obuna va to'lov
 python manage.py test core.tests_phase3  # cheklov, sertifikat, muharrir
 python manage.py test billing.tests_gateways  # Payme / Click
 python manage.py test core.tests_mentor       # AI Mentor
+python manage.py test core.tests_generate_quizzes  # savol generatsiyasi
 ```
 
 ## Hali qilinmagan
 
 - Videolarni CDN / S3 ga ko'chirish
-- 66 darsga test yaratish (hozir 7 test bor)
+- Darslarning `theory` maydonini to'ldirish (hozir ko'pchiligi bo'sh —
+  `generate_quizzes` ishlashi uchun matn kerak)
 
 > **Payme / Click:** kod yozilgan va testlar bilan qoplangan, lekin
 > haqiqiy merchant kalitlarisiz faqat soxta so'rovlar bilan sinalgan.

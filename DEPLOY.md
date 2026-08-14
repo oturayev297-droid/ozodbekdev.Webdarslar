@@ -331,7 +331,49 @@ qiling.
 Admin panel → **AI Mentor savollari** da barcha suhbatlar ko'rinadi —
 javob sifatini va suiiste'molni shu yerdan kuzating.
 
-## 11. Ortiqcha video fayllar
+## 11. Test savollarini generatsiya qilish
+
+`ANTHROPIC_API_KEY` sozlangandan keyin (10-bo'lim) darslardan qoralama
+test savollari yozdirish mumkin:
+
+```bash
+# Avval ko'rib chiqing — hech narsa saqlanmaydi
+python manage.py generate_quizzes --category python --limit 3 --dry-run
+
+# Keyin haqiqiy generatsiya
+python manage.py generate_quizzes --category python --limit 10
+```
+
+**Natija QORALAMA** — o'quvchi ko'rmaydi. Admin panel → Testlar →
+har savolni o'qib chiqing → "Nashr qilish" amali.
+
+### Matn yetarli bo'lishi kerak
+
+Buyruq matni 200 belgidan qisqa darslarni o'tkazib yuboradi va ro'yxatini
+ko'rsatadi. Sabab: model faqat berilgan matndan savol yoza oladi, dars
+mazmuni esa videoda. Matnsiz generatsiya qilingan savol darsga mos
+kelmaydi va o'quvchi ko'rmagan narsasidan imtihon topshiradi.
+
+Video transkriptini fayl sifatida berish:
+
+```
+dars_matnlari/
+  34.txt    <- 34-dars matni
+  35.txt
+  36.md
+```
+
+```bash
+python manage.py generate_quizzes --notes-dir ./dars_matnlari --category python
+```
+
+### Xarajat
+
+Har dars bitta so'rov. Tizim ko'rsatmasi keshlanadi. `--limit` bilan
+bir yurishdagi darslar sonini cheklang; buyruq oxirida sarflangan
+tokenlarni ko'rsatadi.
+
+## 12. Ortiqcha video fayllar
 
 Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
 yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
@@ -346,7 +388,7 @@ Standart holda **hech narsa o'chirilmaydi**. Backup borligiga ishonch
 hosil qilmasdan `--delete` ishlatmang — video fayllarni qaytarib
 bo'lmaydi.
 
-## 12. Backup
+## 13. Backup
 
 ```bash
 # Baza
@@ -356,6 +398,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 13. Loglar
+## 14. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

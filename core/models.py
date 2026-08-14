@@ -58,6 +58,32 @@ class Quiz(models.Model):
     title = models.CharField(max_length=200)
     time_limit = models.PositiveIntegerField(default=20, help_text="Testni topshirish vaqti (minutda)")
 
+    #: Nashr qilinganmi. False bo'lsa o'quvchi umuman ko'rmaydi.
+    #:
+    #: DEFAULT True: admin panelda qo'lda yaratilgan test darhol ishlaydi —
+    #: bu odatiy kutilgan xatti-harakat. `generate_quizzes` buyrug'i esa
+    #: ATAYLAB False qo'yadi: model yozgan savol tekshirilmaguncha
+    #: o'quvchiga ko'rinmasligi kerak. Noto'g'ri savol o'quvchini
+    #: chalg'itadi va sertifikatni ma'nosiz qiladi.
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name="Nashr qilingan",
+        help_text="Olib tashlansa o'quvchi bu testni ko'rmaydi (qoralama)",
+    )
+
+    #: Kim yozgani — qoralamalarni ajratish uchun
+    is_generated = models.BooleanField(
+        default=False,
+        verbose_name="Model generatsiya qilgan",
+        help_text="Avtomatik yozilgan. Nashrdan oldin tekshirilishi shart.",
+    )
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Test"
+        verbose_name_plural = "Testlar"
+
     def __str__(self):
         return self.title
 
