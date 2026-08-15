@@ -243,8 +243,49 @@ except admin.sites.NotRegistered:
     pass
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'level')
+    list_display = ('user', 'full_name', 'level', 'approval_badge', 'approved_at')
+    list_filter = ('is_approved',)
     search_fields = ('user__username', 'full_name')
+    readonly_fields = ('approved_at', 'approved_by')
+    actions = ['action_approve', 'action_revoke']
+
+    @admin.display(description="Ruxsat", ordering='is_approved')
+    def approval_badge(self, obj):
+        if obj.is_approved:
+            return format_html(
+                '<span style="background:#10b981;color:#fff;padding:2px 8px;'
+                'border-radius:10px;font-size:11px;font-weight:700">RUXSAT</span>'
+            )
+        return format_html(
+            '<span style="background:#f59e0b;color:#fff;padding:2px 8px;'
+            'border-radius:10px;font-size:11px;font-weight:700">KUTMOQDA</span>'
+        )
+
+    @admin.action(description="Ruxsat berish")
+    def action_approve(self, request, queryset):
+        from .approval import approve
+
+        count = 0
+        for profile in queryset.filter(is_approved=False):
+            approve(profile, admin=request.user)
+            count += 1
+        self.message_user(request, f"{count} ta o'quvchiga ruxsat berildi.")
+
+    @admin.action(description="Ruxsatni olib tashlash")
+    def action_revoke(self, request, queryset):
+        # Sabab bu yerda so'ralmaydi — ommaviy amalda uni kiritish
+        # imkoni yo'q. Sababli rad etish uchun panel ishlatiladi.
+        from .approval import revoke
+
+        count = 0
+        for profile in queryset.filter(is_approved=True):
+            revoke(profile, reason='', admin=request.user)
+            count += 1
+        self.message_user(
+            request,
+            f"{count} ta ruxsat olib tashlandi. Sabab yozish uchun /panel/oquvchilar/ dan foydalaning.",
+            messages.WARNING,
+        )
 
 # NewStudent
 try:

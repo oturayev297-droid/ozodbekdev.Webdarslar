@@ -35,6 +35,7 @@ urlpatterns = [
     path('oquvchilar/', views.students, name='students'),
     path('oquvchilar/<int:user_id>/', views.student_detail, name='student_detail'),
     path('oquvchilar/<int:user_id>/bepul/', views.student_grant, name='student_grant'),
+    path('oquvchilar/<int:user_id>/ruxsat/', views.student_approval, name='student_approval'),
 
     # ── Darsliklar ──
     path('darslar/', views.content, name='content'),

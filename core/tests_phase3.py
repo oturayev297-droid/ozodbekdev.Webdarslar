@@ -7,7 +7,8 @@ Ishga tushirish:  python manage.py test core.tests_phase3
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from core.test_utils import approve_all
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -42,6 +43,7 @@ class LockoutTests(TestCase):
             username='talaba', email='t@test.uz', password='TogriParol12345'
         )
         self.url = reverse('login')
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _try(self, password='NotogriParol', username='talaba'):
         return self.client.post(self.url, {'username': username, 'password': password})
@@ -165,6 +167,7 @@ class ResetThrottleTests(TestCase):
     def setUp(self):
         User.objects.create_user(username='talaba', email='t@test.uz', password='Parol12345678')
         self.url = reverse('forgot_password')
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_kop_sorov_cheklanadi(self):
         for _ in range(lockout.MAX_RESET_PER_IP):
@@ -214,6 +217,7 @@ class CertificateTests(TestCase):
         self.user.profile.full_name = "Ozodbek O'turayev"
         self.user.profile.save()
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _result(self, score):
         return QuizResult.objects.create(
@@ -300,6 +304,7 @@ class CertificateTests(TestCase):
     def test_begona_sertifikatni_yuklab_bolmaydi(self):
         cert = certificates.issue_for_result(self._result(95))
         other = User.objects.create_user(username='boshqa', password='Parol12345678')
+        approve_all()   # setUp dan KEYIN yaratildi — ruxsatni qayta ochamiz
         self.client.force_login(other)
         self.assertEqual(
             self.client.get(reverse('certificate_pdf', args=[cert.code])).status_code, 404
@@ -365,6 +370,7 @@ class EditorLanguageTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='talaba', password='Parol12345678')
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_yangi_topshiriq_python(self):
         """Platforma Python o'rgatadi — standart til shunga mos."""
@@ -408,16 +414,23 @@ class EditorLanguageTests(TestCase):
 # ==========================================================================
 
 
+@override_settings(TELEGRAM_BOT_TOKEN='', TELEGRAM_ADMIN_CHAT_IDS=[])
 class TelegramMockTests(TestCase):
     """
     Token sozlanmaganda hech qayerga so'rov ketmasligi va HECH QACHON
     xato tashlanmasligi kerak — xabarnoma to'lov oqimini yiqitmasin.
+
+    SOZLAMA ATAYLAB MAJBURLANADI. Ilgari test `.env` dan o'qirdi va
+    "token bo'sh" degan taxminga tayanardi. Dasturchi tokenni
+    to'ldirgan kuni test yiqilardi — kodda hech narsa buzilmagan
+    bo'lsa ham. Test o'z shartini o'zi qo'yishi kerak.
     """
 
     def setUp(self):
         self.user = User.objects.create_user(
             username='talaba', email='t@test.uz', password='Parol12345678'
         )
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_sozlanmagan_holda_xato_bermaydi(self):
         from billing import telegram

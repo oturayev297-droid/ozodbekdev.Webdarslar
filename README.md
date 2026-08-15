@@ -7,7 +7,8 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **73 video dars** 4 yo'nalishda (Python 15, Django 13, React 15, JavaScript 30)
 - **Yozma darslar** — matn, sxema-rasmlar va test bilan; «Sun'iy intellekt»
   kursi (10 dars, 41 savol) tayyor holda kiritilgan
-- **Obuna tizimi** — Payme / Click avtomatik yoki qo'lda tasdiqlash, 1/3/6/12 oy
+- **Admin ruxsati** — ro'yxatdan o'tgan o'quvchi admin tasdiqlamaguncha kira olmaydi
+- **Obuna tizimi** — oylik, 100 000 so'm; Payme / Click yoki qo'lda tasdiqlash
 - **Testlar** — server tomonda tekshiriladigan, natijasi soxtalashtirilmaydigan
 - **PDF sertifikat** — 80%+ ballda avtomatik, ommaviy tekshirish kodi bilan
 - **O'zlashtirish nazorati** — dars tugatish, level tizimi, haftalik faollik
@@ -68,7 +69,42 @@ templates/             HTML shablonlar (Tailwind CDN)
 media/lesson_videos/   dars videolari (git ga tushmaydi, ~5 GB)
 ```
 
+## Kirish qoidasi
+
+Kontent ochilishi uchun **ikkita darvoza** o'tilishi kerak. Ular alohida
+va bir-birining o'rnini bosmaydi:
+
+| Darvoza | Nima | Qachon |
+|---|---|---|
+| **Ruxsat** | Adminning bu odamni qabul qilishi | BIR MARTA, panelda |
+| **Obuna** | Joriy oy uchun to'lov | HAR OY yangilanadi |
+
+```
+Ro'yxatdan o'tdi        -> hisob YOPIQ (is_approved=False)
+Admin ruxsat berdi      -> tanishtiruv darslari ochildi (har kursdan 3 ta)
+100 000 so'm to'ladi    -> admin tasdiqlaydi
+                        -> HAMMA dars ochiq, 1 oy
+Oy tugadi               -> kirish AVTOMATIK yopiladi
+```
+
+Ruxsat obunani almashtirsa, bir marta to'lagan odam abadiy kirardi.
+Obuna ruxsatni almashtirsa, admin kimni qabul qilishini nazorat qila
+olmasdi. Shuning uchun ikkalasi ham kerak.
+
+**Ruxsatsiz odam kirishi BLOKLANMAYDI** — u tizimga kiradi va
+`/kutish/` sahifasida aynan nima kutayotganini ko'radi. Login butunlay
+yopilsa, u to'g'ri parol bilan ham kira olmay "parolim ishlamayapti"
+deb o'ylardi.
+
+Ruxsat berish: **`/panel/oquvchilar/`** — kutayotganlar ro'yxat tepasida
+turadi. Ruxsatni olib tashlashda **sabab majburiy**, chunki u
+o'quvchiga ko'rsatiladi.
+
 ## Obuna tizimi
+
+**Faqat oylik, 100 000 so'm.** Uzoq muddatli variantlar (3/6/12 oy)
+ataylab olib tashlangan: o'quvchi har oy davom etish-etmaslikni qayta
+hal qiladi va narx bitta bo'lgani uchun hisobda chalkashlik bo'lmaydi.
 
 Ikki yo'l bor. **Avtomatik** — Payme yoki Click orqali, obuna darhol
 ochiladi. **Qo'lda** — kartaga o'tkazma, admin tasdiqlaydi:
@@ -93,7 +129,7 @@ modullarida — boshqa joyda yozmang.
 Sozlash:
 
 ```bash
-python manage.py seed_billing --price 99000 --free-lessons 3
+python manage.py seed_billing --price 100000 --free-lessons 3
 ```
 
 So'ng admin panel -> **Admin sozlamalari** -> `subscription.cards` ga karta
@@ -269,6 +305,17 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 35. **Kurs kartochkalari shablonda yozilmaydi** — `courseData` dan
     quriladi. Qo'lda yozilganda yangi bo'lim sahifada ko'rinmasdi va
     dars sonlari bazadagi haqiqatga bog'lanmagan edi.
+36. **Yangi hisob `is_approved=False` bilan tug'iladi** (fail closed).
+    Ro'yxatdan o'tish formasini topgan har kim darhol ichkariga
+    kirmasin.
+37. **Ruxsat va obuna ARALASHTIRILMAYDI.** Ruxsat — adminning odamni
+    tanishi (bir marta), obuna — joriy oy uchun to'lov (har oy).
+    Ikkalasi ham o'tishi kerak.
+38. **Ruxsatni olib tashlashda sabab MAJBURIY** — u o'quvchiga
+    ko'rsatiladi. Sababsiz rad javobi odamni butunlay yo'qotadi.
+39. **Ruxsatsiz odam login sahifasiga qaytarilmaydi** — u `/kutish/`
+    sahifasiga tushadi. Anonim odam esa login sahifasiga. Bu ikki xil
+    holat va ikki xil javob talab qiladi.
 
 ## Yozma darslar
 
@@ -373,6 +420,7 @@ python manage.py test panel                   # boshqaruv paneli
 python manage.py test core.tests_richtext     # dars matni va xavfsizligi
 python manage.py test core.tests_ai_course    # tayyor AI kursi
 python manage.py test core.tests_lesson_content  # yozma dars va qulf
+python manage.py test core.tests_approval     # admin ruxsati darvozasi
 ```
 
 ## Hali qilinmagan

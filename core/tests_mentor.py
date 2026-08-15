@@ -13,6 +13,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from core.test_utils import approve_all
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -31,6 +32,7 @@ class MentorBase(TestCase):
         )
         self.client.force_login(self.user)
         self.url = reverse('mentor_ask')
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def ask(self, question="Python'da for sikli qanday ishlaydi?", **extra):
         payload = {'question': question}
@@ -46,6 +48,7 @@ class MockModeTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='talaba', password='Parol12345678')
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     @override_settings(ANTHROPIC_API_KEY="")
     def test_sozlanmagan_holda_xato_bermaydi(self):
@@ -149,6 +152,7 @@ class QuotaTests(MentorBase):
         self.assertEqual(self.ask().status_code, 429)
 
         other = User.objects.create_user(username='boshqa', password='Parol12345678')
+        approve_all()   # setUp dan KEYIN yaratildi — ruxsatni qayta ochamiz
         self.client.force_login(other)
         self.assertEqual(self.ask().status_code, 200)
 
@@ -193,6 +197,7 @@ class LessonContextTests(MentorBase):
         self.paid = Lesson.objects.create(
             module=self.module, title="Pullik dars", order=2, is_free=False
         )
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     @patch('core.ai_mentor._call_claude', return_value="Javob")
     def test_bepul_dars_konteksti_qabul_qilinadi(self, mock_call):

@@ -258,6 +258,41 @@ class Profile(models.Model):
         help_text="Bir martalik havola orqali avtomatik to'ldiriladi",
     )
 
+    #: ─── ADMIN RUXSATI ───
+    #:
+    #: Ro'yxatdan o'tishning O'ZI kirish huquqini bermaydi. Admin
+    #: paneldan ruxsat bermaguncha o'quvchi darslarni ko'rmaydi.
+    #:
+    #: DEFAULT False (fail closed): yangi hisob YOPIQ tug'iladi.
+    #: Teskarisi bo'lganda, ro'yxatdan o'tish formasini topgan har kim
+    #: darhol ichkariga kirardi va bu e'tibordan chetda qolardi.
+    #:
+    #: BU OBUNANING O'RNINI BOSMAYDI. Ikkalasi ham kerak:
+    #:   ruxsat  = adminning bu odamni tanishi
+    #:   obuna   = joriy oy uchun to'lov qilinganligi
+    #: Ruxsat bir marta beriladi, obuna esa har oy yangilanadi.
+    is_approved = models.BooleanField(
+        default=False,
+        verbose_name="Ruxsat berilgan",
+        help_text="Olib tashlansa o'quvchi darslarni ko'rmaydi",
+    )
+
+    approved_at = models.DateTimeField(null=True, blank=True, verbose_name="Ruxsat vaqti")
+
+    #: SET_NULL: admin hisobi ketsa ham ruxsat qolаdi
+    approved_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_students',
+        verbose_name="Kim ruxsat berdi",
+    )
+
+    #: Rad etilgan bo'lsa sababi. O'quvchiga KO'RSATILADI, shuning uchun
+    #: ichki izoh emas — tushunarli qilib yoziladi.
+    rejection_reason = models.TextField(blank=True, verbose_name="Rad etish sababi")
+
     def __str__(self):
         return self.user.username
 

@@ -47,6 +47,68 @@
             </dl>
         </div>
 
+        {% comment %}
+        RUXSAT VA OBUNA — ALOHIDA. Ruxsat bir marta beriladi (adminning
+        bu odamni tanishi), obuna esa har oy yangilanadi (to'lov). Ular
+        bitta blokka qo'shilsa, admin bepul kirish berayotganini sezmay
+        qolardi.
+        {% endcomment %}
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-4">Ruxsat</h2>
+
+            {% if student.profile.is_approved %}
+                <div class="p-4 rounded-xl bg-emerald-500/10 mb-4">
+                    <p class="font-bold text-emerald-400">Ruxsat berilgan</p>
+                    {% if student.profile.approved_at %}
+                        <p class="text-xs text-slate-400 mt-1">
+                            {{ student.profile.approved_at|date:"d.m.Y H:i" }}
+                            {% if student.profile.approved_by %}
+                                &middot; {{ student.profile.approved_by.username }}
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <form method="post" action="{% url 'panel:student_approval' student.id %}" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="revoke">
+                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                    <input name="reason" required placeholder="Sabab (o'quvchiga ko'rsatiladi)"
+                           class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-500">
+                    <button class="w-full py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 text-sm font-semibold transition">
+                        Ruxsatni olib tashlash
+                    </button>
+                </form>
+            {% else %}
+                <div class="p-4 rounded-xl bg-amber-500/10 mb-4">
+                    <p class="font-bold text-amber-400">Ruxsat kutilmoqda</p>
+                    <p class="text-xs text-slate-400 mt-1">Darslarni umuman ko'rmayapti</p>
+                </div>
+
+                {% if student.profile.rejection_reason %}
+                    <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
+                        <p class="text-xs text-red-300">
+                            <b>Rad etilgan:</b> {{ student.profile.rejection_reason }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'panel:student_approval' student.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                    <button class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition">
+                        Ruxsat berish
+                    </button>
+                </form>
+            {% endif %}
+
+            <p class="text-[11px] text-slate-600 mt-3 leading-relaxed">
+                Ruxsat obunaning o'rnini bosmaydi. Darslar ochilishi uchun
+                ikkalasi ham kerak.
+            </p>
+        </div>
+
         <div class="glass rounded-2xl p-6">
             <h2 class="font-bold mb-4">Obuna holati</h2>
             <div class="p-4 rounded-xl mb-4

@@ -214,7 +214,8 @@ class PaymentRequest(models.Model):
     )
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='payment_requests')
 
-    #: 1, 3, 6 yoki 12. Baza darajasida ham cheklangan.
+    #: Ruxsat etilgan qiymatlar `dates.ALLOWED_MONTHS` da.
+    #: Baza darajasida ham cheklangan (CheckConstraint).
     months = models.PositiveIntegerField()
 
     #: Summa HAR DOIM serverda plandan hisoblanadi. Klientdan kelgan

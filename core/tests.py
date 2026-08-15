@@ -7,6 +7,7 @@ Ishga tushirish:  python manage.py test core
 import json
 
 from django.contrib.auth.models import User
+from core.test_utils import approve_all
 from django.test import TestCase
 from django.urls import reverse
 
@@ -55,6 +56,7 @@ class AuthRequiredTests(BaseFixtureMixin, TestCase):
 
     def setUp(self):
         self.build_content()
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_kontent_sahifalari_login_talab_qiladi(self):
         protected = [
@@ -85,6 +87,7 @@ class QuizScoringTests(BaseFixtureMixin, TestCase):
         self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
         self.client.force_login(self.user)
         self.url = reverse('submit_quiz', args=[self.quiz.id])
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _submit(self, answers):
         return self.client.post(
@@ -160,6 +163,7 @@ class LessonProgressTests(BaseFixtureMixin, TestCase):
         self.build_content()
         self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_darsni_tugatish_yozuv_yaratadi(self):
         url = reverse('complete_lesson', args=[self.lesson.id])
@@ -199,6 +203,7 @@ class VideoProtectionTests(BaseFixtureMixin, TestCase):
 
     def setUp(self):
         self.build_content()
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_video_login_talab_qiladi(self):
         response = self.client.get(reverse('lesson_video', args=[self.lesson.id]))
@@ -212,6 +217,7 @@ class VideoProtectionTests(BaseFixtureMixin, TestCase):
 
     def test_videosiz_dars_404(self):
         user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
+        approve_all()   # setUp dan KEYIN yaratildi — ruxsatni qayta ochamiz
         self.client.force_login(user)
         response = self.client.get(reverse('lesson_video', args=[self.lesson.id]))
         self.assertEqual(response.status_code, 404)
@@ -222,6 +228,7 @@ class RegistrationTests(TestCase):
 
     def setUp(self):
         self.url = reverse('register')
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _post(self, **kwargs):
         payload = {
@@ -271,6 +278,7 @@ class EditorTests(BaseFixtureMixin, TestCase):
         self.build_content()
         self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_mavjud_bolmagan_challenge_404_beradi(self):
         """Avval 500 xato qaytarardi."""
@@ -308,6 +316,7 @@ class PasswordResetTests(TestCase):
             username='talaba', email='talaba@test.uz', password='EskiParol12345'
         )
         mail.outbox = []
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _get_code(self):
         """Yuborilgan xatdan kodni ajratib oladi."""

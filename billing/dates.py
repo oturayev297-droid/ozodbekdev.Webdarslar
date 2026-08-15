@@ -27,7 +27,17 @@ UTC = dt_timezone.utc
 TASHKENT = ZoneInfo("Asia/Tashkent")
 
 # Oy soni faqat shu qiymatlar bo'lishi mumkin
-ALLOWED_MONTHS = (1, 3, 6, 12)
+#: Obuna FAQAT OYLIK.
+#:
+#: Ilgari (1, 3, 6, 12) edi. Bir oylikka qoldirilgani ataylab:
+#: o'quvchi har oy to'laydi va har oy davom etish-etmaslikni qayta hal
+#: qiladi. Uzoq muddatli chegirma hozircha yo'q — narx bitta bo'lgani
+#: uchun o'quvchi ham, admin ham hisobda adashmaydi.
+#:
+#: DIQQAT: bu ro'yxat `PaymentRequest` dagi baza cheklovi bilan
+#: bog'langan. O'zgartirilsa MIGRATSIYA kerak, aks holda baza eski
+#: qiymatlarni talab qilib turaveradi.
+ALLOWED_MONTHS = (1,)
 
 
 def now() -> datetime:

@@ -3,7 +3,7 @@ Obuna tizimini boshlang'ich holatga keltiradi.
 
 Ishga tushirish:
     python manage.py seed_billing
-    python manage.py seed_billing --price 99000 --free-lessons 3
+    python manage.py seed_billing --price 100000 --free-lessons 3
 """
 
 import json
@@ -23,7 +23,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--price', type=int, default=None,
-            help="Oylik narx SO'MDA (masalan 99000). Berilmasa o'zgarmaydi.",
+            help="Oylik narx SO'MDA (masalan 100000). Berilmasa o'zgarmaydi.",
         )
         parser.add_argument(
             '--free-lessons', type=int, default=3,

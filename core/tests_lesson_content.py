@@ -13,6 +13,7 @@ import tempfile
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from core.test_utils import approve_all
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -82,6 +83,7 @@ class LessonContentTests(TestCase):
         self.user = User.objects.create_user('oquvchi', password='juda-maxfiy-parol-1')
         Profile.objects.get_or_create(user=self.user)
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _lessons(self):
         response = self.client.get(reverse('lessons'))
@@ -150,6 +152,7 @@ class LessonDescriptionTests(TestCase):
         user = User.objects.create_user('o2', password='juda-maxfiy-parol-2')
         Profile.objects.get_or_create(user=user)
         self.client.force_login(user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_tavsifda_bezak_belgilari_yoq(self):
         response = self.client.get(reverse('lessons'))

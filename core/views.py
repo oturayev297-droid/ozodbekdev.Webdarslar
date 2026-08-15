@@ -19,10 +19,12 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from urllib.parse import quote
 
+from billing import telegram
 from billing.gating import can_access_lesson, can_access_quiz, paywall
 from billing.services import get_state
 
 from . import ai_mentor, certificates, lockout, richtext
+from .approval import approval_required, is_approved
 from . import password_reset as pwreset
 from .models import (
     Category,
@@ -52,6 +54,7 @@ def landing(request):
 # Darslar
 # ==========================================================================
 
+@approval_required
 @login_required
 def lessons(request, lesson_id=None):
     """Darslar sahifasi. Kontent faqat tizimga kirganlar uchun."""
@@ -171,6 +174,7 @@ def lessons(request, lesson_id=None):
     return render(request, 'lessons.html', context)
 
 
+@approval_required
 @login_required
 def lesson_video(request, lesson_id):
     """
@@ -209,6 +213,7 @@ def lesson_video(request, lesson_id):
         raise Http404("Video fayl topilmadi")
 
 
+@approval_required
 @login_required
 @require_POST
 def complete_lesson(request, lesson_id):
@@ -246,6 +251,7 @@ def complete_lesson(request, lesson_id):
 # Dashboard
 # ==========================================================================
 
+@approval_required
 @login_required
 def dashboard(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -367,6 +373,7 @@ def dashboard(request):
 # Kod muharriri va loyihalar
 # ==========================================================================
 
+@approval_required
 @login_required
 def editor(request, challenge_id=None):
     challenges = Challenge.objects.all().order_by('order')
@@ -387,6 +394,7 @@ def editor(request, challenge_id=None):
     return render(request, 'editor.html', context)
 
 
+@approval_required
 @login_required
 def challenge_solution(request, challenge_id):
     """Yechimni faqat so'ralganda beradi — HTML manbasida ochiq turmaydi."""
@@ -394,6 +402,7 @@ def challenge_solution(request, challenge_id):
     return JsonResponse({'solution': challenge.solution_code or ''})
 
 
+@approval_required
 @login_required
 def projects(request):
     projects_list = Project.objects.all().order_by('order')
@@ -422,6 +431,7 @@ def _visible_quizzes(user):
     return qs.filter(is_published=True)
 
 
+@approval_required
 @login_required
 def quizzes(request):
     quiz_list = _visible_quizzes(request.user)
@@ -438,6 +448,7 @@ def quizzes(request):
     })
 
 
+@approval_required
 @login_required
 def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(_visible_quizzes(request.user), id=quiz_id)
@@ -452,6 +463,7 @@ def quiz_detail(request, quiz_id):
     })
 
 
+@approval_required
 @login_required
 @require_POST
 def submit_quiz(request, quiz_id):
@@ -613,10 +625,40 @@ def register(request):
         profile.save(update_fields=['full_name'])
 
         login(request, user)
-        logger.info("Yangi ro'yxatdan o'tish: %s", username)
-        return redirect('dashboard')
+        logger.info("Yangi ro'yxatdan o'tish: %s (ruxsat kutilmoqda)", username)
+
+        # Adminga darhol xabar beramiz. Xabar ketmasa ham ro'yxatdan
+        # o'tish BUZILMAYDI — Telegram sozlanmagan bo'lishi mumkin, va
+        # bu o'quvchining muammosi emas.
+        try:
+            telegram.notify_new_registration(user)
+        except Exception:
+            logger.exception("Yangi ro'yxatdan o'tish haqida xabar yuborilmadi")
+
+        # Dashboard EMAS: yangi hisob ruxsat kutadi va u yerda
+        # baribir kutish sahifasiga qaytarilardi.
+        return redirect('pending_approval')
 
     return render(request, 'register.html')
+
+
+@login_required
+def pending_approval(request):
+    """
+    Ruxsat kutayotgan o'quvchi sahifasi.
+
+    Ruxsati BOR odam bu yerga tushsa dashboardga qaytariladi — aks
+    holda ruxsat berilgandan keyin ham eski havola bo'yicha kutish
+    sahifasini ko'rib, hech narsa o'zgarmagandek tuyulardi.
+    """
+    if is_approved(request.user):
+        return redirect('dashboard')
+
+    profile = getattr(request.user, 'profile', None)
+    return render(request, 'pending_approval.html', {
+        'profile': profile,
+        'rejected': bool(profile and profile.rejection_reason),
+    })
 
 
 def user_login(request):
@@ -674,6 +716,7 @@ def user_logout(request):
 # ==========================================================================
 
 
+@approval_required
 @login_required
 @require_POST
 def mentor_ask(request):
@@ -716,6 +759,7 @@ def mentor_ask(request):
 # ==========================================================================
 
 
+@approval_required
 @login_required
 def my_certificates(request):
     """O'quvchining sertifikatlari."""
@@ -730,6 +774,7 @@ def my_certificates(request):
     })
 
 
+@approval_required
 @login_required
 def certificate_pdf(request, code):
     """

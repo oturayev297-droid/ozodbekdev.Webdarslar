@@ -15,6 +15,7 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
+from core.test_utils import approve_all
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -57,6 +58,7 @@ class BaseCommandTest(TestCase):
         self.thin = Lesson.objects.create(
             module=self.module, title="Qisqa dars", theory="Theory here", order=2
         )
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def run_cmd(self, *args, **kwargs):
         out = io.StringIO()
@@ -338,6 +340,7 @@ class DraftVisibilityTests(TestCase):
         Choice.objects.create(question=question, text="Yo'q", is_correct=False)
 
         self.student = User.objects.create_user(username='talaba', password='Parol12345678')
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_oquvchi_royxatda_kormaydi(self):
         self.client.force_login(self.student)

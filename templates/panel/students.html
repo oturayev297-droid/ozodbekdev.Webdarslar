@@ -6,7 +6,31 @@
 
 {% block content %}
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+{% if pending_count %}
+    <a href="?state=pending"
+       class="flex items-center gap-4 mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/15 transition">
+        <span class="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <span class="material-icons-round">how_to_reg</span>
+        </span>
+        <span class="min-w-0">
+            <span class="block font-bold text-amber-300">
+                {{ pending_count }} ta o'quvchi ruxsat kutmoqda
+            </span>
+            <span class="block text-sm text-amber-200/60">
+                Ruxsat berilmaguncha ular darslarni umuman ko'rmaydi.
+            </span>
+        </span>
+        <span class="material-icons-round ml-auto text-amber-400">chevron_right</span>
+    </a>
+{% endif %}
+
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <a href="?state=pending" class="glass rounded-2xl p-4 hover:bg-white/5 transition {% if state == 'pending' %}border-amber-500/40{% endif %}">
+        <p class="text-2xl font-extrabold {% if pending_count %}text-amber-400{% else %}text-slate-600{% endif %}">
+            {{ pending_count }}
+        </p>
+        <p class="text-xs text-slate-500 mt-1">Ruxsat kutmoqda</p>
+    </a>
     <a href="?" class="glass rounded-2xl p-4 hover:bg-white/5 transition">
         <p class="text-2xl font-extrabold">{{ counts.total }}</p>
         <p class="text-xs text-slate-500 mt-1">Obunasi bor</p>
@@ -44,6 +68,7 @@
                 <thead>
                 <tr class="border-b border-white/5">
                     <th>O'quvchi</th>
+                    <th>Ruxsat</th>
                     <th>Obuna</th>
                     <th>Darslar</th>
                     <th>Testlar</th>
@@ -61,6 +86,28 @@
                             <span class="block text-xs text-slate-500">
                                 {{ student.username }}{% if student.email %} &middot; {{ student.email }}{% endif %}
                             </span>
+                        </td>
+                        {% comment %}
+                        Ruxsat ustuni. Tugma to'g'ridan-to'g'ri jadvalda:
+                        yangi o'quvchini qabul qilish eng ko'p takrorlanadigan
+                        amal, uni har safar tafsilot sahifasiga kirib
+                        bajarish ortiqcha ish bo'lardi.
+                        {% endcomment %}
+                        <td class="whitespace-nowrap">
+                            {% if student.profile.is_approved %}
+                                <span class="inline-flex items-center gap-1 text-emerald-400 text-xs">
+                                    <span class="material-icons-round text-sm">check_circle</span> Berilgan
+                                </span>
+                            {% else %}
+                                <form method="post" action="{% url 'panel:student_approval' student.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <input type="hidden" name="back" value="{{ request.get_full_path }}">
+                                    <button class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition">
+                                        Ruxsat berish
+                                    </button>
+                                </form>
+                            {% endif %}
                         </td>
                         <td class="whitespace-nowrap">
                             {% if student.subscription %}

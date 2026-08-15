@@ -1,0 +1,135 @@
+{% comment %}
+Ruxsat kutayotgan o'quvchi sahifasi.
+
+NEGA LOGIN BLOKLANMAYDI: odam tizimga kira oladi va aynan NIMA
+kutayotganini ko'radi. Login butunlay yopilsa, u to'g'ri parol bilan
+ham kira olmay "parolim ishlamayapti" deb o'ylardi va admin bilan
+bog'lanish o'rniga qayta-qayta urinardi.
+{% endcomment %}
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% if rejected %}Ruxsat berilmadi{% else %}Ruxsat kutilmoqda{% endif %} | Ozodbek.web</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script>
+        tailwind.config = { darkMode: "class", theme: { extend: { colors: {
+            primary: "#0ea5e9", secondary: "#2dd4bf", background: "#020617",
+        } } } }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; }
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(14,165,233,.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14,165,233,.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
+        }
+        .step { position: relative; padding-left: 2.75rem; padding-bottom: 1.75rem; }
+        .step::before {
+            content: ""; position: absolute; left: .875rem; top: 1.6rem; bottom: 0;
+            width: 2px; background: rgba(255,255,255,.08);
+        }
+        .step:last-child { padding-bottom: 0; }
+        .step:last-child::before { display: none; }
+        .step-dot {
+            position: absolute; left: 0; top: .2rem;
+            width: 1.75rem; height: 1.75rem; border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 800;
+        }
+    </style>
+</head>
+<body class="bg-background text-slate-100 min-h-screen flex items-center justify-center p-4">
+<div class="fixed inset-0 grid-bg pointer-events-none"></div>
+
+<div class="relative w-full max-w-lg">
+
+    <div class="text-center mb-8">
+        <span class="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-5
+            {% if rejected %}bg-red-500/15 text-red-400{% else %}bg-amber-500/15 text-amber-400{% endif %}">
+            <span class="material-icons-round text-3xl">
+                {% if rejected %}block{% else %}hourglass_top{% endif %}
+            </span>
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            {% if rejected %}Ruxsat berilmadi{% else %}Ruxsat kutilmoqda{% endif %}
+        </h1>
+        <p class="text-slate-400 mt-2">
+            Salom, {{ profile.full_name|default:user.username }}
+        </p>
+    </div>
+
+    <div class="glass rounded-2xl p-6 sm:p-8">
+
+        {% if rejected %}
+            <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/25 mb-6">
+                <p class="text-sm font-semibold text-red-300 mb-1">Sabab</p>
+                <p class="text-sm text-red-200/80 leading-relaxed">{{ profile.rejection_reason }}</p>
+            </div>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Agar bu xato deb hisoblasangiz, biz bilan bog'laning —
+                hisobingiz qayta ko'rib chiqiladi.
+            </p>
+        {% else %}
+            <p class="text-slate-300 leading-relaxed mb-7">
+                Hisobingiz yaratildi. Endi administrator uni ko'rib chiqadi va
+                ruxsat beradi. Bu odatda uzoq davom etmaydi.
+            </p>
+
+            <div class="mb-7">
+                <div class="step">
+                    <span class="step-dot bg-emerald-500 text-slate-950">&#10003;</span>
+                    <p class="font-semibold text-slate-200">Ro'yxatdan o'tdingiz</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Hisob yaratildi</p>
+                </div>
+                <div class="step">
+                    <span class="step-dot bg-amber-500 text-slate-950">2</span>
+                    <p class="font-semibold text-amber-300">Administrator ruxsat beradi</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Hozir shu bosqichdasiz</p>
+                </div>
+                <div class="step">
+                    <span class="step-dot bg-slate-800 text-slate-500">3</span>
+                    <p class="font-semibold text-slate-400">Darslar ochiladi</p>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Tanishtiruv darslari bepul, qolganlari obuna bilan
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Ruxsat berilgach shu sahifani yangilang — darslar avtomatik
+                    ochiladi. Telegramingizni ulagan bo'lsangiz xabar ham keladi.
+                </p>
+            </div>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-2 mt-7 pt-6 border-t border-white/5">
+            <a href="{% url 'pending_approval' %}"
+               class="flex-1 min-w-[140px] text-center py-2.5 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 font-bold text-sm transition">
+                Holatni yangilash
+            </a>
+            <a href="{% url 'profile' %}"
+               class="flex-1 min-w-[140px] text-center py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-semibold text-sm transition">
+                Profilim
+            </a>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'logout' %}" class="text-center mt-6">
+        {% csrf_token %}
+        <button class="text-xs text-slate-600 hover:text-slate-400 transition">Chiqish</button>
+    </form>
+</div>
+</body>
+</html>

@@ -64,7 +64,8 @@ def create_request(user, months) -> PaymentRequest:
         raise BillingError("Muddat noto'g'ri")
 
     if months not in dates.ALLOWED_MONTHS:
-        raise BillingError("Muddat faqat 1, 3, 6 yoki 12 oy bo'ladi")
+        allowed = ", ".join(str(m) for m in dates.ALLOWED_MONTHS)
+        raise BillingError(f"Muddat faqat {allowed} oy bo'ladi")
 
     if get_open_request(user):
         raise BillingError(

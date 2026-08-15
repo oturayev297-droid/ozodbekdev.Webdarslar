@@ -32,6 +32,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from billing import payment_requests as pr
+from billing import telegram
 from billing import services
 from billing.dates import format_money, now as billing_now
 from billing.models import (
@@ -43,6 +44,7 @@ from billing.models import (
     Subscription,
     SubscriptionPeriod,
 )
+from core import approval
 from core.models import (
     Category,
     Certificate,
@@ -305,7 +307,10 @@ def students(request):
         )
 
     state = request.GET.get('state', '')
-    if state == 'active':
+    if state == 'pending':
+        # Ruxsat kutayotganlar — eng shoshilinch ro'yxat
+        qs = qs.filter(profile__is_approved=False)
+    elif state == 'active':
         qs = qs.filter(subscription__current_period_end__gt=at)
     elif state == 'expired':
         qs = qs.filter(subscription__current_period_end__lte=at)
@@ -314,13 +319,65 @@ def students(request):
     elif state == 'telegram':
         qs = qs.filter(profile__telegram_chat_id__gt='')
 
+    # Kutayotganlar TEPADA: yangi odam javob kutib turibdi, u sana
+    # bo'yicha ro'yxatning o'rtasiga tushib ketmasligi kerak.
+    if not state:
+        qs = qs.order_by('profile__is_approved', '-date_joined')
+
     return render(request, 'panel/students.html', {
         'page_obj': _page(request, qs),
         'q': query,
         'state': state,
         'now': at,
         'counts': reports.subscriber_counts(at),
+        'pending_count': User.objects.filter(
+            is_staff=False, profile__is_approved=False
+        ).count(),
     })
+
+
+@require_POST
+@staff_required
+def student_approval(request, user_id):
+    """
+    O'quvchiga ruxsat berish yoki olib tashlash.
+
+    RUXSAT VA OBUNA — ALOHIDA NARSA. Bu yerda faqat ruxsat
+    o'zgartiriladi; obuna `billing` orqali, to'lov tasdiqlanganda
+    uzayadi. Ikkalasi bir tugmaga birlashtirilsa, admin bepul
+    kirish berayotganini sezmay qolardi.
+    """
+    student = get_object_or_404(
+        User.objects.select_related('profile'), pk=user_id, is_staff=False
+    )
+    profile = student.profile
+    action = request.POST.get('action')
+
+    if action == 'approve':
+        approval.approve(profile, admin=request.user)
+        messages.success(request, f"{student.username}: ruxsat berildi.")
+        try:
+            telegram.notify_approved(student)
+        except Exception:
+            logger.exception("Ruxsat haqida xabar yuborilmadi")
+
+    elif action == 'revoke':
+        reason = (request.POST.get('reason') or '').strip()
+        if not reason:
+            messages.error(request, "Sabab yozilishi shart — u o'quvchiga ko'rsatiladi.")
+            return redirect(request.POST.get('back') or 'panel:students')
+
+        approval.revoke(profile, reason=reason, admin=request.user)
+        messages.success(request, f"{student.username}: ruxsat olib tashlandi.")
+        try:
+            telegram.notify_rejected_registration(student, reason)
+        except Exception:
+            logger.exception("Rad etish haqida xabar yuborilmadi")
+
+    else:
+        messages.error(request, "Noma'lum amal.")
+
+    return redirect(request.POST.get('back') or 'panel:students')
 
 
 @staff_required

@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 PLAN_CODE = "STUDENT_MONTHLY"
 
 #: Standart oylik narx (tiyinda) — tarif birinchi marta yaratilganda
-DEFAULT_PRICE_TIYIN = 9_900_000  # 99 000 so'm
+DEFAULT_PRICE_TIYIN = 10_000_000  # 100 000 so'm
 
 #: Karta rekvizitlari uchun AdminSetting kaliti.
 #:
@@ -192,7 +192,8 @@ def extend_subscription(
     if months is not None:
         months = int(months)
         if months not in dates.ALLOWED_MONTHS:
-            raise BillingError("Oy soni faqat 1, 3, 6 yoki 12 bo'ladi")
+            allowed = ", ".join(str(m) for m in dates.ALLOWED_MONTHS)
+            raise BillingError(f"Oy soni faqat {allowed} bo'lishi mumkin")
     if days is not None:
         days = int(days)
         if days < 1 or days > 3650:

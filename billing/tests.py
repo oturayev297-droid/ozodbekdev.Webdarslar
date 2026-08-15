@@ -16,6 +16,7 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from core.test_utils import approve_all
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -104,6 +105,7 @@ class BaseBillingTest(TestCase):
         self.admin = User.objects.create_user(
             username='admin', email='admin@test.uz', password='JudaKuchliParol9', is_staff=True
         )
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
 
 class ExtendSubscriptionTests(BaseBillingTest):
@@ -111,7 +113,7 @@ class ExtendSubscriptionTests(BaseBillingTest):
 
     def test_tolov_davr_yaratadi_va_sanani_yangilaydi(self):
         result = extend_subscription(
-            self.user, months=3, source=PeriodSource.PAYMENT,
+            self.user, months=1, source=PeriodSource.PAYMENT,
             payment_method=PaymentMethod.CARD_TRANSFER,
         )
         sub = Subscription.objects.get(user=self.user)
@@ -119,17 +121,17 @@ class ExtendSubscriptionTests(BaseBillingTest):
         self.assertEqual(sub.periods.count(), 1)
 
         period = sub.periods.first()
-        self.assertEqual(period.months, 3)
-        self.assertEqual(period.amount_tiyin, 30_000_000)  # 3 x 100 000
+        self.assertEqual(period.months, 1)
+        self.assertEqual(period.amount_tiyin, 10_000_000)  # 1 x 100 000
         self.assertEqual(period.source, PeriodSource.PAYMENT)
 
     def test_summa_serverda_hisoblanadi(self):
         extend_subscription(
-            self.user, months=6, source=PeriodSource.PAYMENT,
+            self.user, months=1, source=PeriodSource.PAYMENT,
             payment_method=PaymentMethod.CASH,
         )
         self.assertEqual(
-            SubscriptionPeriod.objects.get().amount_tiyin, 60_000_000
+            SubscriptionPeriod.objects.get().amount_tiyin, 10_000_000
         )
 
     def test_narx_davrga_muzlatiladi(self):
@@ -153,9 +155,17 @@ class ExtendSubscriptionTests(BaseBillingTest):
             self.user, months=1, source=PeriodSource.PAYMENT,
             payment_method=PaymentMethod.CASH,
         )
-        # Boshqa muddat — ikki marta bosish himoyasiga tushmaydi
+
+        # BIRINCHI DAVRNI ORQAGA SURAMIZ. Obuna endi faqat oylik, ya'ni
+        # ikkala to'lov ham 1 oy — ular ketma-ket kelsa "ikki marta
+        # bosish" himoyasiga tushadi va bu TO'G'RI. Haqiqatda esa ikkinchi
+        # to'lov keyinroq keladi, shuni taqlid qilamiz.
+        SubscriptionPeriod.objects.filter(pk=first.period.pk).update(
+            created_at=dates.now() - timedelta(minutes=5)
+        )
+
         second = extend_subscription(
-            self.user, months=3, source=PeriodSource.PAYMENT,
+            self.user, months=1, source=PeriodSource.PAYMENT,
             payment_method=PaymentMethod.CARD_TRANSFER,
         )
         # Ikkinchi davr birinchisining tugash sanasidan boshlanadi
@@ -247,7 +257,7 @@ class DatabaseConstraintTests(BaseBillingTest):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 PaymentRequest.objects.create(
-                    user=self.user, plan=self.plan, months=3, amount_tiyin=1,
+                    user=self.user, plan=self.plan, months=1, amount_tiyin=1,
                     expires_at=timezone.now() + timedelta(days=1),
                 )
 
@@ -270,7 +280,16 @@ class DatabaseConstraintTests(BaseBillingTest):
         """`payment_request=None` bo'lgan bir necha davr bemalol bo'ladi."""
         extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
                             payment_method=PaymentMethod.CASH)
-        extend_subscription(self.user, months=3, source=PeriodSource.PAYMENT,
+
+        # Ikki marta bosish himoyasidan chetlab o'tamiz — bu yerda
+        # tekshirilayotgan narsa boshqa: naqd to'lovlarda
+        # `payment_request` bo'sh bo'lgani uchun unique indeks ularni
+        # to'smasligi kerak.
+        SubscriptionPeriod.objects.all().update(
+            created_at=dates.now() - timedelta(minutes=5)
+        )
+
+        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
                             payment_method=PaymentMethod.CASH)
         self.assertEqual(SubscriptionPeriod.objects.filter(payment_request=None).count(), 2)
 
@@ -279,9 +298,9 @@ class PaymentRequestFlowTests(BaseBillingTest):
     """To'liq oqim: so'rov -> karta -> chek -> tasdiq."""
 
     def test_toliq_oqim(self):
-        req = payment_requests.create_request(self.user, 3)
+        req = payment_requests.create_request(self.user, 1)
         self.assertEqual(req.status, RequestStatus.REQUESTED)
-        self.assertEqual(req.amount_tiyin, 30_000_000)
+        self.assertEqual(req.amount_tiyin, 10_000_000)
 
         payment_requests.issue_card(req.pk, self.admin)
         req.refresh_from_db()
@@ -295,7 +314,7 @@ class PaymentRequestFlowTests(BaseBillingTest):
         result = payment_requests.confirm_request(req.pk, self.admin)
         req.refresh_from_db()
         self.assertEqual(req.status, RequestStatus.CONFIRMED)
-        self.assertEqual(req.period.amount_tiyin, 30_000_000)
+        self.assertEqual(req.period.amount_tiyin, 10_000_000)
         self.assertTrue(get_state(self.user).active)
 
     def test_klient_summani_ozgartira_olmaydi(self):
@@ -306,7 +325,7 @@ class PaymentRequestFlowTests(BaseBillingTest):
     def test_ikkinchi_sorov_rad_etiladi(self):
         payment_requests.create_request(self.user, 1)
         with self.assertRaises(BillingError) as ctx:
-            payment_requests.create_request(self.user, 3)
+            payment_requests.create_request(self.user, 1)
         self.assertEqual(ctx.exception.status, 409)
 
     def test_ikki_marta_tasdiqlash_obunani_ikki_marta_uzaytirmaydi(self):
@@ -331,7 +350,7 @@ class PaymentRequestFlowTests(BaseBillingTest):
     def test_rad_etilgan_sorovdan_keyin_yangisi_mumkin(self):
         req = payment_requests.create_request(self.user, 1)
         payment_requests.reject_request(req.pk, self.admin, "Chek kelmadi")
-        again = payment_requests.create_request(self.user, 3)
+        again = payment_requests.create_request(self.user, 1)
         self.assertEqual(again.status, RequestStatus.REQUESTED)
 
     def test_karta_faqat_card_issued_holatida_korinadi(self):
@@ -496,6 +515,7 @@ class ContentGatingTests(BaseBillingTest):
         )
         self.paid_quiz = Quiz.objects.create(lesson=self.paid_lesson, title="Pullik test")
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_yangi_dars_yopiq_tugiladi(self):
         """FAIL CLOSED: bayroqni unutish kontentni bepul qilmasligi kerak."""
@@ -574,21 +594,27 @@ class BillingViewTests(BaseBillingTest):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_tarif_sahifasi_narxlarni_korsatadi(self):
         response = self.client.get(reverse('billing:plans'))
         self.assertEqual(response.status_code, 200)
         options = response.context['options']
-        self.assertEqual([o['months'] for o in options], [1, 3, 6, 12])
+        # Obuna FAQAT OYLIK — uzoq muddatli variantlar olib tashlangan
+        self.assertEqual([o['months'] for o in options], [1])
         self.assertEqual(options[0]['amount_display'], "100 000 so'm")
-        self.assertEqual(options[3]['amount_display'], "1 200 000 so'm")
 
     def test_sorov_yuborish(self):
-        response = self.client.post(reverse('billing:create_request'), {'months': 6})
+        response = self.client.post(reverse('billing:create_request'), {'months': 1})
         self.assertEqual(response.status_code, 302)
         req = PaymentRequest.objects.get(user=self.user)
-        self.assertEqual(req.months, 6)
-        self.assertEqual(req.amount_tiyin, 60_000_000)
+        self.assertEqual(req.months, 1)
+        self.assertEqual(req.amount_tiyin, 10_000_000)
+
+    def test_endi_ruxsat_etilmagan_muddat_rad_etiladi(self):
+        """3 oylik obuna olib tashlangan — so'rov yaratilmasligi kerak."""
+        self.client.post(reverse('billing:create_request'), {'months': 3})
+        self.assertEqual(PaymentRequest.objects.count(), 0)
 
     def test_notogri_muddat_rad_etiladi(self):
         self.client.post(reverse('billing:create_request'), {'months': 7})

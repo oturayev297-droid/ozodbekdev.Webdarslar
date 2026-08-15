@@ -283,3 +283,43 @@ def notify_expiring(user, days_left, end_date, grace_days):
             f"yangi muddat eski sanadan qo'shiladi."
         )
     return send(user_chat_id(user), text)
+
+
+def notify_new_registration(user) -> bool:
+    """
+    Yangi ro'yxatdan o'tish haqida ADMINGA xabar.
+
+    NEGA KERAK: yangi hisob ruxsat kutib turadi va o'quvchi hech narsa
+    ko'rmaydi. Admin buni bilmasa, odam kunlab kutib qolardi va
+    ehtimol butunlay ketib qolardi.
+    """
+    profile = getattr(user, 'profile', None)
+    full_name = (profile.full_name if profile else '') or user.username
+
+    return send_to_admins(
+        "Yangi ro'yxatdan o'tish\n\n"
+        f"Ism   : {full_name}\n"
+        f"Login : {user.username}\n"
+        f"Email : {user.email or '—'}\n\n"
+        "Ruxsat kutilmoqda. Panelda ko'rib chiqing:\n"
+        "/panel/oquvchilar/?state=pending"
+    )
+
+
+def notify_approved(user) -> bool:
+    """O'quvchiga ruxsat berilgani haqida xabar."""
+    return send(
+        user_chat_id(user),
+        "Sizga ruxsat berildi!\n\n"
+        "Endi saytga kirib bepul darslarni ko'rishingiz mumkin.\n"
+        "Barcha darslar uchun obuna rasmiylashtiring.",
+    )
+
+
+def notify_rejected_registration(user, reason: str) -> bool:
+    """Ruxsat berilmagani haqida xabar. Sabab o'quvchiga KO'RSATILADI."""
+    text = "Hisobingizga ruxsat berilmadi."
+    if reason:
+        text += f"\n\nSabab: {reason}"
+    text += "\n\nSavollaringiz bo'lsa biz bilan bog'laning."
+    return send(user_chat_id(user), text)

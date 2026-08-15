@@ -14,6 +14,7 @@ import json
 import time
 
 from django.contrib.auth.models import User
+from core.test_utils import approve_all
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -55,9 +56,10 @@ class GatewayBase(TestCase):
         self.user = User.objects.create_user(
             username='talaba', email='t@test.uz', password='Parol12345678'
         )
-        self.request = payment_requests.create_request(self.user, 3)
+        self.request = payment_requests.create_request(self.user, 1)
         # 3 oy x 100 000 = 300 000 so'm = 30 000 000 tiyin
-        self.assertEqual(self.request.amount_tiyin, 30_000_000)
+        self.assertEqual(self.request.amount_tiyin, 10_000_000)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
 
 # ==========================================================================
@@ -125,7 +127,7 @@ class PaymeMethodTests(GatewayBase):
 
     def test_check_perform_ruxsat_beradi(self):
         data = self._call('CheckPerformTransaction', {
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         })
         self.assertTrue(data['result']['allow'])
 
@@ -137,18 +139,18 @@ class PaymeMethodTests(GatewayBase):
 
     def test_mavjud_bolmagan_sorov(self):
         data = self._call('CheckPerformTransaction', {
-            'amount': 30_000_000, 'account': {'order_id': '999999'},
+            'amount': 10_000_000, 'account': {'order_id': '999999'},
         })
         # -31050 oralig'i: Payme buni "foydalanuvchi xatosi" deb ko'rsatadi
         self.assertEqual(data['error']['code'], payme_gw.ERR_ACCOUNT)
 
     def test_account_bosh(self):
-        data = self._call('CheckPerformTransaction', {'amount': 30_000_000, 'account': {}})
+        data = self._call('CheckPerformTransaction', {'amount': 10_000_000, 'account': {}})
         self.assertEqual(data['error']['code'], payme_gw.ERR_ACCOUNT)
 
     def test_xato_xabari_uch_tilda(self):
         data = self._call('CheckPerformTransaction', {
-            'amount': 30_000_000, 'account': {'order_id': '999999'},
+            'amount': 10_000_000, 'account': {'order_id': '999999'},
         })
         self.assertEqual(set(data['error']['message']), {'uz', 'ru', 'en'})
 
@@ -161,7 +163,7 @@ class PaymeMethodTests(GatewayBase):
     def test_create_transaction(self):
         data = self._call('CreateTransaction', {
             'id': 'tx-1', 'time': int(time.time() * 1000),
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         })
         result = data['result']
         self.assertEqual(result['state'], GatewayTransaction.State.CREATED)
@@ -171,7 +173,7 @@ class PaymeMethodTests(GatewayBase):
         """Payme tarmoq uzilganda so'rovni ATAYLAB qayta yuboradi."""
         params = {
             'id': 'tx-1', 'time': int(time.time() * 1000),
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         }
         first = self._call('CreateTransaction', params)['result']
         second = self._call('CreateTransaction', params)['result']
@@ -191,11 +193,11 @@ class PaymeMethodTests(GatewayBase):
         """Bitta so'rovga ikki marta to'lab bo'lmasin."""
         self._call('CreateTransaction', {
             'id': 'tx-1', 'time': int(time.time() * 1000),
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         })
         data = self._call('CreateTransaction', {
             'id': 'tx-2', 'time': int(time.time() * 1000),
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         })
         self.assertEqual(data['error']['code'], payme_gw.ERR_CANNOT_PERFORM)
 
@@ -204,7 +206,7 @@ class PaymeMethodTests(GatewayBase):
     def _create(self, external_id='tx-1'):
         return self._call('CreateTransaction', {
             'id': external_id, 'time': int(time.time() * 1000),
-            'amount': 30_000_000, 'account': self._account(),
+            'amount': 10_000_000, 'account': self._account(),
         })
 
     def test_perform_obunani_uzaytiradi(self):
@@ -220,8 +222,8 @@ class PaymeMethodTests(GatewayBase):
         period = SubscriptionPeriod.objects.get()
         self.assertEqual(period.source, PeriodSource.PAYMENT)
         self.assertEqual(period.payment_method, PaymentMethod.PAYME)
-        self.assertEqual(period.amount_tiyin, 30_000_000)
-        self.assertEqual(period.months, 3)
+        self.assertEqual(period.amount_tiyin, 10_000_000)
+        self.assertEqual(period.months, 1)
 
     def test_perform_takrorlanishga_chidamli(self):
         """IDEMPOTENTLIK: takror so'rov obunani ikki marta uzaytirmasin."""
@@ -284,7 +286,7 @@ class PaymeMethodTests(GatewayBase):
         data = self._call('GetStatement', {'from': now - 60000, 'to': now + 60000})['result']
         self.assertEqual(len(data['transactions']), 1)
         self.assertEqual(data['transactions'][0]['id'], 'tx-1')
-        self.assertEqual(data['transactions'][0]['amount'], 30_000_000)
+        self.assertEqual(data['transactions'][0]['amount'], 10_000_000)
 
 
 # ==========================================================================
@@ -297,12 +299,12 @@ class ClickSignTests(GatewayBase):
         """Rasmiy click-integration-php kutubxonasidagi formula."""
         data = {
             'click_trans_id': '123', 'service_id': CLICK_SERVICE_ID,
-            'merchant_trans_id': '7', 'amount': '300000.00',
+            'merchant_trans_id': '7', 'amount': '100000.00',
             'action': '0', 'sign_time': '2026-08-14 12:00:00',
         }
         expected = hashlib.md5(
             ('123' + CLICK_SERVICE_ID + CLICK_SECRET + '7' + '' +
-             '300000.00' + '0' + '2026-08-14 12:00:00').encode()
+             '100000.00' + '0' + '2026-08-14 12:00:00').encode()
         ).hexdigest()
         self.assertEqual(click_gw.build_sign(data), expected)
 
@@ -310,11 +312,11 @@ class ClickSignTests(GatewayBase):
         data = {
             'click_trans_id': '123', 'service_id': CLICK_SERVICE_ID,
             'merchant_trans_id': '7', 'merchant_prepare_id': '42',
-            'amount': '300000.00', 'action': '1', 'sign_time': '2026-08-14 12:00:00',
+            'amount': '100000.00', 'action': '1', 'sign_time': '2026-08-14 12:00:00',
         }
         expected = hashlib.md5(
             ('123' + CLICK_SERVICE_ID + CLICK_SECRET + '7' + '42' +
-             '300000.00' + '1' + '2026-08-14 12:00:00').encode()
+             '100000.00' + '1' + '2026-08-14 12:00:00').encode()
         ).hexdigest()
         self.assertEqual(click_gw.build_sign(data), expected)
 
@@ -327,7 +329,7 @@ class ClickFlowTests(GatewayBase):
             'click_paydoc_id': '555',
             'merchant_trans_id': str(self.request.pk),
             # Click SO'MDA yuboradi — 30 000 000 tiyin = 300 000 so'm
-            'amount': '300000.00',
+            'amount': '100000.00',
             'action': str(action),
             'error': '0',
             'error_note': 'Success',
@@ -369,9 +371,9 @@ class ClickFlowTests(GatewayBase):
     def test_tiyin_somga_chalkashtirilmaydi(self):
         """
         Click SO'MDA yuboradi. Agar kimdir tiyin qiymatini yuborsa
-        (30000000), u 100 barobar katta va RAD ETILISHI kerak.
+        (10000000), u 100 barobar katta va RAD ETILISHI kerak.
         """
-        data = self._payload(0, amount='30000000.00')
+        data = self._payload(0, amount='10000000.00')
         result = self._post('click_prepare', data)
         self.assertEqual(result['error'], click_gw.ERR_AMOUNT)
 
@@ -392,7 +394,7 @@ class ClickFlowTests(GatewayBase):
         self.assertTrue(get_state(self.user).active)
         period = SubscriptionPeriod.objects.get()
         self.assertEqual(period.payment_method, PaymentMethod.CLICK)
-        self.assertEqual(period.amount_tiyin, 30_000_000)
+        self.assertEqual(period.amount_tiyin, 10_000_000)
 
     def test_complete_takrorlanishga_chidamli(self):
         prepared = self._post('click_prepare', self._payload(0))
@@ -442,6 +444,7 @@ class GatewayLinkTests(GatewayBase):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_payme_havolasi_tiyinda(self):
         from . import gateway_links
@@ -450,14 +453,14 @@ class GatewayLinkTests(GatewayBase):
         encoded = url.rsplit('/', 1)[-1]
         decoded = base64.b64decode(encoded).decode()
 
-        self.assertIn(f"a=30000000", decoded, "Payme summani TIYINDA kutadi")
+        self.assertIn(f"a=10000000", decoded, "Payme summani TIYINDA kutadi")
         self.assertIn(f"ac.order_id={self.request.pk}", decoded)
 
     def test_click_havolasi_somda(self):
         from . import gateway_links
 
         url = gateway_links.build_url('CLICK', self.request)
-        self.assertIn("amount=300000.00", url, "Click summani SO'MDA kutadi")
+        self.assertIn("amount=100000.00", url, "Click summani SO'MDA kutadi")
         self.assertIn(f"transaction_param={self.request.pk}", url)
 
     def test_yonaltirish_ishlaydi(self):
@@ -484,6 +487,7 @@ class GatewayNotConfiguredTests(TestCase):
             username='talaba', email='t@test.uz', password='Parol12345678'
         )
         self.client.force_login(self.user)
+        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_tugmalar_korinmaydi(self):
         response = self.client.get(reverse('billing:plans'))

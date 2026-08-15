@@ -160,7 +160,7 @@ Deploydan keyin bir marta:
 
 ```bash
 # Tarif va bepul darslar
-python manage.py seed_billing --price 99000 --free-lessons 3
+python manage.py seed_billing --price 100000 --free-lessons 3
 ```
 
 So'ng **admin panel → Admin sozlamalari** dan `subscription.cards` kalitiga
@@ -206,6 +206,20 @@ yaratilishi shart.
 # Tekshirish
 python manage.py shell -c "from django.core.mail import send_mail; send_mail('Sinov','Ishladi',None,['siz@gmail.com'])"
 ```
+
+### Admin ruxsati
+
+Yangi o'quvchi ro'yxatdan o'tganda hisobi YOPIQ bo'ladi va admin
+paneldan ruxsat bermaguncha u darslarni ko'rmaydi.
+
+Ruxsat berish: `/panel/oquvchilar/` — kutayotganlar ro'yxat tepasida.
+Yangi ro'yxatdan o'tish haqida adminlarga Telegramda xabar keladi
+(8-bo'lim sozlangan bo'lsa).
+
+MIGRATSIYA HAQIDA: `core.0021` mavjud BARCHA o'quvchilarga ruxsatni
+avtomatik beradi. Yangi qoida faqat bundan keyingi ro'yxatdan
+o'tishlarga tegishli — aks holda allaqachon to'lagan o'quvchilar
+ertalab turib kirish yopilganini ko'rardi.
 
 ## 8. Telegram bot
 
