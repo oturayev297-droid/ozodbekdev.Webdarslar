@@ -117,14 +117,36 @@ def get_cards() -> list:
     return [c for c in (_normalize_card(x) for x in parsed) if c]
 
 
+#: Karta raqamidagi raqamlar soni. Uzcard va Humo — 16 xona.
+#: Yuqori chegara xalqaro kartalar uchun bo'sh qoldirilgan.
+CARD_DIGITS = (16, 19)
+
+
 def update_cards(cards, admin=None) -> list:
-    """Kartalar ro'yxatini butunlay almashtiradi."""
+    """
+    Kartalar ro'yxatini butunlay almashtiradi.
+
+    RAQAM SHU YERDA TEKSHIRILADI. Tekshiruvsiz xato terilgan raqam
+    saqlanardi va o'quvchilar pulni yo'q kartaga yuborardi — xato
+    faqat "pulim yo'qoldi" degan murojaatdan keyin bilinardi.
+    Tekshiruv aynan yozishda: allaqachon saqlangan ro'yxat o'qishda
+    jimgina yo'qolib qolmasin.
+    """
     if not isinstance(cards, list):
         raise BillingError("Kartalar ro'yxati noto'g'ri")
     if len(cards) > 10:
         raise BillingError("Ko'pi bilan 10 ta karta")
 
     clean = [c for c in (_normalize_card(x) for x in cards) if c]
+
+    low, high = CARD_DIGITS
+    for card in clean:
+        digits = ''.join(ch for ch in card['number'] if ch.isdigit())
+        if not low <= len(digits) <= high:
+            raise BillingError(
+                f"Karta raqami noto'g'ri: {card['number']}. "
+                f"{low} xonali raqam kiriting."
+            )
 
     AdminSetting.objects.update_or_create(
         key=CARDS_KEY,

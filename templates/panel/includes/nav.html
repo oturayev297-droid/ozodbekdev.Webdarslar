@@ -62,6 +62,11 @@ eskirib qolardi.
         {% endif %}
     </a>
 
+    <a href="{% url 'panel:parents' %}"
+       class="nav-item {% if u == 'parents' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">family_restroom</span> Ota-onalar
+    </a>
+
     <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-slate-600">Aloqa</p>
 
     <a href="{% url 'panel:messages' %}"
@@ -72,6 +77,11 @@ eskirib qolardi.
     <a href="{% url 'panel:monitor' %}"
        class="nav-item {% if u == 'monitor' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
         <span class="material-icons-round text-lg">monitoring</span> Kuzatish
+    </a>
+
+    <a href="{% url 'panel:settings' %}"
+       class="nav-item {% if u == 'settings' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">settings</span> Sozlamalar
     </a>
 
 </div>

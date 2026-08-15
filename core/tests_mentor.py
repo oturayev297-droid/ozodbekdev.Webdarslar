@@ -31,7 +31,8 @@ class MentorBase(TestCase):
             username='talaba', email='t@test.uz', password='Parol12345678'
         )
         self.client.force_login(self.user)
-        self.url = reverse('mentor_ask')
+        # Eski sahifa o'chirilgan — mentor endi API orqali
+        self.url = reverse('api:mentor_ask')
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def ask(self, question="Python'da for sikli qanday ishlaydi?", **extra):
@@ -53,21 +54,21 @@ class MockModeTests(TestCase):
     @override_settings(ANTHROPIC_API_KEY="")
     def test_sozlanmagan_holda_xato_bermaydi(self):
         response = self.client.post(
-            reverse('mentor_ask'),
+            reverse('api:mentor_ask'),
             data=json.dumps({'question': 'Salom'}),
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertTrue(data['success'])
+        self.assertIn('answer_html', data)
         self.assertTrue(data['mock'])
-        self.assertIn('sozlanmagan', data['answer'])
+        self.assertIn('sozlanmagan', data['answer_html'])
 
     @override_settings(ANTHROPIC_API_KEY="")
     def test_mock_rejimda_yozuv_saqlanmaydi(self):
         """Kvota faqat haqiqiy so'rovlardan sanalishi kerak."""
         self.client.post(
-            reverse('mentor_ask'),
+            reverse('api:mentor_ask'),
             data=json.dumps({'question': 'Salom'}),
             content_type='application/json',
         )
@@ -78,9 +79,9 @@ class AskTests(MentorBase):
     @patch('core.ai_mentor._call_claude', return_value="For sikli **takrorlaydi**.")
     def test_javob_qaytaradi(self, mock_call):
         data = self.ask().json()
-        self.assertTrue(data['success'])
+        self.assertIn('answer_html', data)
         self.assertFalse(data['mock'])
-        self.assertIn('<strong>takrorlaydi</strong>', data['answer'])
+        self.assertIn('<strong>takrorlaydi</strong>', data['answer_html'])
         mock_call.assert_called_once()
 
     @patch('core.ai_mentor._call_claude', return_value="Javob")
@@ -103,8 +104,9 @@ class AskTests(MentorBase):
     def test_login_talab_qiladi(self):
         self.client.logout()
         response = self.ask()
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/login/', response['Location'])
+        # API kirmagan odamga 403 beradi (yo'naltirish emas) —
+        # frontend o'zi login sahifasiga olib boradi
+        self.assertEqual(response.status_code, 403)
 
     def test_get_qabul_qilinmaydi(self):
         self.assertEqual(self.client.get(self.url).status_code, 405)
@@ -118,7 +120,7 @@ class QuotaTests(MentorBase):
 
         response = self.ask()
         self.assertEqual(response.status_code, 429)
-        self.assertIn('tez', response.json()['error'])
+        self.assertIn('tez', response.json()['detail'])
 
     @patch('core.ai_mentor._call_claude', return_value="Javob")
     def test_kunlik_cheklov(self, _):
@@ -132,7 +134,7 @@ class QuotaTests(MentorBase):
 
         response = self.ask()
         self.assertEqual(response.status_code, 429)
-        self.assertIn('Kunlik', response.json()['error'])
+        self.assertIn('Kunlik', response.json()['detail'])
 
     @patch('core.ai_mentor._call_claude', return_value="Javob")
     def test_eski_sorovlar_hisoblanmaydi(self, _):
@@ -261,7 +263,8 @@ class ApiErrorTests(MentorBase):
             )
             response = self.ask("Ob-havo qanday?")
         self.assertEqual(response.status_code, 400)
-        self.assertIn("javob bera olmayman", response.json()['error'])
+        # API xatoni `detail` da beradi (DRF ning odatiy shakli)
+        self.assertIn("javob bera olmayman", response.json()['detail'])
         self.assertEqual(MentorMessage.objects.count(), 0)
 
     def test_tarmoq_xatosi_ushlanadi(self):

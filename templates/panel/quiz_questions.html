@@ -1,0 +1,127 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}{{ quiz.title }} — savollar{% endblock %}
+{% block heading %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'panel:quizzes' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-5 transition">
+    <span class="material-icons-round text-base">arrow_back</span> Testlar
+</a>
+
+<p class="text-sm text-slate-500 mb-6">
+    {{ quiz.lesson.module.category.name }} / {{ quiz.lesson.title }}
+    {% if quiz.is_generated %}
+        <span class="ml-2 px-2 py-0.5 rounded bg-primary/15 text-primary text-[11px] font-semibold">
+            Model tuzgan
+        </span>
+    {% endif %}
+</p>
+
+{% if quiz.is_generated and not quiz.is_published %}
+    <div class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-sm text-slate-300 leading-relaxed">
+        Bu savollarni model yozgan. Har birini o'qib chiqing va to'g'ri
+        javob joyida ekaniga ishonch hosil qiling — model ham xato qilishi
+        mumkin. Tekshirgach testlar bo'limida nashr qiling.
+    </div>
+{% endif %}
+
+{% comment %}
+Mavjud savollar. Har biri o'z formasida — bittasini saqlash
+qolganlariga tegmaydi.
+{% endcomment %}
+<div class="space-y-4">
+    {% for question in questions %}
+        <form method="post" action="{% url 'panel:question_save' quiz.pk %}"
+              class="glass rounded-2xl p-5">
+            {% csrf_token %}
+            <input type="hidden" name="question_id" value="{{ question.pk }}">
+
+            <div class="flex items-start gap-3 mb-4">
+                <span class="text-xs text-slate-600 mt-3 shrink-0">{{ forloop.counter }}.</span>
+                <textarea name="text" rows="2" required
+                          class="flex-1 bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary resize-y">{{ question.text }}</textarea>
+            </div>
+
+            <div class="space-y-2 pl-7">
+                {% for choice in question.choices.all %}
+                    <label class="flex items-center gap-3">
+                        {% comment %}
+                        Radio: bitta savolda FAQAT BITTA to'g'ri javob.
+                        Checkbox bo'lsa ikkitasini belgilash mumkin
+                        bo'lardi va server uni rad etardi.
+                        {% endcomment %}
+                        <input type="radio" name="correct" value="{{ forloop.counter0 }}"
+                               {% if choice.is_correct %}checked{% endif %}
+                               class="w-4 h-4 text-emerald-500 bg-slate-900 border-white/20 shrink-0">
+                        <input name="choice_text" value="{{ choice.text }}"
+                               class="flex-1 bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div class="flex items-center gap-3 mt-4 pl-7">
+                <button class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                    Saqlash
+                </button>
+                <span class="text-xs text-slate-600">Yashil doiracha — to'g'ri javob</span>
+            </div>
+        </form>
+    {% empty %}
+        <div class="glass rounded-2xl p-10 text-center">
+            <p class="text-slate-500">Bu testda savol yo'q.</p>
+            <p class="text-sm text-slate-600 mt-1">
+                Savolsiz testni nashr qilib bo'lmaydi.
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+{% comment %} ─── Yangi savol ─── {% endcomment %}
+<form method="post" action="{% url 'panel:question_save' quiz.pk %}"
+      class="glass rounded-2xl p-5 mt-6 border-primary/20">
+    {% csrf_token %}
+    <h2 class="font-bold mb-4">Yangi savol</h2>
+
+    <textarea name="text" rows="2" required placeholder="Savol matni"
+              class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary resize-y mb-4"></textarea>
+
+    <div class="space-y-2">
+        {% for i in "0123" %}
+            <label class="flex items-center gap-3">
+                <input type="radio" name="correct" value="{{ forloop.counter0 }}"
+                       {% if forloop.first %}checked{% endif %}
+                       class="w-4 h-4 text-emerald-500 bg-slate-900 border-white/20 shrink-0">
+                <input name="choice_text" placeholder="{{ forloop.counter }}-variant"
+                       class="flex-1 bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+            </label>
+        {% endfor %}
+    </div>
+
+    <button class="mt-4 px-5 py-2.5 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 text-sm font-bold transition">
+        Qo'shish
+    </button>
+    <p class="text-xs text-slate-600 mt-3">
+        Bo'sh variantlar saqlanmaydi. Kamida ikkitasi to'ldirilishi kerak.
+    </p>
+</form>
+
+{% comment %} Savolni o'chirish — alohida formalar {% endcomment %}
+{% if questions %}
+    <div class="mt-6 glass rounded-2xl p-5">
+        <h2 class="font-bold mb-3 text-sm">Savolni o'chirish</h2>
+        <div class="flex flex-wrap gap-2">
+            {% for question in questions %}
+                <form method="post" action="{% url 'panel:question_delete' question.pk %}">
+                    {% csrf_token %}
+                    <button onclick="return confirm('{{ forloop.counter }}-savol o\'chirilsinmi?')"
+                            class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs transition">
+                        {{ forloop.counter }}-savol
+                    </button>
+                </form>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

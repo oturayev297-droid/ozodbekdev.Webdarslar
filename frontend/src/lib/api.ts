@@ -290,6 +290,70 @@ export interface MentorMessage {
   created_at: string;
 }
 
+export interface Project {
+  id: number;
+  title: string;
+  description_html: string;
+  image_url: string | null;
+  difficulty: string;
+  tech_list: string[];
+  demo_url: string | null;
+  repo_url: string | null;
+  order: number;
+}
+
+export interface StudyDay {
+  date: string;
+  label: string;
+  seconds: number;
+  minutes: number;
+  hours: number;
+  lessons_completed: number;
+}
+
+export interface StudySummary {
+  today_minutes: number;
+  total_seconds: number;
+  total_hours: number;
+  active_days: number;
+  average_minutes: number;
+  all_time_hours: number;
+}
+
+export interface Child {
+  student_id: number;
+  username: string;
+  full_name: string;
+  relation: string;
+}
+
+export interface ChildReport {
+  student: {
+    id: number;
+    username: string;
+    full_name: string;
+    relation: string;
+    level: number;
+  };
+  study: { summary: StudySummary; series: StudyDay[] };
+  lessons: { total: number; completed: number; percent: number };
+  quizzes: {
+    taken: number;
+    average_score: number;
+    recent: {
+      quiz: string;
+      category: string;
+      score: number;
+      correct: number;
+      total: number;
+      attempts: number;
+      completed_at: string;
+    }[];
+  };
+  certificates: Certificate[];
+  subscription: SubscriptionState;
+}
+
 export interface DashboardData {
   lessons: { total: number; completed: number; percent: number };
   quizzes: { taken: number; average_score: number };
@@ -406,4 +470,19 @@ export const profile = {
 
 export const mentorHistory = {
   list: () => api.get<MentorMessage[]>('/mentor/history/'),
+};
+
+export const projects = {
+  list: () => api.get<Project[]>('/projects/'),
+};
+
+export const study = {
+  /** "Men shu yerdaman" signali. Sana va miqdor SERVERDA belgilanadi. */
+  ping: () => api.post<{ counted: boolean; seconds_today: number }>('/study/ping/'),
+  me: () => api.get<{ summary: StudySummary; series: StudyDay[] }>('/study/me/'),
+};
+
+export const parent = {
+  children: () => api.get<Child[]>('/parent/children/'),
+  report: (studentId: number) => api.get<ChildReport>(`/parent/children/${studentId}/`),
 };

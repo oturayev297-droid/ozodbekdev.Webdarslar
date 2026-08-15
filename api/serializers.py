@@ -27,6 +27,7 @@ from core.models import (
     LessonImage,
     MentorMessage,
     Profile,
+    Project,
     Question,
     Quiz,
 )
@@ -373,3 +374,30 @@ class MentorMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = MentorMessage
         fields = ['id', 'question', 'answer', 'lesson_title', 'created_at']
+
+
+# ══════════════════════════ Loyihalar ══════════════════════════
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    tech_list = serializers.SerializerMethodField()
+    description_html = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Project
+        fields = [
+            'id', 'title', 'description_html', 'image_url', 'difficulty',
+            'tech_list', 'demo_url', 'repo_url', 'order',
+        ]
+
+    def get_tech_list(self, obj):
+        """
+        Vergul bilan yozilgan matn RO'YXATGA aylantiriladi.
+
+        Frontendda bo'lishi ham mumkin edi, lekin format bazadagi
+        ma'lumotga tegishli — uni bilish backendning ishi.
+        """
+        return [t.strip() for t in (obj.tech_stack or '').split(',') if t.strip()]
+
+    def get_description_html(self, obj):
+        return richtext.render(obj.description)

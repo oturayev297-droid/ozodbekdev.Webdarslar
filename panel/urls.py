@@ -45,12 +45,28 @@ urlpatterns = [
     path('rasmlar/<int:image_id>/ochirish/', views.lesson_image_delete, name='lesson_image_delete'),
     path('modullar/yangi/', views.module_edit, name='module_new'),
     path('modullar/<int:module_id>/', views.module_edit, name='module_edit'),
+    path('bolimlar/yangi/', views.category_edit, name='category_new'),
+    path('bolimlar/<int:category_id>/', views.category_edit, name='category_edit'),
+    path('bolimlar/<int:category_id>/ochirish/', views.category_delete, name='category_delete'),
     path('testlar/', views.quizzes, name='quizzes'),
+    path('testlar/<int:quiz_id>/savollar/', views.quiz_questions, name='quiz_questions'),
+    path('testlar/<int:quiz_id>/savol/', views.question_save, name='question_save'),
+    path('savollar/<int:question_id>/ochirish/', views.question_delete, name='question_delete'),
     path('testlar/<int:quiz_id>/nashr/', views.quiz_publish, name='quiz_publish'),
 
     # ── Xabarlar ──
     path('xabarlar/', views.messages_page, name='messages'),
     path('xabarlar/<int:message_id>/', views.message_detail, name='message_detail'),
+
+    # ── Ota-onalar ──
+    path('ota-onalar/', views.parents, name='parents'),
+    path('ota-onalar/boglash/', views.parent_link_create, name='parent_link_create'),
+    path('ota-onalar/<int:link_id>/uzish/', views.parent_link_delete, name='parent_link_delete'),
+
+    # ── Sozlamalar ──
+    path('sozlamalar/', views.settings_page, name='settings'),
+    path('sozlamalar/kartalar/', views.settings_cards, name='settings_cards'),
+    path('sozlamalar/narx/', views.settings_price, name='settings_price'),
 
     # ── Kuzatish ──
     path('kuzatish/', views.monitor, name='monitor'),

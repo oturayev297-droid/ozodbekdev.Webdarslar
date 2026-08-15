@@ -13,7 +13,7 @@ bayroq butun kursni bepulga chiqarib yuborardi.
 
 from django import forms
 
-from core.models import Lesson, LessonImage, Module
+from core.models import Category, Lesson, LessonImage, Module
 
 #: Tailwind bilan bo'yalgan maydonlar uchun umumiy sinflar
 INPUT = (
@@ -131,4 +131,31 @@ class LessonImageForm(forms.ModelForm):
             'caption': forms.TextInput(attrs={'class': INPUT, 'placeholder': "Rasm tagidagi matn"}),
             'alt_text': forms.TextInput(attrs={'class': INPUT, 'placeholder': "Rasm ochilmasa ko'rinadi"}),
             'order': forms.NumberInput(attrs={'class': INPUT}),
+        }
+
+
+class CategoryForm(forms.ModelForm):
+    """
+    Bo'lim (kurs).
+
+    `slug` manzilda ishlatiladi (`/kurslar/python`) va u O'ZGARMASLIGI
+    kerak: o'zgartirilsa tarqatilgan havolalar ishlamay qoladi.
+    """
+
+    class Meta:
+        model = Category
+        fields = ['name', 'slug', 'description']
+        labels = {
+            'name': "Bo'lim nomi",
+            'slug': "Manzil qismi (slug)",
+            'description': "Tavsif",
+        }
+        help_texts = {
+            'slug': "Faqat lotin harflari va chiziqcha: python, sun-iy-intellekt",
+            'description': "Kurs kartochkasida ko'rinadi",
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': INPUT}),
+            'slug': forms.TextInput(attrs={'class': INPUT}),
+            'description': forms.Textarea(attrs={'class': INPUT, 'rows': 3}),
         }

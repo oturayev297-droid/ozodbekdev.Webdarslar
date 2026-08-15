@@ -306,6 +306,120 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.get_or_create(user=instance)
 
+class StudySession(models.Model):
+    """
+    O'quv vaqti.
+
+    NEGA KERAK: platforma o'zlashtirishni "nechta dars tugatildi" bilan
+    o'lchardi. Ota-onaning savoli esa boshqa: "bolam kuniga qancha
+    vaqt sarflayapti?" Buni tugatilgan darslar soni ko'rsatmaydi —
+    dars ochilib, yopilib qo'yilgan bo'lishi ham mumkin.
+
+    QANDAY O'LCHANADI: frontend ochiq sahifada har daqiqada bir marta
+    "men shu yerdaman" degan signal yuboradi (`ping`). Har signal
+    `seconds` ni oshiradi.
+
+    NEGA SHUNDAY, "boshlandi/tugadi" emas: brauzer tabini yopganda
+    "tugadi" signali kafolatlanmaydi (kompyuter o'chdi, internet
+    uzildi). Unda ochiq qolgan seans soatlab hisoblanib ketardi.
+    Vaqti-vaqti bilan keladigan signal esa eng yomon holatda bitta
+    oraliqni yo'qotadi.
+
+    HAR KUN — ALOHIDA YOZUV: `(user, date)` unique. Kunlik hisobot
+    shundan to'g'ridan-to'g'ri o'qiladi, guruhlash kerak emas.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='study_sessions')
+
+    #: Toshkent vaqti bo'yicha KUN. Sana serverda hisoblanadi —
+    #: klientdan olinsa, uni o'zgartirib "kecha 10 soat o'qidim" deb
+    #: yozib qo'yish mumkin bo'lardi.
+    date = models.DateField(db_index=True)
+
+    seconds = models.PositiveIntegerField(default=0, verbose_name="Soniya")
+
+    #: Shu kuni tugatilgan darslar — hisobotda vaqt bilan yonma-yon
+    #: turadi. "3 soat o'tirdi, lekin bitta dars tugatmadi" degan
+    #: holat ota-onaga ko'rinishi kerak.
+    lessons_completed = models.PositiveIntegerField(default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "O'quv vaqti"
+        verbose_name_plural = "O'quv vaqtlari"
+        ordering = ['-date']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'date'], name='one_study_row_per_day'),
+        ]
+        indexes = [
+            models.Index(fields=['user', '-date']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} {self.date}: {self.minutes} daqiqa"
+
+    @property
+    def minutes(self) -> int:
+        return self.seconds // 60
+
+    @property
+    def hours(self) -> float:
+        return round(self.seconds / 3600, 1)
+
+
+class ParentLink(models.Model):
+    """
+    Ota-ona va o'quvchi bog'lanishi.
+
+    NEGA ALOHIDA MODEL, `Profile` ga maydon emas: bitta ota-onaning
+    bir necha farzandi bo'lishi mumkin, va bitta o'quvchini ikkala
+    ota-ona ham kuzatishi mumkin. Ya'ni bu ko'pga-ko'p munosabat.
+
+    KIRISH FAQAT ADMIN ORQALI: ota-ona o'zini o'zi biror o'quvchiga
+    bog'lay olmaydi. Aks holda har kim istagan bolaning natijalarini
+    ko'rib olardi — bu shaxsiy ma'lumot.
+    """
+
+    parent = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='children_links',
+        verbose_name="Ota-ona",
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='parent_links',
+        verbose_name="O'quvchi",
+    )
+
+    #: Ekranda ko'rsatiladi: "Otasi", "Onasi", "Vasiysi"
+    relation = models.CharField(
+        max_length=50, blank=True, verbose_name="Kimligi",
+        help_text="Otasi / Onasi / Vasiysi",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_parent_links',
+    )
+
+    class Meta:
+        verbose_name = "Ota-ona bog'lanishi"
+        verbose_name_plural = "Ota-ona bog'lanishlari"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['parent', 'student'], name='one_link_per_parent_student'
+            ),
+            # O'ziga o'zini bog'lab bo'lmaydi
+            models.CheckConstraint(
+                check=~models.Q(parent=models.F('student')),
+                name='parent_is_not_student',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.parent.username} -> {self.student.username}"
+
+
 class UserProgress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='progress')
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='user_progress')

@@ -52,21 +52,27 @@ def paywall(request, message=None):
     """
     Obuna talab qilinganda qaytariladigan javob.
 
-    JSON so'rovga 402 Payment Required, oddiy so'rovga tarif sahifasi.
+    HAR DOIM JSON, 402 Payment Required.
+
+    ILGARI HTML SAHIFA QAYTARARDI. Endi o'quvchi sahifalari React
+    frontendda va bu funksiya faqat fayl uzatuvchi ko'rinishlardan
+    (video) chaqiriladi. HTML qaytarish ikki sababga ko'ra noto'g'ri
+    bo'lardi:
+
+      * `<video src="...">` HTML sahifani ko'rsata olmaydi — brauzer
+        shunchaki "video ochilmadi" deydi va sabab bilinmaydi;
+      * o'sha shablon o'chirilgan manzillarga murojaat qilib, 402
+        o'rniga 500 qaytarardi.
+
+    Frontend 402 ni ko'rib obuna sahifasiga yuboradi.
     """
     message = message or (
         "Bu dars obuna talab qiladi. Bepul darslar hamma uchun ochiq, "
         "qolganlari uchun obuna rasmiylashtiring."
     )
-    if _is_ajax(request):
-        return JsonResponse(
-            {'success': False, 'error': message, 'code': 'SUBSCRIPTION_REQUIRED'},
-            status=402,
-        )
-    return render(
-        request,
-        'billing/paywall.html',
-        {'message': message, 'state': get_state(request.user)},
+    return JsonResponse(
+        {'success': False, 'error': message, 'detail': message,
+         'code': 'SUBSCRIPTION_REQUIRED'},
         status=402,
     )
 

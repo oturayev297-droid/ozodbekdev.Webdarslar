@@ -479,30 +479,3 @@ class GatewayLinkTests(GatewayBase):
         self.assertEqual(response.status_code, 404)
 
 
-class GatewayNotConfiguredTests(TestCase):
-    """Kalitlar bo'sh bo'lsa qo'lda tasdiqlash oqimi ishlashda davom etadi."""
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username='talaba', email='t@test.uz', password='Parol12345678'
-        )
-        self.client.force_login(self.user)
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def test_tugmalar_korinmaydi(self):
-        response = self.client.get(reverse('billing:plans'))
-        self.assertEqual(response.context['gateways'], [])
-        self.assertNotContains(response, "orqali to'lash")
-
-    def test_qolda_oqim_ishlaydi(self):
-        response = self.client.post(reverse('billing:create_request'), {'months': 1})
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(PaymentRequest.objects.filter(user=self.user).exists())
-
-    def test_sozlanmagan_tizimga_yonaltirmaydi(self):
-        req = payment_requests.create_request(self.user, 1)
-        response = self.client.get(
-            reverse('billing:start_payment', args=[req.pk, 'payme'])
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/obuna/', response['Location'])

@@ -11,6 +11,8 @@ ham o'tishi kerak. Chalkashtirilsa:
 Shuning uchun har ikkalasi alohida ham, birga ham tekshiriladi.
 """
 
+import json
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
@@ -41,27 +43,33 @@ def make_student(username, approved=False, subscribed=False):
 
 
 class ApprovalGateTests(TestCase):
-    """Ruxsatsiz o'quvchi kontentni ko'rmasligi."""
+    """
+    Ruxsatsiz o'quvchi kontentni ko'rmasligi.
 
-    #: Ruxsat talab qiladigan sahifalar
-    GUARDED = ['lessons', 'dashboard', 'projects', 'quizzes', 'editor', 'my_certificates']
+    ESKI SAHIFALAR O'CHIRILGAN — darvoza endi API darajasida
+    tekshiriladi. Ruxsatsiz odam 403 oladi (yo'naltirish emas):
+    React frontend shu kodni ko'rib kutish ekranini ko'rsatadi.
+    """
+
+    #: Ruxsat talab qiladigan endpointlar
+    GUARDED = ['api:courses', 'api:dashboard', 'api:quizzes',
+               'api:challenges', 'api:certificates', 'api:projects']
 
     def setUp(self):
         Category.objects.create(name='Python', slug='python')
 
-    def test_ruxsatsiz_oquvchi_kutish_sahifasiga_yuboriladi(self):
+    def test_ruxsatsiz_oquvchi_403_oladi(self):
         self.client.force_login(make_student('kutuvchi'))
 
         for name in self.GUARDED:
-            with self.subTest(page=name):
-                response = self.client.get(reverse(name))
-                self.assertRedirects(response, reverse('pending_approval'))
+            with self.subTest(endpoint=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 403)
 
     def test_ruxsatli_oquvchi_otadi(self):
         self.client.force_login(make_student('ruxsatli', approved=True))
 
         for name in self.GUARDED:
-            with self.subTest(page=name):
+            with self.subTest(endpoint=name):
                 self.assertEqual(self.client.get(reverse(name)).status_code, 200)
 
     def test_xodim_ruxsatsiz_ham_otadi(self):
@@ -70,74 +78,87 @@ class ApprovalGateTests(TestCase):
         Profile.objects.filter(user=staff).update(is_approved=False)
         self.client.force_login(staff)
 
-        self.assertEqual(self.client.get(reverse('lessons')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 200)
 
-    def test_anonim_LOGIN_sahifasiga_yuboriladi_kutish_sahifasiga_EMAS(self):
+    def test_ruxsatsiz_ham_OZ_HOLATINI_kora_oladi(self):
         """
-        Kirmagan odam va kirgan-u ruxsatsiz odam — ikki xil holat.
-        Ikkalasi bir joyga yuborilsa, anonim odam "ruxsat kutilmoqda"
-        degan xabarni ko'rib butunlay chalkashardi.
+        `/auth/me/` ruxsat talab qilmaydi — frontend aynan shu javob
+        bilan kutish ekranini ko'rsatadi. Yopilsa, ruxsatsiz odam
+        nima kutayotganini umuman bilmasdi.
         """
-        response = self.client.get(reverse('lessons'))
-        self.assertIn('/login/', response['Location'])
+        self.client.force_login(make_student('kutuvchi2'))
+        response = self.client.get(reverse('api:me'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['user']['is_approved'])
 
     def test_ruxsat_berilgach_darhol_ochiladi(self):
         student = make_student('yangi')
         self.client.force_login(student)
-        self.assertRedirects(self.client.get(reverse('lessons')), reverse('pending_approval'))
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 403)
 
         approve(student.profile)
 
-        self.assertEqual(self.client.get(reverse('lessons')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 200)
 
     def test_ruxsat_olinsa_darhol_yopiladi(self):
         student = make_student('eski', approved=True)
         self.client.force_login(student)
-        self.assertEqual(self.client.get(reverse('lessons')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 200)
 
-        revoke(student.profile, reason='To\'lov kelmadi')
+        revoke(student.profile, reason="To'lov kelmadi")
 
-        self.assertRedirects(self.client.get(reverse('lessons')), reverse('pending_approval'))
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 403)
 
 
-class PendingPageTests(TestCase):
-    def test_ruxsatli_odam_kutish_sahifasidan_qaytariladi(self):
+class RejectionReasonTests(TestCase):
+    """Rad etish sababi o'quvchiga yetib borishi."""
+
+    def test_sabab_me_javobida_boladi(self):
         """
-        Aks holda ruxsat berilgandan keyin ham eski havola bo'yicha
-        kutish sahifasini ko'rib, hech narsa o'zgarmagandek tuyulardi.
+        Frontend kutish ekranida aynan shu sababni ko'rsatadi.
+        Berilmasa, o'quvchi nega rad etilganini bilmay qolardi.
         """
-        self.client.force_login(make_student('ruxsatli2', approved=True))
-        response = self.client.get(reverse('pending_approval'))
-        self.assertRedirects(response, reverse('dashboard'))
-
-    def test_rad_etilgan_sabab_korsatiladi(self):
         student = make_student('radetilgan')
         revoke(student.profile, reason='Hujjatlar yetarli emas')
         self.client.force_login(student)
 
-        response = self.client.get(reverse('pending_approval'))
-        self.assertContains(response, 'Hujjatlar yetarli emas')
+        data = self.client.get(reverse('api:me')).json()
 
-    def test_kutish_sahifasi_ochiladi(self):
-        self.client.force_login(make_student('kutuvchi2'))
-        response = self.client.get(reverse('pending_approval'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Ruxsat kutilmoqda')
+        self.assertFalse(data['user']['is_approved'])
+        self.assertEqual(data['user']['rejection_reason'], 'Hujjatlar yetarli emas')
+
+    def test_qayta_ruxsat_berilganda_sabab_tozalanadi(self):
+        student = make_student('qaytaqabul')
+        revoke(student.profile, reason='Eski sabab')
+        approve(student.profile)
+        self.client.force_login(student)
+
+        data = self.client.get(reverse('api:me')).json()
+
+        self.assertTrue(data['user']['is_approved'])
+        self.assertEqual(data['user']['rejection_reason'], '')
 
 
 class RegistrationTests(TestCase):
-    """Yangi hisob YOPIQ tug'ilishi."""
+    """Yangi hisob YOPIQ tug'ilishi — ro'yxatdan o'tish endi API da."""
 
     DATA = {
         'username': 'yangiodam',
         'email': 'yangi@example.com',
         'password': 'juda-maxfiy-parol-9',
-        'password2': 'juda-maxfiy-parol-9',
         'full_name': 'Yangi Odam',
     }
 
+    def _register(self):
+        return self.client.post(
+            reverse('api:register'),
+            data=json.dumps(self.DATA),
+            content_type='application/json',
+        )
+
     def test_yangi_hisob_ruxsatsiz_yaratiladi(self):
-        self.client.post(reverse('register'), self.DATA)
+        self._register()
 
         profile = Profile.objects.get(user__username='yangiodam')
         self.assertFalse(
@@ -145,13 +166,16 @@ class RegistrationTests(TestCase):
             "Yangi hisob YOPIQ tug'ilishi kerak (fail closed)",
         )
 
-    def test_royxatdan_keyin_kutish_sahifasiga_yuboriladi(self):
-        response = self.client.post(reverse('register'), self.DATA)
-        self.assertRedirects(response, reverse('pending_approval'))
+    def test_javobda_ruxsat_yoqligi_korinadi(self):
+        """Frontend shu javobga qarab kutish ekraniga o'tadi."""
+        response = self._register()
+
+        self.assertEqual(response.status_code, 201)
+        self.assertFalse(response.json()['user']['is_approved'])
 
     def test_royxatdan_otgan_odam_darslarni_kormaydi(self):
-        self.client.post(reverse('register'), self.DATA)
-        self.assertRedirects(self.client.get(reverse('lessons')), reverse('pending_approval'))
+        self._register()
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 403)
 
 
 class ApprovalAndSubscriptionTests(TestCase):
@@ -197,14 +221,14 @@ class ApprovalAndSubscriptionTests(TestCase):
         """
         user = make_student('a3', subscribed=True)
         self.client.force_login(user)
-        self.assertRedirects(self.client.get(reverse('lessons')), reverse('pending_approval'))
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 403)
 
     def test_ruxsatli_obunali__ochiq(self):
         user = make_student('a4', approved=True, subscribed=True)
         self.assertTrue(self._can_see_paid_lesson(user))
 
         self.client.force_login(user)
-        self.assertEqual(self.client.get(reverse('lessons')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('api:courses')).status_code, 200)
 
 
 class PanelApprovalTests(TestCase):

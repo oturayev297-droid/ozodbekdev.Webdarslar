@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/kurslar', label: 'Kurslar' },
   { href: '/testlar', label: 'Testlar' },
   { href: '/muharrir', label: 'Muharrir' },
+  { href: '/loyihalar', label: 'Loyihalar' },
   { href: '/sertifikatlar', label: 'Sertifikatlar' },
 ];
 
@@ -64,6 +65,12 @@ export function Nav() {
                 </Link>
               )}
 
+              {/* Ota-ona havolasi HAR DOIM ko'rinadi: ota-onaga dars
+                  ruxsati kerak emas va u `is_approved` bo'lmasligi
+                  mumkin. Farzandi yo'q bo'lsa sahifa buni aytadi. */}
+              <Link href="/farzandlarim" className="text-slate-300 hover:text-white">
+                Farzandlarim
+              </Link>
               <Link href="/profil" className="text-slate-500 hover:text-slate-300">
                 {user.username}
               </Link>
@@ -105,6 +112,13 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
+          <Link
+            href="/farzandlarim"
+            onClick={() => setMenuOpen(false)}
+            className="block py-2 text-slate-300"
+          >
+            Farzandlarim
+          </Link>
           <Link
             href="/profil"
             onClick={() => setMenuOpen(false)}

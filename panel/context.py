@@ -16,13 +16,15 @@ IKKI QAT'IY SHART:
    ikkita qo'shimcha so'rov ketardi. Manzil bo'yicha ham cheklaymiz.
 """
 
+from django.conf import settings
+
 from billing.models import PaymentRequest, RequestStatus
 from core.models import Quiz
 
 #: Hisoblagichlar faqat shu prefiksdagi sahifalarda hisoblanadi
 PANEL_PREFIX = '/panel/'
 
-EMPTY = {'panel_awaiting': 0, 'panel_drafts': 0}
+EMPTY = {'panel_awaiting': 0, 'panel_drafts': 0, 'frontend_url': ''}
 
 
 def panel_badges(request):
@@ -39,4 +41,6 @@ def panel_badges(request):
             status=RequestStatus.RECEIPT_UPLOADED
         ).count(),
         'panel_drafts': Quiz.objects.filter(is_published=False).count(),
+        # O'quvchi sayti alohida domenda — manzili sozlamadan
+        'frontend_url': getattr(settings, 'FRONTEND_URL', ''),
     }

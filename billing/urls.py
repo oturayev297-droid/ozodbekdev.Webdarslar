@@ -1,3 +1,16 @@
+"""
+`billing` manzillari — FAQAT TASHQI XIZMATLAR UCHUN.
+
+O'quvchi ko'radigan sahifalar (tarif, to'lov so'rovi, tarix, Telegram
+ulash) OLIB TASHLANDI: ular React frontendda va `/api/v1/subscription/`
+orqali ishlaydi.
+
+BU YERDAGI MANZILLARNI O'ZGARTIRIB BO'LMAYDI. Ular Payme, Click va
+Telegram kabinetlariga AYNAN SHU ko'rinishda yozib qo'yilgan — manzil
+o'zgarsa, to'lovlar jimgina kelmay qo'yadi va buni faqat pul
+yo'qolganda sezasiz.
+"""
+
 from django.urls import path
 
 from . import gateway_views, views
@@ -5,23 +18,18 @@ from . import gateway_views, views
 app_name = 'billing'
 
 urlpatterns = [
-    path('', views.plans, name='plans'),
-    path('request/', views.create_request, name='create_request'),
-    path('request/receipt/', views.mark_receipt_sent, name='mark_receipt_sent'),
-    path('request/cancel/', views.cancel_request, name='cancel_request'),
-    path('history/', views.my_history, name='history'),
-
-    # Telegram
-    path('telegram/link/', views.telegram_link, name='telegram_link'),
-    path('telegram/unlink/', views.telegram_unlink, name='telegram_unlink'),
-    # Maxfiy manzil — `.env` dagi TELEGRAM_WEBHOOK_SECRET bilan mos kelishi kerak
-    path('telegram/hook/<str:secret>/', views.telegram_webhook, name='telegram_webhook'),
-
-    # ── To'lov tizimlari ──
-    # Bu manzillar TASHQI serverlar uchun. Ularni to'lov tizimi
-    # kabinetiga aynan shu ko'rinishda yozib qo'yish kerak.
+    # To'lov sahifasiga yo'naltirish. Frontend bu manzilga havola
+    # beradi, Django esa imzolangan to'lov havolasini quradi.
     path('pay/<int:request_id>/<str:provider>/', views.start_gateway_payment, name='start_payment'),
+
+    # ── Payme / Click chaqiradigan manzillar ──
     path('payme/', gateway_views.payme_endpoint, name='payme_endpoint'),
     path('click/prepare/', gateway_views.click_prepare, name='click_prepare'),
     path('click/complete/', gateway_views.click_complete, name='click_complete'),
+
+    # ── Telegram bot ──
+    # Maxfiy qism `.env` dagi TELEGRAM_WEBHOOK_SECRET bilan mos kelishi
+    # kerak. Busiz har kim bot nomidan soxta /start yuborib begona
+    # hisobni o'ziga bog'lab olardi.
+    path('telegram/hook/<str:secret>/', views.telegram_webhook, name='telegram_webhook'),
 ]

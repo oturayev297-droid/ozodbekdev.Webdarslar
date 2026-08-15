@@ -643,7 +643,11 @@ class ContextProcessorTests(TestCase):
 
         req = FakeRequest()
         req.user = self.student
-        self.assertEqual(panel_badges(req), {'panel_awaiting': 0, 'panel_drafts': 0})
+        # `frontend_url` ham bo'sh qaytadi — panel tashqarisida
+        # hech qanday so'rov ketmasligi muhim, kalitlar soni emas
+        badges = panel_badges(req)
+        self.assertEqual(badges['panel_awaiting'], 0)
+        self.assertEqual(badges['panel_drafts'], 0)
 
     def test_panel_tashqarisida_hisoblagich_ishlamaydi(self):
         """Xodim sayt bo'ylab yurganda har sahifada qo'shimcha so'rov ketmasin."""
@@ -654,7 +658,11 @@ class ContextProcessorTests(TestCase):
 
         req = FakeRequest()
         req.user = self.staff
-        self.assertEqual(panel_badges(req), {'panel_awaiting': 0, 'panel_drafts': 0})
+        # `frontend_url` ham bo'sh qaytadi — panel tashqarisida
+        # hech qanday so'rov ketmasligi muhim, kalitlar soni emas
+        badges = panel_badges(req)
+        self.assertEqual(badges['panel_awaiting'], 0)
+        self.assertEqual(badges['panel_drafts'], 0)
 
     def test_panel_ichida_hisoblanadi(self):
         from .context import panel_badges

@@ -45,9 +45,9 @@
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0">
-                    <a href="/admin/core/quiz/{{ quiz.pk }}/change/" target="_blank"
+                    <a href="{% url 'panel:quiz_questions' quiz.pk %}"
                        class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-sm text-slate-300 transition">
-                        Savollarni ko'rish
+                        Savollar ({{ quiz.question_count }})
                     </a>
 
                     <form method="post" action="{% url 'panel:quiz_publish' quiz.pk %}">

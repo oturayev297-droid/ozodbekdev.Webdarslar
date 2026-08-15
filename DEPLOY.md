@@ -79,7 +79,7 @@ server {
     ssl_certificate     /etc/letsencrypt/live/sizning-domen.uz/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/sizning-domen.uz/privkey.pem;
 
-    client_max_body_size 500M;   # admin panelda video yuklash uchun
+    client_max_body_size 500M;   # panelda video yuklash uchun
 
     # Statik fayllar
     location /static/ {
@@ -163,15 +163,14 @@ Deploydan keyin bir marta:
 python manage.py seed_billing --price 100000 --free-lessons 3
 ```
 
-So'ng **admin panel → Admin sozlamalari** dan `subscription.cards` kalitiga
-karta rekvizitlarini kiriting. Qiymat — JSON massiv:
+So'ng **panel → Sozlamalar** dan karta rekvizitlarini kiriting. Har
+karta uchun bitta qator: raqam, egasi, banki va izoh. Ilgari bu JSON
+matn sifatida Django adminiga qo'lda yozilardi — bitta vergul xatosi
+butun ro'yxatni yo'q qilardi.
 
-```json
-[
-  {"number": "8600 1234 5678 9012", "holder": "OZODBEK T.", "bank": "Uzcard", "note": "Asosiy"},
-  {"number": "9860 1234 5678 9012", "holder": "OZODBEK T.", "bank": "Humo", "note": ""}
-]
-```
+Raqam saqlashda tekshiriladi (16-19 xona). Kartalar ro'yxati
+**butunlay almashtiriladi**: qatorni o'chirib saqlasangiz, o'sha karta
+o'quvchiga ko'rinmay qoladi.
 
 Bu rekvizitlar sahifada turmaydi — faqat so'rovi **"Karta berildi"**
 holatidagi o'quvchi ko'radi.
@@ -403,8 +402,18 @@ tokenlarni ko'rsatadi.
 ## 12. Boshqaruv paneli (`/panel/`)
 
 Kundalik ish shu panelda: hisobotlar, to'lovlarni tasdiqlash, dars
-joylash, xabar yuborish va kuzatish. Django'ning standart `/admin/`
-paneli zaxira yo'l sifatida qoladi.
+joylash, xabar yuborish, kuzatish, ota-onalarni bog'lash va sozlamalar.
+
+Django'ning standart `/admin/` paneli **o'chirilgan**. Ilgari faqat u
+orqali kiritiladigan ma'lumotlar panelga ko'chirildi:
+
+| Ilgari admin'da | Endi panelda |
+|---|---|
+| Karta rekvizitlari (`AdminSetting`) | Sozlamalar |
+| Obuna narxi (`SubscriptionPlan`) | Sozlamalar |
+| Bo'limlar (`Category`) | Darsliklar -> Bo'limlar |
+| Test savollari (`Question`, `Choice`) | Testlar -> Savollar |
+| Ota-ona bog'lanishi | Ota-onalar |
 
 ### Kirish huquqi
 
@@ -590,7 +599,7 @@ hojati yo'q — ular faqat siz uchun.
 
 ## 15. Ortiqcha video fayllar
 
-Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
+Panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
 yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
 fayllar diskni bekorga egallaydi.
 

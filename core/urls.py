@@ -1,46 +1,31 @@
+"""
+`core` manzillari.
+
+ESKI O'QUVCHI SAHIFALARI OLIB TASHLANDI — ularning o'rnini React
+frontend (`frontend/`) egalladi. Bu yerda faqat SHU IKKI SABABGA
+KO'RA qoladigan manzillar bor:
+
+1. FAYL UZATISH. Video va PDF sertifikat React'da qayta yozilmaydi:
+   ular fayl, HTML emas. Ikkalasi ham huquq tekshiruvidan o'tadi va
+   frontend ularga havola beradi.
+
+2. TASHQI XIZMATLAR. `billing/urls.py` dagi Payme, Click va Telegram
+   webhook manzillari — ularni o'sha xizmatlar kabinetiga yozib
+   qo'yilgan, o'zgartirsak to'lovlar ishlamay qoladi.
+
+Autentifikatsiya endi `/api/v1/auth/` da, panel esa `/panel/` da —
+ikkalasining o'z kirishi bor.
+"""
+
 from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    path('', views.landing, name='landing'),
-
-    # Darslar
-    path('lessons/', views.lessons, name='lessons'),
-    path('lessons/<int:lesson_id>/', views.lessons, name='lessons_detail'),
+    # Video FAQAT shu manzil orqali beriladi va bu yerda obuna
+    # tekshiriladi. Frontend faylni to'g'ridan-to'g'ri ololmaydi.
     path('lessons/<int:lesson_id>/video/', views.lesson_video, name='lesson_video'),
-    path('lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
 
-    path('dashboard/', views.dashboard, name='dashboard'),
-
-    # Kod muharriri
-    path('editor/', views.editor, name='editor'),
-    path('editor/<int:challenge_id>/', views.editor, name='editor_detail'),
-    path('editor/<int:challenge_id>/solution/', views.challenge_solution, name='challenge_solution'),
-
-    path('projects/', views.projects, name='projects'),
-
-    # Testlar
-    path('quizzes/', views.quizzes, name='quizzes'),
-    path('quiz/<int:quiz_id>/', views.quiz_detail, name='quiz_detail'),
-    path('quiz/<int:quiz_id>/submit/', views.submit_quiz, name='submit_quiz'),
-
-    # Auth
-    path('register/', views.register, name='register'),
-    path('kutish/', views.pending_approval, name='pending_approval'),
-    path('login/', views.user_login, name='login'),
-    path('logout/', views.user_logout, name='logout'),
-    path('profile/', views.profile, name='profile'),
-
-    # AI Mentor
-    path('mentor/ask/', views.mentor_ask, name='mentor_ask'),
-
-    # Sertifikatlar
-    path('certificates/', views.my_certificates, name='my_certificates'),
+    # PDF serverda `reportlab` bilan chiziladi — brauzerda emas.
     path('certificates/<str:code>/pdf/', views.certificate_pdf, name='certificate_pdf'),
-    path('verify/', views.verify_certificate, name='verify_certificate'),
-
-    # Parolni tiklash
-    path('forgot-password/', views.forgot_password, name='forgot_password'),
-    path('reset-password/', views.reset_password, name='reset_password'),
 ]

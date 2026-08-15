@@ -46,11 +46,21 @@ def build_url(provider: str, payment_request, request=None) -> str:
 
 
 def _return_url(request) -> str:
-    if request is None:
-        return ''
-    from django.urls import reverse
+    """
+    To'lovdan keyin o'quvchi QAYTADIGAN manzil.
 
-    return request.build_absolute_uri(reverse('billing:plans'))
+    FRONTENDGA ishora qiladi, backendga emas: to'lov tugagach odam
+    obuna sahifasini ko'rishi kerak, backendda esa unga ko'rsatadigan
+    sahifa yo'q.
+
+    `FRONTEND_URL` sozlanmagan bo'lsa bo'sh qaytariladi — Payme va
+    Click uchun bu maydon ixtiyoriy, ular o'z sahifasida qoldiradi.
+    Noto'g'ri manzil yuborgandan ko'ra hech narsa yubormagan yaxshi.
+    """
+    from django.conf import settings
+
+    base = getattr(settings, 'FRONTEND_URL', '')
+    return f"{base}/obuna" if base else ''
 
 
 def _payme_url(payment_request, request) -> str:

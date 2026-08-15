@@ -26,6 +26,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -48,17 +49,20 @@ from core import approval
 from core.models import (
     Category,
     Certificate,
+    Choice,
     Lesson,
     LessonImage,
     LoginAttempt,
     MentorMessage,
     Module,
+    ParentLink,
+    Question,
     Quiz,
 )
 
 from . import messaging, reports
 from .auth import staff_required
-from .forms import LessonForm, LessonImageForm, ModuleForm
+from .forms import CategoryForm, LessonForm, LessonImageForm, ModuleForm
 from .models import Audience, PanelMessage
 
 logger = logging.getLogger(__name__)
@@ -702,3 +706,320 @@ def monitor(request):
         context['only_failed'] = only_failed
 
     return render(request, 'panel/monitor.html', context)
+
+
+# ─────────────────────────── Sozlamalar ───────────────────────────
+
+
+@staff_required
+def settings_page(request):
+    """
+    Karta rekvizitlari va tarif narxi.
+
+    NEGA PANELGA KO'CHIRILDI: ilgari bular FAQAT Django adminda
+    tahrirlanardi. Karta rekvizitlarisiz o'quvchi umuman to'lay
+    olmaydi — ya'ni bu kundalik ish uchun majburiy bo'lim, zaxira
+    panelda qolib ketmasligi kerak.
+    """
+    plan = services.get_plan()
+
+    return render(request, 'panel/settings.html', {
+        'cards': services.get_cards(),
+        'plan': plan,
+        'price_soum': plan.price_per_month_tiyin // 100,
+    })
+
+
+@require_POST
+@staff_required
+def settings_cards(request):
+    """
+    Kartalar ro'yxatini butunlay almashtiradi.
+
+    `billing.services.update_cards` orqali — u tekshiruvni va
+    saqlashni o'zi qiladi.
+    """
+    cards = []
+    numbers = request.POST.getlist('number')
+    holders = request.POST.getlist('holder')
+    banks = request.POST.getlist('bank')
+    notes = request.POST.getlist('note')
+
+    for index, number in enumerate(numbers):
+        if not (number or '').strip():
+            # Bo'sh qator — o'chirilgan deb qaraladi
+            continue
+        cards.append({
+            'number': number,
+            'holder': holders[index] if index < len(holders) else '',
+            'bank': banks[index] if index < len(banks) else '',
+            'note': notes[index] if index < len(notes) else '',
+        })
+
+    try:
+        saved = services.update_cards(cards, admin=request.user)
+    except services.BillingError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, f"{len(saved)} ta karta saqlandi.")
+
+    return redirect('panel:settings')
+
+
+@require_POST
+@staff_required
+def settings_price(request):
+    """
+    Tarif narxini o'zgartiradi.
+
+    NARX TIYINDA saqlanadi, formada esa SO'MDA kiritiladi —
+    aylantirish faqat shu yerda.
+
+    O'TGAN TUSHUM O'ZGARMAYDI: summa har davrga muzlatib yozilgan.
+    """
+    try:
+        soum = int(request.POST.get('price') or 0)
+    except (TypeError, ValueError):
+        soum = 0
+
+    if soum < 1000 or soum > 10_000_000:
+        messages.error(request, "Narx 1 000 dan 10 000 000 so'mgacha bo'lishi kerak.")
+        return redirect('panel:settings')
+
+    plan = services.get_plan()
+    old = plan.price_per_month_tiyin
+    plan.price_per_month_tiyin = soum * 100
+    plan.save(update_fields=['price_per_month_tiyin'])
+
+    logger.info(
+        "[PANEL] Narx o'zgartirildi: %s -> %s (admin=%s)", old, plan.price_per_month_tiyin,
+        request.user.username,
+    )
+    messages.success(
+        request,
+        f"Narx {format_money(plan.price_per_month_tiyin)} qilib o'zgartirildi. "
+        "O'tgan to'lovlar hisoboti o'zgarmaydi.",
+    )
+    return redirect('panel:settings')
+
+
+# ─────────────────────────── Ota-onalar ───────────────────────────
+
+
+@staff_required
+def parents(request):
+    """
+    Ota-ona bog'lanishlari.
+
+    BOG'LANISHNI FAQAT ADMIN YARATADI. Ota-ona o'zini o'zi biror
+    o'quvchiga bog'lay olsa, har kim istagan bolaning natijalarini
+    ko'rib olardi — bu shaxsiy ma'lumot.
+    """
+    links = (
+        ParentLink.objects.select_related('parent__profile', 'student__profile')
+        .order_by('student__username')
+    )
+
+    return render(request, 'panel/parents.html', {
+        'page_obj': _page(request, links),
+        # Bog'lash formasi uchun: ota-ona ham, o'quvchi ham oddiy
+        # foydalanuvchi. Farqi faqat `ParentLink` da.
+        'users': User.objects.filter(is_staff=False).select_related('profile')
+        .order_by('username'),
+    })
+
+
+@require_POST
+@staff_required
+def parent_link_create(request):
+    """Ota-onani o'quvchiga bog'laydi."""
+    parent_id = request.POST.get('parent')
+    student_id = request.POST.get('student')
+
+    if not parent_id or not student_id:
+        messages.error(request, "Ota-ona va o'quvchi tanlanishi shart.")
+        return redirect('panel:parents')
+
+    if parent_id == student_id:
+        messages.error(request, "O'quvchini o'ziga bog'lab bo'lmaydi.")
+        return redirect('panel:parents')
+
+    parent = User.objects.filter(pk=parent_id, is_staff=False).first()
+    student = User.objects.filter(pk=student_id, is_staff=False).first()
+
+    if parent is None or student is None:
+        messages.error(request, "Foydalanuvchi topilmadi.")
+        return redirect('panel:parents')
+
+    link, created = ParentLink.objects.get_or_create(
+        parent=parent,
+        student=student,
+        defaults={
+            'relation': (request.POST.get('relation') or '').strip(),
+            'created_by': request.user,
+        },
+    )
+
+    if created:
+        messages.success(
+            request, f"{parent.username} endi {student.username} ning hisobotini ko'radi."
+        )
+    else:
+        messages.info(request, "Bu bog'lanish allaqachon mavjud.")
+
+    return redirect('panel:parents')
+
+
+@require_POST
+@staff_required
+def parent_link_delete(request, link_id):
+    """Bog'lanishni uzadi — ota-ona hisobotni ko'rmay qoladi."""
+    link = get_object_or_404(ParentLink.objects.select_related('parent', 'student'), pk=link_id)
+    names = f"{link.parent.username} -> {link.student.username}"
+    link.delete()
+    messages.success(request, f"Bog'lanish uzildi: {names}")
+    return redirect('panel:parents')
+
+
+# ─────────────────────────── Bo'limlar ───────────────────────────
+
+
+@staff_required
+def category_edit(request, category_id=None):
+    """
+    Bo'lim (kurs) qo'shish yoki tahrirlash.
+
+    NEGA PANELGA KO'CHIRILDI: ilgari bu FAQAT Django adminda edi.
+    Yangi kurs ochish — kundalik ish, zaxira panelda qolib
+    ketmasligi kerak.
+    """
+    category = get_object_or_404(Category, pk=category_id) if category_id else None
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            obj = form.save()
+            messages.success(request, f"Bo'lim saqlandi: {obj.name}")
+            return redirect('panel:content')
+        messages.error(request, "Formada xato bor.")
+    else:
+        form = CategoryForm(instance=category)
+
+    return render(request, 'panel/category_form.html', {
+        'form': form,
+        'category': category,
+        # Darsi bor bo'limni o'chirib bo'lmaydi — quyida shu son
+        # bo'yicha ogohlantirish ko'rsatiladi.
+        'lesson_count': (
+            Lesson.objects.filter(module__category=category).count() if category else 0
+        ),
+    })
+
+
+@require_POST
+@staff_required
+def category_delete(request, category_id):
+    """
+    Bo'limni o'chiradi — FAQAT darslari bo'lmasa.
+
+    Darsi bor bo'limni o'chirish CASCADE bilan modul va darslarni ham
+    olib ketardi. Bu qaytarib bo'lmaydigan yo'qotish.
+    """
+    category = get_object_or_404(Category, pk=category_id)
+    lesson_count = Lesson.objects.filter(module__category=category).count()
+
+    if lesson_count:
+        messages.error(
+            request,
+            f"Bu bo'limda {lesson_count} ta dars bor — avval ularni "
+            "boshqa bo'limga ko'chiring yoki o'chiring.",
+        )
+    else:
+        name = category.name
+        category.delete()
+        messages.success(request, f"Bo'lim o'chirildi: {name}")
+
+    return redirect('panel:content')
+
+
+# ─────────────────────────── Test savollari ───────────────────────────
+
+
+@staff_required
+def quiz_questions(request, quiz_id):
+    """
+    Test savollarini ko'rish va tahrirlash.
+
+    NEGA KERAK: `generate_quizzes` yozgan savollarni nashrdan OLDIN
+    o'qib chiqish, xatosini esa tuzatish kerak. Ilgari buning yagona
+    yo'li Django admin edi.
+    """
+    quiz = get_object_or_404(
+        Quiz.objects.select_related('lesson__module__category'), pk=quiz_id
+    )
+    return render(request, 'panel/quiz_questions.html', {
+        'quiz': quiz,
+        'questions': quiz.questions.prefetch_related('choices').order_by('id'),
+    })
+
+
+@require_POST
+@staff_required
+def question_save(request, quiz_id):
+    """
+    Savolni saqlaydi: matn va variantlar birga.
+
+    BITTA TO'G'RI JAVOB MAJBURIY. Ikkita to'g'ri javobli savol testni
+    ishonchsiz qiladi va sertifikatni ma'nosiz, shuning uchun
+    saqlashdan oldin tekshiriladi.
+    """
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+
+    text = (request.POST.get('text') or '').strip()
+    choice_texts = [t.strip() for t in request.POST.getlist('choice_text')]
+    try:
+        correct_index = int(request.POST.get('correct', -1))
+    except (TypeError, ValueError):
+        correct_index = -1
+
+    filled = [(i, t) for i, t in enumerate(choice_texts) if t]
+
+    if not text:
+        messages.error(request, "Savol matni bo'sh.")
+    elif len(filled) < 2:
+        messages.error(request, "Kamida ikkita variant kerak.")
+    elif correct_index not in [i for i, _ in filled]:
+        messages.error(request, "To'g'ri javob belgilanmagan.")
+    else:
+        question_id = request.POST.get('question_id')
+        with transaction.atomic():
+            if question_id:
+                question = get_object_or_404(Question, pk=question_id, quiz=quiz)
+                question.text = text
+                question.save(update_fields=['text'])
+                # Variantlar QAYTA yoziladi: qaysi biri o'zgarganini
+                # kuzatishdan ko'ra oddiy va xatosiz.
+                question.choices.all().delete()
+            else:
+                question = Question.objects.create(quiz=quiz, text=text)
+
+            for index, choice_text in filled:
+                Choice.objects.create(
+                    question=question,
+                    text=choice_text,
+                    is_correct=(index == correct_index),
+                )
+
+        messages.success(request, "Savol saqlandi.")
+
+    return redirect('panel:quiz_questions', quiz_id=quiz.pk)
+
+
+@require_POST
+@staff_required
+def question_delete(request, question_id):
+    question = get_object_or_404(Question.objects.select_related('quiz'), pk=question_id)
+    quiz_id = question.quiz_id
+    question.delete()
+    messages.success(request, "Savol o'chirildi.")
+    return redirect('panel:quiz_questions', quiz_id=quiz_id)

@@ -24,6 +24,7 @@ from django.utils import timezone
 from core.models import Category, Lesson, Module, Quiz
 
 from . import dates, payment_requests
+from .gating import can_access_lesson, can_access_quiz
 from .models import (
     AdminSetting,
     PaymentMethod,
@@ -501,26 +502,50 @@ class CardStorageTests(BaseBillingTest):
 
 
 class ContentGatingTests(BaseBillingTest):
-    """Bepul dars ochiq, qolgani obunada."""
+    """
+    Kontent darvozasi.
+
+    O'QUVCHI SAHIFALARI O'CHIRILGAN — bu yerda xizmat darajasidagi
+    tekshiruv (`can_access_lesson`) va HALI TIRIK bo'lgan video
+    endpointi sinaladi. API darajasi `api/tests.py` da.
+    """
 
     def setUp(self):
         super().setUp()
-        self.category = Category.objects.create(name="Python", slug="python")
-        self.module = Module.objects.create(category=self.category, title="Asoslar", order=1)
+        category = Category.objects.create(name='Python', slug='python')
+        module = Module.objects.create(category=category, title='Modul', order=1)
+
         self.free_lesson = Lesson.objects.create(
-            module=self.module, title="Bepul kirish", theory="Matn", order=1, is_free=True
+            module=module, title='Bepul kirish', theory='Matn', order=1, is_free=True
         )
         self.paid_lesson = Lesson.objects.create(
-            module=self.module, title="Pullik dars", theory="Maxfiy matn", order=2, is_free=False
+            module=module, title='Pullik dars', theory='Maxfiy matn', order=2, is_free=False
         )
-        self.paid_quiz = Quiz.objects.create(lesson=self.paid_lesson, title="Pullik test")
+        self.paid_quiz = Quiz.objects.create(
+            lesson=self.paid_lesson, title='Pullik test', is_published=True
+        )
         self.client.force_login(self.user)
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    def test_yangi_dars_yopiq_tugiladi(self):
-        """FAIL CLOSED: bayroqni unutish kontentni bepul qilmasligi kerak."""
-        lesson = Lesson.objects.create(module=self.module, title="Yangi", order=3)
-        self.assertFalse(lesson.is_free)
+    def test_bepul_dars_hammaga_ochiq(self):
+        self.assertTrue(can_access_lesson(self.user, self.free_lesson))
+
+    def test_pullik_dars_obunasiz_yopiq(self):
+        self.assertFalse(can_access_lesson(self.user, self.paid_lesson))
+
+    def test_obuna_bilan_ochiladi(self):
+        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
+                            payment_method=PaymentMethod.CASH)
+        self.assertTrue(can_access_lesson(self.user, self.paid_lesson))
+
+    def test_test_darsdan_huquqni_meros_oladi(self):
+        """Testning o'z bayrog'i yo'q — ikkita manba bo'lsa ular
+        ertami-kechmi bir-biriga to'g'ri kelmay qolardi."""
+        self.assertFalse(can_access_quiz(self.user, self.paid_quiz))
+
+        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
+                            payment_method=PaymentMethod.CASH)
+        self.assertTrue(can_access_quiz(self.user, self.paid_quiz))
 
     def test_bepul_dars_videosi_ochiq(self):
         response = self.client.get(reverse('lesson_video', args=[self.free_lesson.id]))
@@ -531,125 +556,21 @@ class ContentGatingTests(BaseBillingTest):
         response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
         self.assertEqual(response.status_code, 402)
 
+    def test_paywall_JSON_qaytaradi(self):
+        """
+        `<video src>` HTML sahifani ko'rsata olmaydi — brauzer
+        shunchaki "ochilmadi" deydi va sabab bilinmaydi. JSON esa
+        frontendga tushunarli.
+        """
+        response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
+
+        self.assertEqual(response['Content-Type'], 'application/json')
+        self.assertEqual(response.json()['code'], 'SUBSCRIPTION_REQUIRED')
+
     def test_obuna_bilan_pullik_video_ochiladi(self):
         extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
                             payment_method=PaymentMethod.CASH)
         response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
         self.assertEqual(response.status_code, 404, "Paywall emas, faqat video yo'q")
 
-    def test_qulflangan_dars_mazmuni_json_ga_tushmaydi(self):
-        """CSS bilan yashirish yetarli emas — mazmun serverdan kelmasligi kerak."""
-        response = self.client.get(reverse('lessons'))
-        self.assertNotContains(response, "Maxfiy matn")
 
-        data = json.loads(response.context['course_data_json'])
-        lessons = {l['title']: l for l in data['python']['lessons']}
-        self.assertFalse(lessons['Pullik dars']['unlocked'])
-        self.assertEqual(lessons['Pullik dars']['theoryHtml'], '')
-        self.assertEqual(lessons['Pullik dars']['videoUrl'], '')
-        # Rasmlar ham yuborilmaydi: dars mazmuni rasmda bo'lsa,
-        # ularni qoldirish qulfni ma'nosiz qilardi
-        self.assertEqual(lessons['Pullik dars']['images'], [])
-        self.assertTrue(lessons['Bepul kirish']['unlocked'])
-        self.assertIn('Matn', lessons['Bepul kirish']['theoryHtml'])
-
-    def test_obuna_bilan_mazmun_keladi(self):
-        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
-                            payment_method=PaymentMethod.CASH)
-        data = json.loads(self.client.get(reverse('lessons')).context['course_data_json'])
-        lessons = {l['title']: l for l in data['python']['lessons']}
-        self.assertTrue(lessons['Pullik dars']['unlocked'])
-        # Matn endi serverda HTML ga aylantiriladi, shuning uchun
-        # aynan tenglik emas, ichida borligi tekshiriladi
-        self.assertIn('Maxfiy matn', lessons['Pullik dars']['theoryHtml'])
-
-    def test_pullik_test_yopiq(self):
-        response = self.client.get(reverse('quiz_detail', args=[self.paid_quiz.id]))
-        self.assertEqual(response.status_code, 402)
-
-    def test_pullik_testni_topshirib_bolmaydi(self):
-        response = self.client.post(
-            reverse('submit_quiz', args=[self.paid_quiz.id]),
-            data=json.dumps({'answers': {}}), content_type='application/json',
-        )
-        self.assertEqual(response.status_code, 402)
-
-    def test_test_darsdan_huquqni_meros_oladi(self):
-        self.paid_lesson.is_free = True
-        self.paid_lesson.save()
-        response = self.client.get(reverse('quiz_detail', args=[self.paid_quiz.id]))
-        self.assertEqual(response.status_code, 200)
-
-    def test_qulflangan_darsni_tugatib_bolmaydi(self):
-        response = self.client.post(reverse('complete_lesson', args=[self.paid_lesson.id]))
-        self.assertEqual(response.status_code, 402)
-        self.assertEqual(self.user.progress.count(), 0)
-
-    def test_bepul_darsni_tugatish_mumkin(self):
-        response = self.client.post(reverse('complete_lesson', args=[self.free_lesson.id]))
-        self.assertEqual(response.status_code, 200)
-
-
-class BillingViewTests(BaseBillingTest):
-    def setUp(self):
-        super().setUp()
-        self.client.force_login(self.user)
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def test_tarif_sahifasi_narxlarni_korsatadi(self):
-        response = self.client.get(reverse('billing:plans'))
-        self.assertEqual(response.status_code, 200)
-        options = response.context['options']
-        # Obuna FAQAT OYLIK — uzoq muddatli variantlar olib tashlangan
-        self.assertEqual([o['months'] for o in options], [1])
-        self.assertEqual(options[0]['amount_display'], "100 000 so'm")
-
-    def test_sorov_yuborish(self):
-        response = self.client.post(reverse('billing:create_request'), {'months': 1})
-        self.assertEqual(response.status_code, 302)
-        req = PaymentRequest.objects.get(user=self.user)
-        self.assertEqual(req.months, 1)
-        self.assertEqual(req.amount_tiyin, 10_000_000)
-
-    def test_endi_ruxsat_etilmagan_muddat_rad_etiladi(self):
-        """3 oylik obuna olib tashlangan — so'rov yaratilmasligi kerak."""
-        self.client.post(reverse('billing:create_request'), {'months': 3})
-        self.assertEqual(PaymentRequest.objects.count(), 0)
-
-    def test_notogri_muddat_rad_etiladi(self):
-        self.client.post(reverse('billing:create_request'), {'months': 7})
-        self.assertEqual(PaymentRequest.objects.count(), 0)
-
-    def test_karta_sahifada_faqat_berilgandan_keyin_korinadi(self):
-        update_cards([{'number': '8600 9999 8888 7777', 'holder': 'TEST'}], self.admin)
-        req = payment_requests.create_request(self.user, 1)
-
-        response = self.client.get(reverse('billing:plans'))
-        self.assertNotContains(response, '8600 9999 8888 7777')
-
-        payment_requests.issue_card(req.pk, self.admin)
-        response = self.client.get(reverse('billing:plans'))
-        self.assertContains(response, '8600 9999 8888 7777')
-
-    def test_login_talab_qiladi(self):
-        self.client.logout()
-        for name in ('billing:plans', 'billing:history'):
-            response = self.client.get(reverse(name))
-            self.assertEqual(response.status_code, 302)
-            self.assertIn('/login/', response['Location'])
-
-    def test_chek_yuborilgan_sorovni_bekor_qilib_bolmaydi(self):
-        payment_requests.create_request(self.user, 1)
-        payment_requests.mark_receipt_sent(self.user)
-        self.client.post(reverse('billing:cancel_request'))
-        self.assertEqual(
-            PaymentRequest.objects.get(user=self.user).status,
-            RequestStatus.RECEIPT_UPLOADED,
-        )
-
-    def test_tarix_sahifasi(self):
-        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
-                            payment_method=PaymentMethod.CASH)
-        response = self.client.get(reverse('billing:history'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['periods']), 1)

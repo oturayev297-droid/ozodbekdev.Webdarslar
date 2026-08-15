@@ -50,7 +50,7 @@ core/                  kontent va autentifikatsiya
   lockout.py           login urinishlari cheklovi (brute-force himoyasi)
   certificates.py      PDF sertifikat generatsiyasi va tekshirish
   ai_mentor.py         Claude API orqali o'qituvchi chat
-  admin.py             kontent admin paneli
+  study_time.py        o'quv vaqtini serverda o'lchash
 billing/               obuna va to'lov
   models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
   dates.py             Toshkent vaqti bo'yicha sana hisobi
@@ -61,7 +61,6 @@ billing/               obuna va to'lov
   gateways/payme.py    Payme Merchant API (JSON-RPC)
   gateways/click.py    Click SHOP API (prepare / complete)
   gateway_links.py     to'lov sahifasiga havola qurish
-  admin.py             to'lovlarni ko'rib chiqish paneli
 api/                   REST API (/api/v1/)
   permissions.py       darvozalarni CHAQIRADI, qayta yozmaydi
   serializers.py       qulflangan mazmun serializerga tushmaydi
@@ -146,8 +145,10 @@ Sozlash:
 python manage.py seed_billing --price 100000 --free-lessons 3
 ```
 
-So'ng admin panel -> **Admin sozlamalari** -> `subscription.cards` ga karta
-rekvizitlarini kiriting (JSON massiv), aks holda o'quvchi to'lay olmaydi.
+So'ng `/panel/sozlamalar/` da karta rekvizitlarini kiriting, aks holda
+o'quvchi to'lay olmaydi. Raqam shu yerda tekshiriladi (16-19 xona):
+tekshiruvsiz xato terilgan raqam saqlanardi va pul yo'q kartaga
+ketardi.
 
 Kunlik vazifalar (cron): so'rovlarni kuydirish va 7/3/0 kunlik eslatmalar.
 
@@ -415,8 +416,10 @@ ko'chadi va buyruqni qayta ishga tushirish yetarli.
 
 ## Boshqaruv paneli
 
-`/panel/` — kundalik ish uchun. Django'ning standart `/admin/` paneli
-zaxira yo'l sifatida qoladi (model darajasidagi tuzatishlar uchun).
+`/panel/` — **butun tizim shu yerdan boshqariladi**. Django'ning
+standart `/admin/` paneli o'chirilgan: ikki xil boshqaruv o'rniga bitta
+qoldi. Ilgari admin orqali kiritilgan hamma narsa (karta rekvizitlari,
+tarif narxi, bo'limlar, test savollari) endi panelda o'z bo'limiga ega.
 
 | Bo'lim | Nima qiladi |
 |---|---|
@@ -430,6 +433,8 @@ zaxira yo'l sifatida qoladi (model darajasidagi tuzatishlar uchun).
 | Testlar | Qoralamalarni ko'rib chiqib nashr qilish |
 | Xabar yuborish | Telegramga guruh yoki shaxsiy xabar |
 | Kuzatish | Kirish urinishlari, AI Mentor, sertifikatlar |
+| Ota-onalar | O'quvchini ota-onasiga bog'lash — **faqat admin qo'lida** |
+| Sozlamalar | Karta rekvizitlari va obuna narxi |
 
 Xodim yaratish:
 
@@ -455,11 +460,32 @@ python manage.py test core.tests_generate_quizzes  # savol generatsiyasi
 python manage.py test panel                   # boshqaruv paneli
 python manage.py test core.tests_richtext     # dars matni va xavfsizligi
 python manage.py test core.tests_ai_course    # tayyor AI kursi
-python manage.py test core.tests_lesson_content  # yozma dars va qulf
 python manage.py test core.tests_approval     # admin ruxsati darvozasi
 python manage.py test api                     # REST API va paywall
 python manage.py test core.tests_video_storage  # video ombori
+python manage.py test core.tests_study_time   # o'quv vaqti va ota-ona paneli
+python manage.py test panel.tests_sections    # kartalar, narx, savollar
 ```
+
+## Ota-ona paneli
+
+Ota-ona farzandi qanday o'qiyotganini ko'radi: kunlik soatlar, test
+natijalari, o'zlashtirish foizi va sertifikatlar.
+
+Bog'lanishni **faqat admin yaratadi** (`/panel/ota-onalar/`). Ota-ona
+o'zini istagan o'quvchiga bog'lay olsa, begona odam bolaning shaxsiy
+natijalarini ko'rib olardi — shuning uchun bu yo'l ochiq emas.
+
+O'quv vaqti brauzerdan har daqiqada keladigan signal bilan o'lchanadi
+(`core/study_time.py`):
+
+  * sana **serverda** belgilanadi — telefon soatini o'zgartirish ta'sir qilmaydi
+  * ikki signal orasi 45 soniyadan kam bo'lsa hisoblanmaydi
+  * kuniga eng ko'pi 14 soat yoziladi
+  * varaq ko'rinmayotgan yoki 3 daqiqa harakatsiz bo'lsa signal ketmaydi
+
+Ota-onaga `is_approved` kerak emas — u o'quvchi emas, shuning uchun
+darsga ruxsat talab qilinsa hisobotni umuman ko'ra olmasdi.
 
 ## Hali qilinmagan
 

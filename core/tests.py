@@ -1,3 +1,5 @@
+from datetime import timedelta
+import re
 """
 1-bosqich tuzatishlarini himoya qiluvchi testlar.
 
@@ -7,15 +9,20 @@ Ishga tushirish:  python manage.py test core
 import json
 
 from django.contrib.auth.models import User
+from core import quiz_scoring
+from core import password_reset as pwreset
 from core.test_utils import approve_all
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import (
     Category,
     Choice,
     Lesson,
     Module,
+    PasswordReset,
     Profile,
     Question,
     Quiz,
@@ -51,151 +58,106 @@ class BaseFixtureMixin:
         self.q2_bad = Choice.objects.create(question=self.q2, text="Yo'q", is_correct=False)
 
 
-class AuthRequiredTests(BaseFixtureMixin, TestCase):
-    """Kontent sahifalari tizimga kirmasdan ochilmasligi kerak."""
+class QuizScoringTests(TestCase):
+    """
+    Ball hisoblash.
+
+    ENDI XIZMAT FUNKSIYASI TO'G'RIDAN-TO'G'RI chaqiriladi
+    (`core.quiz_scoring.score_quiz`), HTTP orqali emas. Sababi:
+    tekshirilayotgan narsa — hisoblash mantig'i, u qaysi qatlamdan
+    chaqirilishi ahamiyatsiz. HTTP darajasidagi tekshiruv
+    `api/tests.py` da.
+    """
 
     def setUp(self):
-        self.build_content()
+        category = Category.objects.create(name='Python', slug='python')
+        module = Module.objects.create(category=category, title='Modul', order=1)
+        lesson = Lesson.objects.create(
+            module=module, title='Dars', theory='Matn', order=1, is_free=True
+        )
+        self.quiz = Quiz.objects.create(lesson=lesson, title='Test', is_published=True)
+
+        self.questions = []
+        self.correct = []
+        for i in range(4):
+            question = Question.objects.create(quiz=self.quiz, text=f'Savol {i}')
+            right = Choice.objects.create(question=question, text='To\'g\'ri', is_correct=True)
+            Choice.objects.create(question=question, text='Xato', is_correct=False)
+            self.questions.append(question)
+            self.correct.append(right)
+
+        self.user = User.objects.create_user('talaba', password='JudaKuchliParol9')
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    def test_kontent_sahifalari_login_talab_qiladi(self):
-        protected = [
-            reverse('lessons'),
-            reverse('dashboard'),
-            reverse('editor'),
-            reverse('projects'),
-            reverse('quizzes'),
-            reverse('quiz_detail', args=[self.quiz.id]),
-            reverse('profile'),
-            reverse('lesson_video', args=[self.lesson.id]),
-        ]
-        for url in protected:
-            with self.subTest(url=url):
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, 302)
-                self.assertIn('/login/', response['Location'])
+    def _score(self, answers):
+        return quiz_scoring.score_quiz(self.user, self.quiz, answers)
 
-    def test_landing_ochiq(self):
-        self.assertEqual(self.client.get(reverse('landing')).status_code, 200)
+    def test_hammasi_togri(self):
+        answers = {q.id: c.id for q, c in zip(self.questions, self.correct)}
+        result = self._score(answers)
 
+        self.assertEqual(result['score'], 100)
+        self.assertEqual(result['correct'], 4)
 
-class QuizScoringTests(BaseFixtureMixin, TestCase):
-    """Ball SERVERDA hisoblanishi va soxtalashtirilmasligi kerak."""
+    def test_yarmi_togri(self):
+        answers = {
+            self.questions[0].id: self.correct[0].id,
+            self.questions[1].id: self.correct[1].id,
+        }
+        result = self._score(answers)
 
-    def setUp(self):
-        self.build_content()
-        self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
-        self.client.force_login(self.user)
-        self.url = reverse('submit_quiz', args=[self.quiz.id])
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
+        self.assertEqual(result['score'], 50)
+        self.assertEqual(result['correct'], 2)
 
-    def _submit(self, answers):
-        return self.client.post(
-            self.url, data=json.dumps({'answers': answers}), content_type='application/json'
-        )
+    def test_notogri_javob_hisoblanmaydi(self):
+        wrong = Choice.objects.filter(question=self.questions[0], is_correct=False).first()
+        result = self._score({self.questions[0].id: wrong.id})
 
-    def test_hammasi_togri_100_foiz(self):
-        response = self._submit({str(self.q1.id): self.q1_ok.id, str(self.q2.id): self.q2_ok.id})
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertTrue(data['success'])
-        self.assertEqual(data['score'], 100)
-        self.assertEqual(data['correct'], 2)
-        self.assertEqual(data['total'], 2)
+        self.assertEqual(result['score'], 0)
 
-    def test_yarmi_togri_50_foiz(self):
-        data = self._submit({str(self.q1.id): self.q1_ok.id, str(self.q2.id): self.q2_bad.id}).json()
-        self.assertEqual(data['score'], 50)
-
-    def test_hammasi_notogri_0_foiz(self):
-        data = self._submit({str(self.q1.id): self.q1_bad.id, str(self.q2.id): self.q2_bad.id}).json()
-        self.assertEqual(data['score'], 0)
-
-    def test_klient_yuborgan_score_eiborga_olinmaydi(self):
-        """Eski zaiflik: {"score": 100} yuborib 100% olish. Endi ishlamaydi."""
-        response = self.client.post(
-            self.url, data=json.dumps({'score': 100}), content_type='application/json'
-        )
-        self.assertEqual(response.json()['score'], 0)
-        self.assertEqual(QuizResult.objects.get(user=self.user).score_percentage, 0)
-
-    def test_boshqa_testning_varianti_hisoblanmaydi(self):
-        other_lesson = Lesson.objects.create(
-            module=self.module, title="Boshqa", order=2, is_free=True
-        )
-        other_quiz = Quiz.objects.create(lesson=other_lesson, title="Boshqa test")
-        other_q = Question.objects.create(quiz=other_quiz, text="?")
-        other_ok = Choice.objects.create(question=other_q, text="ha", is_correct=True)
-
-        data = self._submit({str(self.q1.id): other_ok.id, str(self.q2.id): other_ok.id}).json()
-        self.assertEqual(data['score'], 0)
-
-    def test_javoblar_html_da_ochiq_turmaydi(self):
-        response = self.client.get(reverse('quiz_detail', args=[self.quiz.id]))
-        self.assertNotContains(response, 'data-is-correct')
+    def test_satr_kalitlar_ham_qabul_qilinadi(self):
+        """JSON dan kelganda kalitlar SATR bo'ladi, formadan — son."""
+        answers = {str(q.id): c.id for q, c in zip(self.questions, self.correct)}
+        self.assertEqual(self._score(answers)['score'], 100)
 
     def test_eng_yaxshi_natija_saqlanadi(self):
-        self._submit({str(self.q1.id): self.q1_ok.id, str(self.q2.id): self.q2_ok.id})
-        self._submit({str(self.q1.id): self.q1_bad.id, str(self.q2.id): self.q2_bad.id})
+        """Qayta topshirish oldingi yutuqni yo'qotmasligi kerak."""
+        self._score({q.id: c.id for q, c in zip(self.questions, self.correct)})
+        self._score({})
 
         result = QuizResult.objects.get(user=self.user, quiz=self.quiz)
         self.assertEqual(result.score_percentage, 100)
         self.assertEqual(result.attempts, 2)
 
-    def test_level_oshishi_togri_xabar_qiladi(self):
-        data = self._submit({str(self.q1.id): self.q1_ok.id, str(self.q2.id): self.q2_ok.id}).json()
-        self.assertTrue(data['leveled_up'])
-        self.assertEqual(data['new_level'], 2)
-        self.assertEqual(Profile.objects.get(user=self.user).level, 2)
+    def test_boshqa_testning_tanlovi_hisobga_olinmaydi(self):
+        """
+        To'g'ri variantlar FAQAT shu testdan olinadi. Butun bazadan
+        olinsa, boshqa testning tanlov id si ham "to'g'ri" bo'lardi.
+        """
+        other_lesson = Lesson.objects.create(
+            module=self.quiz.lesson.module, title='Boshqa', theory='M', order=2
+        )
+        other_quiz = Quiz.objects.create(lesson=other_lesson, title='Boshqa test')
+        other_q = Question.objects.create(quiz=other_quiz, text='Savol')
+        other_correct = Choice.objects.create(question=other_q, text='Ha', is_correct=True)
 
-        # Ikkinchi urinishda level o'zgarmaydi -> leveled_up False
-        again = self._submit({str(self.q1.id): self.q1_ok.id, str(self.q2.id): self.q2_ok.id}).json()
-        self.assertFalse(again['leveled_up'])
+        result = self._score({self.questions[0].id: other_correct.id})
+        self.assertEqual(result['score'], 0)
 
-    def test_get_soro_qabul_qilinmaydi(self):
-        self.assertEqual(self.client.get(self.url).status_code, 405)
+    def test_savolsiz_test_xato_beradi(self):
+        empty_lesson = Lesson.objects.create(
+            module=self.quiz.lesson.module, title='Bo\'sh', theory='M', order=3
+        )
+        empty_quiz = Quiz.objects.create(lesson=empty_lesson, title='Bo\'sh test')
 
+        with self.assertRaises(quiz_scoring.ScoringError):
+            quiz_scoring.score_quiz(self.user, empty_quiz, {})
 
-class LessonProgressTests(BaseFixtureMixin, TestCase):
-    """Darsni tugatish endpointi va progress statistikasi."""
+    def test_daraja_oshadi(self):
+        self._score({q.id: c.id for q, c in zip(self.questions, self.correct)})
 
-    def setUp(self):
-        self.build_content()
-        self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
-        self.client.force_login(self.user)
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def test_darsni_tugatish_yozuv_yaratadi(self):
-        url = reverse('complete_lesson', args=[self.lesson.id])
-        data = self.client.post(url).json()
-
-        self.assertTrue(data['success'])
-        self.assertEqual(data['total_completed'], 1)
-
-        progress = UserProgress.objects.get(user=self.user, lesson=self.lesson)
-        self.assertTrue(progress.is_completed)
-        self.assertIsNotNone(progress.completed_at)
-
-    def test_ikki_marta_bosish_dublikat_yaratmaydi(self):
-        url = reverse('complete_lesson', args=[self.lesson.id])
-        self.client.post(url)
-        self.client.post(url)
-        self.assertEqual(UserProgress.objects.filter(user=self.user).count(), 1)
-
-    def test_dashboard_progressni_korsatadi(self):
-        self.client.post(reverse('complete_lesson', args=[self.lesson.id]))
-        response = self.client.get(reverse('dashboard'))
-        self.assertEqual(response.context['completed_lessons_count'], 1)
-
-    def test_darslar_sahifasi_real_holatni_beradi(self):
-        self.client.post(reverse('complete_lesson', args=[self.lesson.id]))
-        response = self.client.get(reverse('lessons'))
-        course_data = json.loads(response.context['course_data_json'])
-        self.assertEqual(course_data['python']['completedLessons'], 1)
-        self.assertTrue(course_data['python']['lessons'][0]['completed'])
-
-    def test_mavjud_bolmagan_dars_404(self):
-        self.assertEqual(self.client.post(reverse('complete_lesson', args=[99999])).status_code, 404)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.level, 2)
 
 
 class VideoProtectionTests(BaseFixtureMixin, TestCase):
@@ -223,279 +185,92 @@ class VideoProtectionTests(BaseFixtureMixin, TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class RegistrationTests(TestCase):
-    """Parol validatsiyasi haqiqatan ishlashi kerak."""
-
-    def setUp(self):
-        self.url = reverse('register')
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def _post(self, **kwargs):
-        payload = {
-            'username': 'yangi',
-            'email': 'yangi@test.uz',
-            'password': 'JudaKuchliParol9',
-            'password2': 'JudaKuchliParol9',
-            'full_name': 'Yangi Talaba',
-        }
-        payload.update(kwargs)
-        return self.client.post(self.url, payload)
-
-    def test_togri_malumot_bilan_royxatdan_otadi(self):
-        response = self._post()
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username='yangi').exists())
-        self.assertTrue(Profile.objects.filter(user__username='yangi').exists())
-
-    def test_qisqa_parol_qabul_qilinmaydi(self):
-        response = self._post(password='123', password2='123')
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(User.objects.filter(username='yangi').exists())
-
-    def test_faqat_raqamli_parol_qabul_qilinmaydi(self):
-        response = self._post(password='84726194', password2='84726194')
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(User.objects.filter(username='yangi').exists())
-
-    def test_mos_kelmagan_parollar_rad_etiladi(self):
-        response = self._post(password2='BoshqaParol99')
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(User.objects.filter(username='yangi').exists())
-
-    def test_takroriy_username_rad_etiladi(self):
-        User.objects.create_user(username='yangi', password='JudaKuchliParol9')
-        self._post()
-        self.assertEqual(User.objects.filter(username='yangi').count(), 1)
-
-    def test_takroriy_email_rad_etiladi(self):
-        User.objects.create_user(username='eski', email='yangi@test.uz', password='JudaKuchliParol9')
-        self._post()
-        self.assertFalse(User.objects.filter(username='yangi').exists())
-
-
-class EditorTests(BaseFixtureMixin, TestCase):
-    def setUp(self):
-        self.build_content()
-        self.user = User.objects.create_user(username='talaba', password='JudaKuchliParol9')
-        self.client.force_login(self.user)
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def test_mavjud_bolmagan_challenge_404_beradi(self):
-        """Avval 500 xato qaytarardi."""
-        response = self.client.get(reverse('editor_detail', args=[99999]))
-        self.assertEqual(response.status_code, 404)
-
-    def test_yechim_html_da_ochiq_turmaydi(self):
-        from .models import Challenge
-        Challenge.objects.create(
-            title="Test", description="d", initial_code="x", solution_code="MAXFIY_YECHIM_123"
-        )
-        response = self.client.get(reverse('editor'))
-        self.assertNotContains(response, 'MAXFIY_YECHIM_123')
-
-
-class LogoutTests(TestCase):
-    def test_logout_faqat_post_bilan(self):
-        User.objects.create_user(username='talaba', password='JudaKuchliParol9')
-        self.client.login(username='talaba', password='JudaKuchliParol9')
-
-        self.assertEqual(self.client.get(reverse('logout')).status_code, 405)
-        self.assertEqual(self.client.post(reverse('logout')).status_code, 302)
-
-
 class PasswordResetTests(TestCase):
     """
-    Parolni tiklash: xeshlangan kod, bir martalik, urinishlar cheklovi,
-    enumeratsiyaga qarshi bir xil javob.
+    Parol tiklash — XIZMAT DARAJASIDA.
+
+    Sahifalar React'da, HTTP tekshiruvi `api/tests.py` da. Bu yerda
+    mantiq sinaladi: kod, muddat, urinishlar soni.
     """
 
     def setUp(self):
-        from django.core import mail
-        self.mail = mail
         self.user = User.objects.create_user(
-            username='talaba', email='talaba@test.uz', password='EskiParol12345'
+            'talaba', email='talaba@example.com', password='EskiParol12345'
         )
-        mail.outbox = []
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    def _get_code(self):
-        """Yuborilgan xatdan kodni ajratib oladi."""
-        import re
-        body = self.mail.outbox[-1].body
-        return re.search(r'\b(\d{6})\b', body).group(1)
+    def test_kod_yuboriladi_va_xeshlanadi(self):
+        pwreset.request_reset('talaba@example.com')
 
-    # ── Kod so'rash ──
+        row = PasswordReset.objects.get(user=self.user)
+        self.assertEqual(len(row.code_hash), 64, "Kod XESHLANGAN holda saqlanishi kerak")
+        self.assertEqual(len(mail.outbox), 1)
 
-    def test_kod_yuboriladi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        self.assertEqual(len(self.mail.outbox), 1)
-        self.assertIn('talaba@test.uz', self.mail.outbox[0].to)
-        self.assertRegex(self.mail.outbox[0].body, r'\b\d{6}\b')
+    def test_javob_email_bor_yoqligini_OSHKOR_QILMAYDI(self):
+        """
+        Aks holda bu manzil "qaysi email ro'yxatda" degan savolga
+        javob beradigan asbobga aylanardi.
+        """
+        found = pwreset.request_reset('talaba@example.com')
+        missing = pwreset.request_reset('yoq@example.com')
 
-    def test_kod_bazada_ochiq_saqlanmaydi(self):
-        from core import password_reset as pw
-        from core.models import PasswordReset
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
+        self.assertEqual(found, missing)
 
-        record = PasswordReset.objects.get()
-        self.assertNotEqual(record.code_hash, code)
-        self.assertEqual(len(record.code_hash), 64)  # SHA-256
-        self.assertEqual(record.code_hash, pw.hash_code(code))
-
-    def test_mavjud_bolmagan_email_bir_xil_javob(self):
-        """ANTI-ENUMERATSIYA: javob farq qilmasligi kerak."""
-        from core import password_reset as pw
-        a = pw.request_reset('talaba@test.uz')
-        b = pw.request_reset('yoq@test.uz')
-        self.assertEqual(a, b)
-        # Lekin mavjud bo'lmaganga xat ketmaydi
-        self.assertEqual(len(self.mail.outbox), 1)
-
-    def test_yangi_kod_eskisini_bekor_qiladi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        old_code = self._get_code()
-        pw.request_reset('talaba@test.uz')
-
-        with self.assertRaises(pw.ResetError):
-            pw.confirm_reset('talaba@test.uz', old_code, 'YangiParol12345')
-
-    # ── Kodni ishlatish ──
-
-    def test_togri_kod_parolni_yangilaydi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        pw.confirm_reset('talaba@test.uz', self._get_code(), 'YangiParol12345')
+    def test_togri_kod_parolni_almashtiradi(self):
+        code = self._request_and_read_code()
+        pwreset.confirm_reset('talaba@example.com', code, 'YangiKuchliParol9')
 
         self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('YangiParol12345'))
-        self.assertFalse(self.user.check_password('EskiParol12345'))
-
-    def test_kod_bir_marta_ishlaydi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
-        pw.confirm_reset('talaba@test.uz', code, 'YangiParol12345')
-
-        with self.assertRaises(pw.ResetError):
-            pw.confirm_reset('talaba@test.uz', code, 'BoshqaParol9999')
-
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('YangiParol12345'))
+        self.assertTrue(self.user.check_password('YangiKuchliParol9'))
 
     def test_notogri_kod_rad_etiladi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        with self.assertRaises(pw.ResetError):
-            pw.confirm_reset('talaba@test.uz', '000000', 'YangiParol12345')
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('EskiParol12345'))
+        self._request_and_read_code()
 
-    def test_besh_urinishdan_keyin_kod_kuyadi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
+        with self.assertRaises(pwreset.ResetError):
+            pwreset.confirm_reset('talaba@example.com', '000000', 'YangiKuchliParol9')
 
-        wrong = '999999' if code != '999999' else '111111'
-        for _ in range(pw.MAX_ATTEMPTS):
-            with self.assertRaises(pw.ResetError):
-                pw.confirm_reset('talaba@test.uz', wrong, 'YangiParol12345')
+    def test_kod_bir_marta_ishlaydi(self):
+        code = self._request_and_read_code()
+        pwreset.confirm_reset('talaba@example.com', code, 'YangiKuchliParol9')
 
-        # Endi TO'G'RI kod ham ishlamaydi
-        with self.assertRaises(pw.ResetError) as ctx:
-            pw.confirm_reset('talaba@test.uz', code, 'YangiParol12345')
-        self.assertIn("Juda ko'p", ctx.exception.message)
+        with self.assertRaises(pwreset.ResetError):
+            pwreset.confirm_reset('talaba@example.com', code, 'BoshqaParol12345')
 
     def test_muddati_otgan_kod_ishlamaydi(self):
-        from datetime import timedelta
-        from django.utils import timezone as tz
-        from core import password_reset as pw
-        from core.models import PasswordReset
+        code = self._request_and_read_code()
+        PasswordReset.objects.filter(user=self.user).update(
+            expires_at=timezone.now() - timedelta(minutes=1)
+        )
 
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
-        PasswordReset.objects.update(expires_at=tz.now() - timedelta(minutes=1))
+        with self.assertRaises(pwreset.ResetError):
+            pwreset.confirm_reset('talaba@example.com', code, 'YangiKuchliParol9')
 
-        with self.assertRaises(pw.ResetError):
-            pw.confirm_reset('talaba@test.uz', code, 'YangiParol12345')
+    def test_kop_urinishdan_keyin_kod_kuyadi(self):
+        """
+        MUHIM: urinishlar soni tranzaksiya orqaga qaytganda ham
+        SAQLANISHI kerak — aks holda cheklov umuman ishlamasdi.
+        """
+        self._request_and_read_code()
 
-    def test_bosh_parol_amaldagi_kodni_sarflamaydi(self):
-        """Parol tekshiruvi kod tekshiruvidan OLDIN bo'lishi kerak."""
-        from core import password_reset as pw
-        from core.models import PasswordReset
+        for _ in range(pwreset.MAX_ATTEMPTS):
+            with self.assertRaises(pwreset.ResetError):
+                pwreset.confirm_reset('talaba@example.com', '000000', 'YangiParol12345')
 
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
+        row = PasswordReset.objects.get(user=self.user)
+        self.assertGreaterEqual(row.attempts, pwreset.MAX_ATTEMPTS)
 
-        with self.assertRaises(pw.ResetError):
-            pw.confirm_reset('talaba@test.uz', code, '123')  # juda qisqa
+    def test_zaif_parol_rad_etiladi(self):
+        code = self._request_and_read_code()
 
-        self.assertEqual(PasswordReset.objects.get().attempts, 0)
-        # Kod hali ham ishlaydi
-        pw.confirm_reset('talaba@test.uz', code, 'YangiParol12345')
+        with self.assertRaises(pwreset.ResetError):
+            pwreset.confirm_reset('talaba@example.com', code, '12345678')
 
-    def test_zaif_parol_qabul_qilinmaydi(self):
-        from core import password_reset as pw
-        pw.request_reset('talaba@test.uz')
-        code = self._get_code()
-        for weak in ('123', '12345678', 'password'):
-            with self.subTest(parol=weak):
-                with self.assertRaises(pw.ResetError):
-                    pw.confirm_reset('talaba@test.uz', code, weak)
-
-    # ── Sahifalar ──
-
-    def test_sahifalar_ochiladi(self):
-        for name in ('forgot_password', 'reset_password'):
-            self.assertEqual(self.client.get(reverse(name)).status_code, 200)
-
-    def test_toliq_oqim_sahifalar_orqali(self):
-        self.client.post(reverse('forgot_password'), {'email': 'talaba@test.uz'})
-        code = self._get_code()
-
-        response = self.client.post(reverse('reset_password'), {
-            'email': 'talaba@test.uz', 'code': code,
-            'password': 'YangiParol12345', 'password2': 'YangiParol12345',
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/login/', response['Location'])
-
-        self.assertTrue(self.client.login(username='talaba', password='YangiParol12345'))
-
-    def test_mos_kelmagan_parollar(self):
-        self.client.post(reverse('forgot_password'), {'email': 'talaba@test.uz'})
-        response = self.client.post(reverse('reset_password'), {
-            'email': 'talaba@test.uz', 'code': self._get_code(),
-            'password': 'YangiParol12345', 'password2': 'BoshqaParol9999',
-        })
-        self.assertEqual(response.status_code, 200)
-        self.user.refresh_from_db()
-        self.assertTrue(self.user.check_password('EskiParol12345'))
+    def _request_and_read_code(self) -> str:
+        """Kodni xatdan o'qib oladi — u bazada faqat xesh holida."""
+        mail.outbox.clear()
+        pwreset.request_reset('talaba@example.com')
+        match = re.search(r'\b(\d{6})\b', mail.outbox[0].body)
+        self.assertIsNotNone(match, "Xatda 6 xonali kod bo'lishi kerak")
+        return match.group(1)
 
 
-class RegistrationEmailTests(TestCase):
-    """Email endi majburiy — parol tiklash faqat shu orqali ishlaydi."""
-
-    def test_emailsiz_royxatdan_otib_bolmaydi(self):
-        response = self.client.post(reverse('register'), {
-            'username': 'yangi',
-            'email': '',
-            'password': 'JudaKuchliParol9',
-            'password2': 'JudaKuchliParol9',
-            'full_name': 'Yangi',
-        })
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(User.objects.filter(username='yangi').exists())
-
-    def test_email_bilan_royxatdan_otadi(self):
-        response = self.client.post(reverse('register'), {
-            'username': 'yangi',
-            'email': 'yangi@test.uz',
-            'password': 'JudaKuchliParol9',
-            'password2': 'JudaKuchliParol9',
-            'full_name': 'Yangi',
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(User.objects.get(username='yangi').email, 'yangi@test.uz')

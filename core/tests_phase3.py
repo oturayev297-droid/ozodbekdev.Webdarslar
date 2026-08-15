@@ -1,3 +1,4 @@
+import json
 """
 3-bosqich testlari: login cheklovi, sertifikatlar, kod muharriri tili.
 
@@ -42,11 +43,17 @@ class LockoutTests(TestCase):
         self.user = User.objects.create_user(
             username='talaba', email='t@test.uz', password='TogriParol12345'
         )
-        self.url = reverse('login')
+        # O'quvchi logini endi API da. Qulf MODULI ikkalasida bir xil
+        # (`core.lockout`) — nusxa yozilmagan.
+        self.url = reverse('api:login')
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def _try(self, password='NotogriParol', username='talaba'):
-        return self.client.post(self.url, {'username': username, 'password': password})
+        return self.client.post(
+            self.url,
+            data=json.dumps({'username': username, 'password': password}),
+            content_type='application/json',
+        )
 
     def test_notogri_urinish_yoziladi(self):
         self._try()
@@ -89,7 +96,7 @@ class LockoutTests(TestCase):
         )
 
         response = self._try(password='TogriParol12345')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertIn('_auth_user_id', self.client.session)
 
     def test_muvaffaqiyatli_kirish_hisoblagichni_tozalaydi(self):
@@ -166,7 +173,8 @@ class ResetThrottleTests(TestCase):
 
     def setUp(self):
         User.objects.create_user(username='talaba', email='t@test.uz', password='Parol12345678')
-        self.url = reverse('forgot_password')
+        # Sahifa React'da; bu yerda API endpointi sinaladi
+        self.url = reverse('api:password_reset')
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
     def test_kop_sorov_cheklanadi(self):
@@ -187,10 +195,15 @@ class ResetThrottleTests(TestCase):
         locked, _, _ = lockout.check_locked('talaba', '127.0.0.1')
         self.assertFalse(locked)
 
+        # O'quvchi logini endi API da. Muvaffaqiyatli kirish 200
+        # qaytaradi (yo'naltirish emas) — frontend o'zi navigatsiya
+        # qiladi.
         response = self.client.post(
-            reverse('login'), {'username': 'talaba', 'password': 'Parol12345678'}
+            reverse('api:login'),
+            data=json.dumps({'username': 'talaba', 'password': 'Parol12345678'}),
+            content_type='application/json',
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
 
 # ==========================================================================
@@ -267,24 +280,25 @@ class CertificateTests(TestCase):
     def test_testni_topshirish_sertifikat_beradi(self):
         import json
         response = self.client.post(
-            reverse('submit_quiz', args=[self.quiz.id]),
+            reverse('api:quiz_submit', args=[self.quiz.id]),
             data=json.dumps({'answers': {str(self.q1.id): self.q1_ok.id}}),
             content_type='application/json',
         )
         data = response.json()
         self.assertEqual(data['score'], 100)
-        self.assertIsNotNone(data['certificate_url'])
+        self.assertIsNotNone(data['certificate'], 'Sertifikat berilishi kerak')
+        self.assertTrue(data['certificate']['pdf_url'])
         self.assertEqual(Certificate.objects.filter(user=self.user).count(), 1)
 
     def test_past_ball_sertifikat_havolasini_bermaydi(self):
         import json
         data = self.client.post(
-            reverse('submit_quiz', args=[self.quiz.id]),
+            reverse('api:quiz_submit', args=[self.quiz.id]),
             data=json.dumps({'answers': {str(self.q1.id): self.q1_bad.id}}),
             content_type='application/json',
         ).json()
         self.assertEqual(data['score'], 0)
-        self.assertIsNone(data['certificate_url'])
+        self.assertIsNone(data['certificate'], 'Past ballda sertifikat berilmaydi')
 
     # ── PDF ──
 
@@ -315,24 +329,31 @@ class CertificateTests(TestCase):
     def test_tekshirish_login_talab_qilmaydi(self):
         cert = certificates.issue_for_result(self._result(95))
         self.client.logout()
-        response = self.client.get(reverse('verify_certificate'), {'code': cert.code})
+        response = self.client.get(reverse('api:verify_certificate'), {'code': cert.code})
         self.assertEqual(response.status_code, 200)
-        # Apostrof HTML da &#x27; ga aylanadi — familiyaning boshini tekshiramiz
-        self.assertContains(response, "Ozodbek")
-        self.assertContains(response, "Sertifikat haqiqiy")
+
+        data = response.json()
+        self.assertTrue(data['found'])
+        self.assertTrue(data['valid'])
+        self.assertIn('Ozodbek', data['holder'])
 
     def test_tekshirish_shaxsiy_malumot_chiqarmaydi(self):
         cert = certificates.issue_for_result(self._result(95))
         self.client.logout()
-        response = self.client.get(reverse('verify_certificate'), {'code': cert.code})
-        self.assertNotContains(response, 't@test.uz')
-        self.assertNotContains(response, 'talaba')
+        response = self.client.get(reverse('api:verify_certificate'), {'code': cert.code})
+
+        # Ish beruvchiga faqat sertifikat ma'lumoti kerak — email va
+        # login unga tegishli emas.
+        raw = json.dumps(response.json(), ensure_ascii=False)
+        self.assertNotIn('t@test.uz', raw)
+        self.assertNotIn('talaba', raw)
 
     def test_notogri_kod(self):
         self.client.logout()
-        response = self.client.get(reverse('verify_certificate'), {'code': 'YOQBUNDAYKOD'})
+        response = self.client.get(reverse('api:verify_certificate'), {'code': 'YOQBUNDAYKOD'})
+
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "topilmadi")
+        self.assertFalse(response.json()['found'])
 
     def test_bekor_qilingan_sertifikat(self):
         cert = certificates.issue_for_result(self._result(95))
@@ -341,76 +362,32 @@ class CertificateTests(TestCase):
         cert.save()
 
         self.client.logout()
-        response = self.client.get(reverse('verify_certificate'), {'code': cert.code})
-        self.assertContains(response, "bekor qilingan")
-        self.assertNotContains(response, "Sertifikat haqiqiy")
+        data = self.client.get(
+            reverse('api:verify_certificate'), {'code': cert.code}
+        ).json()
+
+        self.assertTrue(data['found'], "Sertifikat topilishi kerak — u mavjud")
+        self.assertFalse(data['valid'], 'Bekor qilingan sertifikat haqiqiy emas')
+        self.assertEqual(data['revoke_reason'], 'Aldash aniqlandi')
 
     def test_dashboard_haqiqiy_sertifikatlarni_sanaydi(self):
         certificates.issue_for_result(self._result(95))
-        response = self.client.get(reverse('dashboard'))
-        self.assertEqual(response.context['certificates_count'], 1)
+        self.assertEqual(self.client.get(reverse('api:dashboard')).json()['certificates'], 1)
 
+        # Bekor qilingan sertifikat sanalmaydi
         Certificate.objects.update(revoked_at=timezone.now())
-        response = self.client.get(reverse('dashboard'))
-        self.assertEqual(response.context['certificates_count'], 0)
+        self.assertEqual(self.client.get(reverse('api:dashboard')).json()['certificates'], 0)
 
     def test_sertifikatlar_sahifasi(self):
         certificates.issue_for_result(self._result(95))
-        response = self.client.get(reverse('my_certificates'))
+        response = self.client.get(reverse('api:certificates'))
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['certificates']), 1)
+        self.assertEqual(len(response.json()), 1)
 
 
 # ==========================================================================
 # Kod muharriri
-# ==========================================================================
-
-
-class EditorLanguageTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='talaba', password='Parol12345678')
-        self.client.force_login(self.user)
-        approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
-
-    def test_yangi_topshiriq_python(self):
-        """Platforma Python o'rgatadi — standart til shunga mos."""
-        challenge = Challenge.objects.create(title="Test", description="d")
-        self.assertEqual(challenge.language, Challenge.Language.PYTHON)
-
-    def test_python_topshiriq_pyodide_yuklaydi(self):
-        Challenge.objects.create(title="Python vazifa", description="d", order=1)
-        response = self.client.get(reverse('editor'))
-        self.assertContains(response, 'data-language="python"')
-        self.assertContains(response, 'pyodide')
-        self.assertContains(response, 'main.py')
-
-    def test_javascript_topshiriq(self):
-        Challenge.objects.create(
-            title="JS vazifa", description="d", order=1,
-            language=Challenge.Language.JAVASCRIPT,
-        )
-        response = self.client.get(reverse('editor'))
-        self.assertContains(response, 'data-language="javascript"')
-        self.assertContains(response, 'main.js')
-
-    def test_izoh_sahifaga_chiqmaydi(self):
-        """
-        `{# #}` faqat bir qatorli izoh — ko'p qatorda matn sahifaga
-        chiqib ketadi. Bu xato ikki marta takrorlangan, shuning uchun test.
-        """
-        Challenge.objects.create(title="Test", description="d", order=1)
-        response = self.client.get(reverse('editor'))
-        # Django izoh belgilari manbada QOLMASLIGI kerak — qolsa, demak
-        # izoh ochilmagan va matni sahifaga chiqib ketgan.
-        # (JavaScript `//` izohlari manbada bo'lishi normal.)
-        self.assertNotContains(response, '{#')
-        self.assertNotContains(response, '#}')
-        self.assertNotContains(response, 'min-h-0 MUHIM')
-        self.assertNotContains(response, 'solution_code ATAYLAB')
-
-
-# ==========================================================================
-# Telegram (mock rejim)
 # ==========================================================================
 
 

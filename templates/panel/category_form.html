@@ -1,0 +1,73 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}{% if category %}Bo'limni tahrirlash{% else %}Yangi bo'lim{% endif %}{% endblock %}
+{% block heading %}{% if category %}{{ category.name }}{% else %}Yangi bo'lim{% endif %}{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'panel:content' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-5 transition">
+    <span class="material-icons-round text-base">arrow_back</span> Darsliklar
+</a>
+
+<form method="post" class="max-w-xl">
+    {% csrf_token %}
+    <div class="glass rounded-2xl p-6 space-y-5">
+        {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1.5" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                    <p class="text-xs text-slate-500 mt-1.5">{{ field.help_text }}</p>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p class="text-xs text-red-400 mt-1.5">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        {% comment %}
+        Slug manzilda ishlatiladi (`/kurslar/python`). Uni
+        o'zgartirish tarqatilgan havolalarni buzadi — buni oldindan
+        aytib qo'yamiz.
+        {% endcomment %}
+        {% if category %}
+            <p class="text-xs text-amber-400/80 leading-relaxed">
+                Manzil qismini o'zgartirsangiz, bu kursga oldin
+                yuborilgan havolalar ishlamay qoladi.
+            </p>
+        {% endif %}
+
+        <button class="w-full py-3 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 font-bold transition">
+            Saqlash
+        </button>
+    </div>
+</form>
+
+{% if category %}
+    <div class="max-w-xl mt-6 glass rounded-2xl p-6">
+        <h2 class="font-bold mb-2">Bo'limni o'chirish</h2>
+
+        {% if lesson_count %}
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Bu bo'limda <b class="text-slate-200">{{ lesson_count }} ta dars</b> bor.
+                Darsi bor bo'limni o'chirib bo'lmaydi — u bilan birga barcha
+                modul va darslar ham yo'qolardi.
+            </p>
+        {% else %}
+            <p class="text-sm text-slate-500 mb-4">
+                Bo'lim bo'sh — o'chirish mumkin.
+            </p>
+            <form method="post" action="{% url 'panel:category_delete' category.pk %}">
+                {% csrf_token %}
+                <button onclick="return confirm('Bo\'lim o\'chirilsinmi?')"
+                        class="px-5 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 text-sm font-semibold transition">
+                    O'chirish
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

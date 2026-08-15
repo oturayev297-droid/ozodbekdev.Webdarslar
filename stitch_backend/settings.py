@@ -5,6 +5,7 @@ Maxfiy qiymatlar .env faylidan o'qiladi (django-environ).
 Namuna uchun .env.example ga qarang.
 """
 
+import sys
 from pathlib import Path
 
 import environ
@@ -64,7 +65,9 @@ USE_X_ACCEL_REDIRECT = env("USE_X_ACCEL_REDIRECT")
 # --------------------------------------------------------------------------
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # `django.contrib.admin` OLIB TASHLANDI — uning o'rnini `/panel/`
+    # egalladi. `contenttypes` va `auth` qoladi: ular admin uchun
+    # emas, foydalanuvchi va huquqlar tizimi uchun kerak.
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -152,9 +155,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "landing"
+# O'QUVCHI SAHIFALARI ENDI REACT FRONTENDDA.
+#
+# `LOGIN_URL` faqat panel uchun kerak: `@login_required` uni
+# ishlatadi. Panelning o'z kirish sahifasi bor va u `staff_required`
+# bilan himoyalangan, lekin Django ba'zi hollarda (masalan
+# `login_required` bilan bezatilgan fayl uzatish ko'rinishlari)
+# baribir shu manzilga yo'naltiradi.
+LOGIN_URL = "panel:login"
 
 
 # --------------------------------------------------------------------------
@@ -377,6 +385,17 @@ if DEBUG:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
         "rest_framework.renderers.BrowsableAPIRenderer"
     )
+
+# TESTDA CHEKLOV O'CHIRILADI.
+#
+# DRF cheklovi holatni KESHDA saqlaydi, kesh esa testlar orasida
+# tozalanmaydi — bir necha yuz test ketma-ket ishlaganda hisob
+# to'lib, ALOQASI YO'Q testlar 429 bilan yiqila boshlaydi. Bunday
+# yiqilish chalg'ituvchi: kodda hech narsa buzilmagan.
+#
+# Cheklovning O'ZI `api/tests.py` da alohida sinaladi.
+if "test" in sys.argv:
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": None}
 
 # Frontend manzillari: "https://oson.vercel.app,https://oson.uz"
 FRONTEND_ORIGINS = [o.strip().rstrip('/') for o in env("FRONTEND_ORIGINS") if o.strip()]

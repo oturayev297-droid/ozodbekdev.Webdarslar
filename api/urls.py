@@ -50,6 +50,9 @@ urlpatterns = [
     # OCHIQ: ish beruvchining tizimda hisobi yo'q
     path('certificates/verify/', views.verify_certificate, name='verify_certificate'),
 
+    # ── Loyihalar ──
+    path('projects/', views.projects, name='projects'),
+
     # ── Kod muharriri ──
     path('challenges/', views.ChallengeListView.as_view(), name='challenges'),
     path('challenges/<int:pk>/', views.ChallengeDetailView.as_view(), name='challenge_detail'),
@@ -69,6 +72,18 @@ urlpatterns = [
     # ── AI Mentor ──
     path('mentor/ask/', views.MentorAskView.as_view(), name='mentor_ask'),
     path('mentor/history/', views.mentor_history, name='mentor_history'),
+
+    # ── O'quv vaqti ──
+    path('study/ping/', views.StudyPingView.as_view(), name='study_ping'),
+    path('study/me/', views.my_study_time, name='study_me'),
+
+    # ── Ota-ona paneli ──
+    path('parent/children/', views.ParentChildrenView.as_view(), name='parent_children'),
+    path(
+        'parent/children/<int:student_id>/',
+        views.ParentChildReportView.as_view(),
+        name='parent_child_report',
+    ),
 
     # ── Dashboard ──
     path('dashboard/', views.dashboard, name='dashboard'),

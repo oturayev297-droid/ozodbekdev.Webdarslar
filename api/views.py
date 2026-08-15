@@ -23,7 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Prefetch
+from django.db.models import Avg, Count, Prefetch
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -37,7 +37,7 @@ from billing import payment_requests as pr
 from billing import services, telegram
 from billing.dates import ALLOWED_MONTHS, format_money
 from billing.gating import can_access_lesson, can_access_quiz
-from core import ai_mentor, lockout, quiz_scoring
+from core import ai_mentor, lockout, quiz_scoring, study_time
 from core import password_reset as pwreset
 from core.approval import is_approved
 from core.models import (
@@ -46,7 +46,9 @@ from core.models import (
     Challenge,
     Lesson,
     MentorMessage,
+    ParentLink,
     Profile,
+    Project,
     Quiz,
     QuizResult,
     UserProgress,
@@ -67,6 +69,7 @@ from .serializers import (
     PlanOptionSerializer,
     ProfileSerializer,
     ProfileUpdateSerializer,
+    ProjectSerializer,
     QuizDetailSerializer,
     QuizListSerializer,
     QuizSubmitSerializer,
@@ -401,9 +404,16 @@ class LessonCompleteView(APIView):
         progress, created = UserProgress.objects.get_or_create(
             user=request.user, lesson=lesson, defaults={'is_completed': True}
         )
+        newly_completed = created
         if not created and not progress.is_completed:
             progress.is_completed = True
             progress.save(update_fields=['is_completed'])
+            newly_completed = True
+
+        # Kunlik hisobga FAQAT BIRINCHI MARTA qo'shiladi — bir darsni
+        # qayta-qayta bosib raqamni to'ldirib bo'lmasin.
+        if newly_completed:
+            study_time.record_lesson_completed(request.user)
 
         total = Lesson.objects.count()
         done = UserProgress.objects.filter(user=request.user, is_completed=True).count()
@@ -723,6 +733,18 @@ def dashboard(request):
     })
 
 
+# ══════════════════════════ Loyihalar ══════════════════════════
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsApproved])
+def projects(request):
+    """Portfolio uchun loyiha g'oyalari."""
+    return Response(
+        ProjectSerializer(Project.objects.order_by('order'), many=True).data
+    )
+
+
 # ══════════════════════════ Kod muharriri ══════════════════════════
 
 
@@ -887,3 +909,145 @@ def mentor_history(request):
         .order_by('-created_at')[:20]
     )
     return Response(MentorMessageSerializer(messages_qs, many=True).data)
+
+
+# ══════════════════════════ O'quv vaqti ══════════════════════════
+
+
+class StudyPingView(APIView):
+    """
+    "Men shu yerdaman" signali.
+
+    Frontend ochiq sahifada har daqiqada bir marta yuboradi. Sana va
+    qo'shiladigan miqdor SERVERDA belgilanadi — klientdan olinsa,
+    bitta so'rov bilan istalgancha vaqt yozib olish mumkin bo'lardi.
+    """
+
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request):
+        return Response(study_time.record_ping(request.user))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsApproved])
+def my_study_time(request):
+    """O'quvchining o'z vaqti — dashboardda ko'rsatiladi."""
+    return Response({
+        'summary': study_time.summary(request.user),
+        'series': study_time.daily_series(request.user, days=14),
+    })
+
+
+# ══════════════════════════ Ota-ona paneli ══════════════════════════
+
+
+class ParentChildrenView(APIView):
+    """
+    Ota-onaga biriktirilgan farzandlar.
+
+    BOG'LANISHNI FAQAT ADMIN YARATADI. Ota-ona o'zini o'zi biror
+    o'quvchiga bog'lay olmaydi — aks holda har kim istagan bolaning
+    natijalarini ko'rib olardi.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        links = (
+            ParentLink.objects.filter(parent=request.user)
+            .select_related('student__profile')
+            .order_by('student__username')
+        )
+        return Response([
+            {
+                'student_id': link.student_id,
+                'username': link.student.username,
+                'full_name': link.student.profile.full_name or link.student.username,
+                'relation': link.relation,
+            }
+            for link in links
+        ])
+
+
+class ParentChildReportView(APIView):
+    """
+    Bitta farzandning hisoboti.
+
+    HUQUQ HAR SO'ROVDA TEKSHIRILADI: `ParentLink` bo'lmasa 403.
+    Ro'yxatdan olingan id ni o'zgartirib boshqa bolaning hisobotini
+    ko'rish imkoni bo'lmasligi kerak.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, student_id):
+        link = (
+            ParentLink.objects.filter(parent=request.user, student_id=student_id)
+            .select_related('student__profile')
+            .first()
+        )
+        if link is None:
+            return Response(
+                {'detail': "Bu o'quvchining hisobotini ko'rish huquqingiz yo'q."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        student = link.student
+
+        results = (
+            QuizResult.objects.filter(user=student)
+            .select_related('quiz__lesson__module__category')
+            .order_by('-completed_at')[:20]
+        )
+
+        total_lessons = Lesson.objects.count()
+        completed = UserProgress.objects.filter(user=student, is_completed=True).count()
+
+        # Bitta so'rovda: nechta test topshirgan va o'rtacha ball qancha.
+        # Ilgari bu yerda to'rtta alohida so'rov bor edi.
+        quiz_stats = QuizResult.objects.filter(user=student).aggregate(
+            taken=Count('id'), average=Avg('score_percentage')
+        )
+
+        return Response({
+            'student': {
+                'id': student.id,
+                'username': student.username,
+                'full_name': student.profile.full_name or student.username,
+                'relation': link.relation,
+                'level': student.profile.level,
+            },
+            'study': {
+                'summary': study_time.summary(student),
+                'series': study_time.daily_series(student, days=14),
+            },
+            'lessons': {
+                'total': total_lessons,
+                'completed': completed,
+                'percent': round(completed * 100 / total_lessons) if total_lessons else 0,
+            },
+            'quizzes': {
+                'taken': quiz_stats['taken'],
+                'average_score': round(quiz_stats['average'] or 0),
+                'recent': [
+                    {
+                        'quiz': r.quiz.title,
+                        'category': r.quiz.lesson.module.category.name,
+                        'score': r.score_percentage,
+                        'correct': r.correct_count,
+                        'total': r.total_questions,
+                        'attempts': r.attempts,
+                        'completed_at': r.completed_at,
+                    }
+                    for r in results
+                ],
+            },
+            'certificates': CertificateSerializer(
+                Certificate.objects.filter(user=student, revoked_at__isnull=True)
+                .order_by('-issued_at'),
+                many=True,
+                context={'request': request},
+            ).data,
+            'subscription': SubscriptionStateSerializer(services.get_state(student)).data,
+        })

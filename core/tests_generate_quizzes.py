@@ -344,19 +344,20 @@ class DraftVisibilityTests(TestCase):
 
     def test_oquvchi_royxatda_kormaydi(self):
         self.client.force_login(self.student)
-        response = self.client.get(reverse('quizzes'))
+        # Testlar ro'yxati endi API da
+        response = self.client.get(reverse('api:quizzes'))
         self.assertNotContains(response, "Qoralama test")
 
     def test_oquvchi_ocholmaydi(self):
         self.client.force_login(self.student)
-        response = self.client.get(reverse('quiz_detail', args=[self.draft.id]))
+        response = self.client.get(reverse('api:quiz_detail', args=[self.draft.id]))
         self.assertEqual(response.status_code, 404)
 
     def test_oquvchi_topshirolmaydi(self):
         import json
         self.client.force_login(self.student)
         response = self.client.post(
-            reverse('submit_quiz', args=[self.draft.id]),
+            reverse('api:quiz_submit', args=[self.draft.id]),
             data=json.dumps({'answers': {}}), content_type='application/json',
         )
         self.assertEqual(response.status_code, 404)
@@ -368,7 +369,7 @@ class DraftVisibilityTests(TestCase):
         )
         self.client.force_login(staff)
         self.assertEqual(
-            self.client.get(reverse('quiz_detail', args=[self.draft.id])).status_code, 200
+            self.client.get(reverse('api:quiz_detail', args=[self.draft.id])).status_code, 200
         )
 
     def test_nashr_qilingach_korinadi(self):
@@ -377,5 +378,5 @@ class DraftVisibilityTests(TestCase):
 
         self.client.force_login(self.student)
         self.assertEqual(
-            self.client.get(reverse('quiz_detail', args=[self.draft.id])).status_code, 200
+            self.client.get(reverse('api:quiz_detail', args=[self.draft.id])).status_code, 200
         )

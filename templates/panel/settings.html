@@ -1,0 +1,126 @@
+{% extends 'panel/_base.html' %}
+{% load money %}
+
+{% block title %}Sozlamalar{% endblock %}
+{% block heading %}Sozlamalar{% endblock %}
+
+{% block content %}
+
+<div class="grid lg:grid-cols-2 gap-6">
+
+    {% comment %}
+    KARTA REKVIZITLARI — eng muhim sozlama. Ularsiz o'quvchi umuman
+    to'lay olmaydi: "Karta berildi" holatida unga ko'rsatiladigan
+    ma'lumot aynan shu yerdan olinadi.
+    {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <h2 class="font-bold mb-1">Karta rekvizitlari</h2>
+        <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+            To'lov so'rovi «Karta berildi» holatiga o'tganda o'quvchi
+            shularni ko'radi. Boshqa hech qayerda ko'rinmaydi.
+        </p>
+
+        {% if not cards %}
+            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200/80 mb-5 leading-relaxed">
+                <b class="text-amber-300">Karta kiritilmagan.</b>
+                Hozir o'quvchi to'lovni amalga oshira olmaydi.
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'panel:settings_cards' %}" id="cardsForm">
+            {% csrf_token %}
+
+            <div id="cardRows" class="space-y-4">
+                {% for card in cards %}
+                    <div class="card-row p-4 rounded-xl bg-slate-900/50 border border-white/5 space-y-2">
+                        <input name="number" value="{{ card.number }}" placeholder="8600 1234 5678 9012"
+                               class="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-primary">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input name="holder" value="{{ card.holder }}" placeholder="Karta egasi"
+                                   class="bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                            <input name="bank" value="{{ card.bank }}" placeholder="Bank (Uzcard/Humo)"
+                                   class="bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                        </div>
+                        <input name="note" value="{{ card.note }}" placeholder="Izoh (ixtiyoriy)"
+                               class="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                        <button type="button" onclick="this.closest('.card-row').remove()"
+                                class="text-xs text-red-400 hover:text-red-300">Olib tashlash</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex gap-2 mt-4">
+                <button type="button" onclick="addCard()"
+                        class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-sm font-semibold transition">
+                    + Karta
+                </button>
+                <button class="flex-1 py-2.5 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 text-sm font-bold transition">
+                    Saqlash
+                </button>
+            </div>
+        </form>
+
+        <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
+            Bo'sh raqamli qatorlar saqlanmaydi. Ko'pi bilan 10 ta karta.
+        </p>
+    </div>
+
+    {% comment %} ─── Tarif ─── {% endcomment %}
+    <div class="glass rounded-2xl p-6 h-fit">
+        <h2 class="font-bold mb-1">Tarif</h2>
+        <p class="text-xs text-slate-500 mb-5">Obuna faqat oylik</p>
+
+        <div class="p-4 rounded-xl bg-white/5 mb-5">
+            <p class="text-2xl font-extrabold">{{ plan.price_per_month_tiyin|money }}</p>
+            <p class="text-xs text-slate-500 mt-1">bir oy uchun</p>
+        </div>
+
+        <form method="post" action="{% url 'panel:settings_price' %}" class="space-y-3">
+            {% csrf_token %}
+            <label class="block text-sm text-slate-400">Yangi narx (so'mda)</label>
+            <input name="price" type="number" value="{{ price_soum }}" min="1000" step="1000" required
+                   class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+            <button onclick="return confirm('Narx o\'zgartirilsinmi?')"
+                    class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                Narxni o'zgartirish
+            </button>
+        </form>
+
+        {% comment %}
+        Bu eslatma muhim: admin narxni ko'targanda "o'tgan oylar
+        hisoboti ham o'zgaradimi" degan savol tug'iladi. Javob — yo'q,
+        chunki summa har davrga muzlatib yoziladi.
+        {% endcomment %}
+        <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
+            Narx o'zgarsa o'tgan tushum hisoboti O'ZGARMAYDI — summa har
+            to'lovga muzlatib yozilgan. Yangi narx faqat keyingi
+            so'rovlarga tegishli.
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function addCard() {
+        const row = document.createElement('div');
+        row.className = 'card-row p-4 rounded-xl bg-slate-900/50 border border-white/5 space-y-2';
+        row.innerHTML = `
+            <input name="number" placeholder="8600 1234 5678 9012"
+                   class="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-primary">
+            <div class="grid grid-cols-2 gap-2">
+                <input name="holder" placeholder="Karta egasi"
+                       class="bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+                <input name="bank" placeholder="Bank (Uzcard/Humo)"
+                       class="bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+            </div>
+            <input name="note" placeholder="Izoh (ixtiyoriy)"
+                   class="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary">
+            <button type="button" onclick="this.closest('.card-row').remove()"
+                    class="text-xs text-red-400 hover:text-red-300">Olib tashlash</button>
+        `;
+        document.getElementById('cardRows').appendChild(row);
+    }
+</script>
+{% endblock %}

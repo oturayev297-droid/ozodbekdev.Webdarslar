@@ -19,10 +19,17 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { useStudyTimer } from '@/lib/use-study-timer';
 
 export function Guard({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth();
   const router = useRouter();
+
+  // O'quv vaqti FAQAT ruxsatli o'quvchi kontent sahifasida
+  // turganda yoziladi. `Guard` barcha shunday sahifalarda
+  // ishlatilgani uchun hisoblagich shu yerda — har sahifaga alohida
+  // qo'shilsa, biri unutilib qolardi.
+  useStudyTimer(Boolean(user?.is_approved));
 
   useEffect(() => {
     if (loading) return;

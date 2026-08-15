@@ -4,14 +4,21 @@ URL configuration for stitch_backend project.
 
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    # Django'ning standart paneli ZAXIRA yo'l sifatida qoladi: kundalik
-    # ish `/panel/` da, nozik holatlar (model darajasidagi tuzatish)
-    # esa shu yerda bajariladi.
-    path('admin/', admin.site.urls),
+    # DJANGO ADMIN OLIB TASHLANDI.
+    #
+    # Uning barcha vazifalari `/panel/` ga ko'chirildi: bo'limlar,
+    # darslar, test savollari, karta rekvizitlari, tarif narxi,
+    # ota-ona bog'lanishlari.
+    #
+    # Nega butunlay olib tashlandi, o'chirilmay qoldirilmadi: ikkita
+    # boshqaruv paneli bo'lsa, ikkalasida ham bir xil narsani
+    # o'zgartirish mumkin bo'lardi va qaysi biri to'g'ri ekani
+    # bilinmay qolardi. Ustiga `/admin/` — hujumchilar birinchi
+    # navbatda urinib ko'radigan manzil.
+
     # Alohida deploy qilinadigan frontend uchun. Versiya manzilda:
     # frontend va backend bir vaqtda yangilanmaydi.
     path('api/v1/', include('api.urls')),

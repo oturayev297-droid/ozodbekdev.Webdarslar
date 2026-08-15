@@ -103,14 +103,18 @@ matn bo'lib chiqib qoladi. Har doim {% comment %} ishlatiladi.
                 <h1 class="font-bold text-lg md:text-xl truncate">{% block heading %}{% endblock %}</h1>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{% url 'landing' %}" target="_blank"
-                   class="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary px-3 py-2 rounded-lg hover:bg-white/5 transition">
-                    <span class="material-icons-round text-sm">open_in_new</span> Saytni ko'rish
-                </a>
-                <a href="/admin/" target="_blank"
-                   class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 px-3 py-2 rounded-lg hover:bg-white/5 transition">
-                    Django admin
-                </a>
+                {% comment %}
+                O'quvchi sayti ALOHIDA DOMENDA (React frontend).
+                Manzili `.env` dagi FRONTEND_URL dan olinadi —
+                sozlanmagan bo'lsa havola umuman ko'rsatilmaydi,
+                chunki qayerga olib borishini bilmaymiz.
+                {% endcomment %}
+                {% if frontend_url %}
+                    <a href="{{ frontend_url }}" target="_blank" rel="noopener"
+                       class="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary px-3 py-2 rounded-lg hover:bg-white/5 transition">
+                        <span class="material-icons-round text-sm">open_in_new</span> Saytni ko'rish
+                    </a>
+                {% endif %}
             </div>
         </header>
 
