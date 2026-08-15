@@ -266,6 +266,30 @@ export interface SubscriptionInfo {
   } | null;
 }
 
+export interface Challenge {
+  id: number;
+  title: string;
+  language: 'python' | 'javascript';
+  difficulty: string;
+  order: number;
+  // `solution_code` ATAYLAB YO'Q — yechim alohida so'raladi
+}
+
+export interface ChallengeDetail extends Challenge {
+  description_html: string;
+  initial_code: string;
+  has_solution: boolean;
+  next_id: number | null;
+}
+
+export interface MentorMessage {
+  id: number;
+  question: string;
+  answer: string;
+  lesson_title: string;
+  created_at: string;
+}
+
 export interface DashboardData {
   lessons: { total: number; completed: number; percent: number };
   quizzes: { taken: number; average_score: number };
@@ -345,4 +369,41 @@ export const mentor = {
 
 export const dashboard = {
   get: () => api.get<DashboardData>('/dashboard/'),
+};
+
+export const challenges = {
+  list: (language?: string) =>
+    api.get<Challenge[]>(`/challenges/${language ? `?language=${language}` : ''}`),
+  detail: (id: number) => api.get<ChallengeDetail>(`/challenges/${id}/`),
+  // Yechim FAQAT so'ralganda olinadi
+  solution: (id: number) => api.get<{ solution: string }>(`/challenges/${id}/solution/`),
+};
+
+export const profile = {
+  get: () => api.get<User>('/profile/'),
+  update: (data: { full_name?: string; bio?: string }) =>
+    request<User>('/profile/', { method: 'PATCH', body: data }),
+  uploadAvatar: async (file: File) => {
+    // Fayl JSON bilan ketmaydi — `multipart/form-data` kerak,
+    // shuning uchun umumiy `request` ishlatilmaydi.
+    const body = new FormData();
+    body.append('image', file);
+
+    const response = await fetch(`${BASE}/profile/avatar/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': await ensureCsrf() },
+      credentials: 'include',
+      body,
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) throw new ApiError(response.status, data);
+    return data as User;
+  },
+  linkTelegram: () => api.post<{ url: string }>('/profile/telegram/'),
+  unlinkTelegram: () => request<void>('/profile/telegram/', { method: 'DELETE' }),
+};
+
+export const mentorHistory = {
+  list: () => api.get<MentorMessage[]>('/mentor/history/'),
 };

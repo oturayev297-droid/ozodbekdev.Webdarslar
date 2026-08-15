@@ -18,7 +18,18 @@ from rest_framework import serializers
 from billing.dates import format_money
 from billing.services import STATUS_LABELS
 from core import richtext
-from core.models import Category, Certificate, Choice, Lesson, LessonImage, Question, Quiz
+from core.models import (
+    Category,
+    Certificate,
+    Challenge,
+    Choice,
+    Lesson,
+    LessonImage,
+    MentorMessage,
+    Profile,
+    Question,
+    Quiz,
+)
 
 
 # ══════════════════════════ Darslar ══════════════════════════
@@ -302,3 +313,63 @@ class RegisterSerializer(serializers.Serializer):
 class MentorAskSerializer(serializers.Serializer):
     question = serializers.CharField(max_length=2000)
     lesson_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+# ══════════════════════════ Kod muharriri ══════════════════════════
+
+
+class ChallengeListSerializer(serializers.ModelSerializer):
+    """
+    Topshiriqlar ro'yxati.
+
+    DIQQAT — `solution_code` MAYDONI YO'Q va bo'lmasligi kerak. Yechim
+    alohida endpoint orqali, o'quvchi ATAYLAB so'raganda beriladi.
+    Ro'yxatga qo'shilsa, u sahifa yuklanishida javobga tushib qolardi
+    va topshiriqning ma'nosi qolmasdi.
+    """
+
+    class Meta:
+        model = Challenge
+        fields = ['id', 'title', 'language', 'difficulty', 'order']
+
+
+class ChallengeDetailSerializer(ChallengeListSerializer):
+    description_html = serializers.SerializerMethodField()
+    has_solution = serializers.SerializerMethodField()
+
+    class Meta(ChallengeListSerializer.Meta):
+        fields = ChallengeListSerializer.Meta.fields + [
+            'description_html', 'initial_code', 'has_solution',
+        ]
+
+    def get_description_html(self, obj):
+        return richtext.render(obj.description)
+
+    def get_has_solution(self, obj):
+        """Yechim BOR-YO'QLIGI aytiladi, yechimning O'ZI emas."""
+        return bool((obj.solution_code or '').strip())
+
+
+# ══════════════════════════ Profil ══════════════════════════
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Profilni tahrirlash.
+
+    `image` bu yerda YO'Q — fayl yuklash JSON bilan bir so'rovda
+    ketmaydi. Rasm alohida endpoint orqali `multipart/form-data`
+    bilan yuboriladi.
+    """
+
+    class Meta:
+        model = Profile
+        fields = ['full_name', 'bio']
+
+
+class MentorMessageSerializer(serializers.ModelSerializer):
+    lesson_title = serializers.CharField(source='lesson.title', read_only=True, default='')
+
+    class Meta:
+        model = MentorMessage
+        fields = ['id', 'question', 'answer', 'lesson_title', 'created_at']

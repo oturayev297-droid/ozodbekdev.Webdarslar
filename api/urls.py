@@ -50,8 +50,25 @@ urlpatterns = [
     # OCHIQ: ish beruvchining tizimda hisobi yo'q
     path('certificates/verify/', views.verify_certificate, name='verify_certificate'),
 
+    # ── Kod muharriri ──
+    path('challenges/', views.ChallengeListView.as_view(), name='challenges'),
+    path('challenges/<int:pk>/', views.ChallengeDetailView.as_view(), name='challenge_detail'),
+    # Yechim ALOHIDA: topshiriq ma'lumotiga qo'shilsa, u sahifa
+    # ochilishidayoq javobga tushib qolardi.
+    path(
+        'challenges/<int:pk>/solution/',
+        views.ChallengeSolutionView.as_view(),
+        name='challenge_solution',
+    ),
+
+    # ── Profil ──
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/avatar/', views.ProfileAvatarView.as_view(), name='profile_avatar'),
+    path('profile/telegram/', views.TelegramLinkView.as_view(), name='telegram_link'),
+
     # ── AI Mentor ──
     path('mentor/ask/', views.MentorAskView.as_view(), name='mentor_ask'),
+    path('mentor/history/', views.mentor_history, name='mentor_history'),
 
     # ── Dashboard ──
     path('dashboard/', views.dashboard, name='dashboard'),

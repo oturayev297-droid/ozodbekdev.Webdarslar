@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Guard } from '@/components/Guard';
+import { MentorChat } from '@/components/MentorChat';
 import { lessons, ApiError, type LessonDetail } from '@/lib/api';
 
 function Lesson({ id }: { id: number }) {
@@ -143,9 +144,14 @@ function Lesson({ id }: { id: number }) {
 
 export default function LessonPage() {
   const params = useParams<{ id: string }>();
+  const id = Number(params.id);
   return (
     <Guard>
-      <Lesson id={Number(params.id)} />
+      <Lesson id={id} />
+      {/* Mentor dars kontekstini oladi — "bu yerda nima deyilgan?"
+          degan savolga model qaysi dars haqida gapirayotganini biladi.
+          Qulflangan dars konteksti SERVERDA rad etiladi. */}
+      <MentorChat lessonId={id} />
     </Guard>
   );
 }

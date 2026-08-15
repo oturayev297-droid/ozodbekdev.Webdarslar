@@ -215,7 +215,7 @@ sahifaga chiqib ketadi.
                     
                     <div class="prose prose-invert prose-blue max-w-none prose-p:text-slate-400 prose-p:text-sm lg:prose-p:text-base prose-p:leading-relaxed prose-headings:text-white prose-code:text-primary prose-code:bg-primary/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded text-sm lg:text-base">
                         {% if current_challenge %}
-                            {{ current_challenge.description|safe }}
+                            {{ description_html|safe }}
                         {% else %}
                             <p>Darslarni davom ettirishga tayyormisiz? Chap tomondagi paneldan topshiriqni tanlang va kodlashni boshlang.</p>
                         {% endif %}

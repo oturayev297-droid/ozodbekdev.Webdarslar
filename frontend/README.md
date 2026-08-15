@@ -52,18 +52,42 @@ src/
   lib/
     api.ts           barcha endpointlar va turlar; CSRF shu yerda
     auth-context.tsx joriy foydalanuvchi (bir marta so'raladi)
+    runner.ts        kodni BRAUZERDA ishga tushirish (Pyodide)
   components/
     Nav.tsx          yuqori menyu
     Guard.tsx        kirmagan -> /login, ruxsatsiz -> /kutish
+    MentorChat.tsx   AI Mentor suzuvchi oynasi
   app/
-    page.tsx              bosh sahifa
-    login/ register/      autentifikatsiya
-    kutish/               admin ruxsatini kutish
-    kurslar/              kurslar ro'yxati va bo'lim
-    darslar/[id]/         dars: matn, rasm, video
-    testlar/              testlar va yechish
-    obuna/                tarif va to'lov oqimi
+    page.tsx                  bosh sahifa
+    login/ register/          autentifikatsiya
+    parolni-tiklash/          ikki qadam bitta sahifada
+    kutish/                   admin ruxsatini kutish
+    dashboard/                o'zlashtirish raqamlari
+    kurslar/                  kurslar ro'yxati va bo'lim
+    darslar/[id]/             dars: matn, rasm, video, mentor
+    testlar/                  testlar va yechish
+    muharrir/                 kod muharriri (Python + JS)
+    sertifikatlar/            o'z sertifikatlari
+    sertifikat-tekshirish/    OCHIQ: ish beruvchi uchun
+    profil/                   rasm, ma'lumot, Telegram
+    obuna/                    tarif va to'lov oqimi
 ```
+
+## Kod muharriri
+
+Kod **brauzerda** ishlaydi, serverda emas. Bu xavfsizlik qarori:
+begona kodni serverda ijro etish — serverni begona odamga topshirish
+demak.
+
+- **Python** — Pyodide (CPython WebAssembly da). ~10 MB, shuning uchun
+  sahifa ochilganda emas, faqat birinchi «Ishga tushirish» bosilganda
+  yuklanadi.
+- **JavaScript** — `new Function`, `eval` **emas**. Farqi: `Function`
+  atrofdagi o'zgaruvchilarga (masalan sessiya ma'lumotiga) yeta olmaydi.
+
+Yechim **alohida endpoint** orqali, o'quvchi ataylab so'raganda
+olinadi. Topshiriq ma'lumotiga qo'shilsa, u sahifa ochilishidayoq
+javobga tushib qolardi.
 
 ## Xavfsizlik qoidalari
 

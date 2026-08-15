@@ -66,6 +66,12 @@ export default function LoginPage() {
       </form>
 
       <p className="text-center text-sm text-slate-500 mt-5">
+        <Link href="/parolni-tiklash" className="text-primary hover:underline">
+          Parolni unutdingizmi?
+        </Link>
+      </p>
+
+      <p className="text-center text-sm text-slate-500 mt-3">
         Hisobingiz yo&apos;qmi?{' '}
         <Link href="/register" className="text-primary hover:underline">
           Ro&apos;yxatdan o&apos;ting

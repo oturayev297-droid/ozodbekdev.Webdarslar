@@ -22,7 +22,16 @@ from django.urls import reverse
 
 from billing.models import PeriodSource, SubscriptionPlan
 from billing.services import extend_subscription
-from core.models import Category, Choice, Lesson, Module, Profile, Question, Quiz
+from core.models import (
+    Category,
+    Challenge,
+    Choice,
+    Lesson,
+    Module,
+    Profile,
+    Question,
+    Quiz,
+)
 
 SECRET_TEXT = "Bu maxfiy dars matni va u hech qachon chiqmasligi kerak"
 
@@ -424,3 +433,163 @@ class CourseApiTests(ApiBase):
     def test_qulflangan_darsni_tugatib_bolmaydi(self):
         response = self.client.post(reverse('api:lesson_complete', args=[self.paid.id]))
         self.assertEqual(response.status_code, 402)
+
+
+# ══════════════════════════ Kod muharriri ══════════════════════════
+
+
+class ChallengeApiTests(ApiBase):
+    """
+    Yechim ro'yxatga va topshiriq ma'lumotiga TUSHMASLIGI.
+
+    Tushsa, u sahifa ochilishidayoq javobga kelib qolardi va
+    topshiriqni yechishning ma'nosi qolmasdi.
+    """
+
+    SOLUTION = "print('bu yechim va u oldindan chiqmasligi kerak')"
+
+    def setUp(self):
+        super().setUp()
+        self.challenge = Challenge.objects.create(
+            title='Salom dunyo',
+            language='python',
+            description='Ekranga matn chiqaring',
+            initial_code='# kodni yozing',
+            solution_code=self.SOLUTION,
+            order=1,
+        )
+        self.client.force_login(make_user('koder'))
+
+    def test_royxatda_yechim_yoq(self):
+        response = self.client.get(reverse('api:challenges'))
+        raw = json.dumps(response.json(), ensure_ascii=False)
+        self.assertNotIn(self.SOLUTION, raw)
+        self.assertNotIn('solution', raw)
+
+    def test_tafsilotda_ham_yechim_yoq(self):
+        response = self.client.get(reverse('api:challenge_detail', args=[self.challenge.id]))
+        raw = json.dumps(response.json(), ensure_ascii=False)
+        self.assertNotIn(self.SOLUTION, raw)
+
+    def test_yechim_borligi_aytiladi(self):
+        """Yechimning O'ZI emas, BOR-YO'QLIGI — tugmani ko'rsatish uchun."""
+        response = self.client.get(reverse('api:challenge_detail', args=[self.challenge.id]))
+        self.assertTrue(response.json()['has_solution'])
+
+    def test_yechim_ATAYLAB_soralganda_beriladi(self):
+        response = self.client.get(
+            reverse('api:challenge_solution', args=[self.challenge.id])
+        )
+        self.assertEqual(response.json()['solution'], self.SOLUTION)
+
+    def test_til_boyicha_filtr(self):
+        Challenge.objects.create(
+            title='JS', language='javascript', description='d', order=2
+        )
+        response = self.client.get(reverse('api:challenges'), {'language': 'python'})
+        languages = {row['language'] for row in response.json()}
+        self.assertEqual(languages, {'python'})
+
+    def test_ruxsatsiz_odam_topshiriq_ololmaydi(self):
+        self.client.force_login(make_user('ruxsatsizkoder', approved=False))
+        self.assertEqual(self.client.get(reverse('api:challenges')).status_code, 403)
+
+
+# ══════════════════════════ Profil ══════════════════════════
+
+
+class ProfileApiTests(ApiBase):
+    def setUp(self):
+        super().setUp()
+        self.user = make_user('profilchi')
+        self.client.force_login(self.user)
+
+    def test_profilni_oqish(self):
+        response = self.client.get(reverse('api:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['username'], 'profilchi')
+
+    def test_profilni_tahrirlash(self):
+        response = self.client.patch(
+            reverse('api:profile'),
+            data=json.dumps({'full_name': 'Yangi Ism'}),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.full_name, 'Yangi Ism')
+
+    def test_ozini_ozi_TASDIQLAY_OLMAYDI(self):
+        """
+        `is_approved` serializerda yo'q. Bo'lganda o'quvchi bitta
+        so'rov bilan admin ruxsatini o'ziga berib qo'yardi va butun
+        darvoza ma'nosini yo'qotardi.
+
+        Foydalanuvchi ATAYLAB ruxsatsiz yaratiladi — aks holda maydon
+        o'zgardimi yoki yo'qmi bilib bo'lmasdi.
+        """
+        user = make_user('tasdiqsiz', approved=False)
+        self.client.force_login(user)
+
+        self.client.patch(
+            reverse('api:profile'),
+            data=json.dumps({'full_name': 'A', 'is_approved': True}),
+            content_type='application/json',
+        )
+
+        user.profile.refresh_from_db()
+        self.assertFalse(user.profile.is_approved)
+        self.assertEqual(user.profile.full_name, 'A', "Ruxsat etilgan maydon o'zgarishi kerak")
+
+    def test_darajani_ozgartirib_bolmaydi(self):
+        """Level testlardan hisoblanadi — qo'lda qo'yib bo'lmaydi."""
+        self.client.patch(
+            reverse('api:profile'),
+            data=json.dumps({'level': 99}),
+            content_type='application/json',
+        )
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.level, 1)
+
+    def test_juda_katta_rasm_rad_etiladi(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        big = SimpleUploadedFile('katta.jpg', b'x' * (4 * 1024 * 1024), 'image/jpeg')
+        response = self.client.post(reverse('api:profile_avatar'), {'image': big})
+        self.assertEqual(response.status_code, 400)
+
+    def test_notogri_format_rad_etiladi(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        bad = SimpleUploadedFile('virus.exe', b'MZ', 'application/octet-stream')
+        response = self.client.post(reverse('api:profile_avatar'), {'image': bad})
+        self.assertEqual(response.status_code, 400)
+
+    def test_anonim_profil_kora_olmaydi(self):
+        self.client.logout()
+        self.assertEqual(self.client.get(reverse('api:profile')).status_code, 403)
+
+
+class MentorHistoryTests(ApiBase):
+    """Tarix FAQAT o'ziniki bo'lishi."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = make_user('savolchi')
+        self.other = make_user('boshqaodam')
+
+        from core.models import MentorMessage
+
+        MentorMessage.objects.create(
+            user=self.user, question='Mening savolim', answer='Javob'
+        )
+        MentorMessage.objects.create(
+            user=self.other, question='BEGONA SAVOL', answer='Javob'
+        )
+        self.client.force_login(self.user)
+
+    def test_faqat_ozining_tarixi(self):
+        response = self.client.get(reverse('api:mentor_history'))
+        raw = json.dumps(response.json(), ensure_ascii=False)
+        self.assertIn('Mening savolim', raw)
+        self.assertNotIn('BEGONA SAVOL', raw)

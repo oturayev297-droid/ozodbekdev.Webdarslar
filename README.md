@@ -20,7 +20,7 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **Boshqaruv paneli** (`/panel/`) — hisobotlar, pul aylanmasi, darslik joylash,
   xabar yuborish va kuzatish, o'z kirishi va parol tiklashi bilan
 - **REST API** (`/api/v1/`) — alohida deploy qilinadigan frontend uchun
-- **React frontend** (`frontend/`) — Next.js 16, Vercel uchun tayyor
+- **React frontend** (`frontend/`) — Next.js 16, 17 sahifa, Vercel uchun tayyor
 
 ## Tez boshlash
 
@@ -68,8 +68,9 @@ api/                   REST API (/api/v1/)
   views.py             biznes mantiq billing/core dan chaqiriladi
 frontend/              Next.js 16 frontend (Vercel)
   src/lib/api.ts       barcha endpointlar, CSRF, sessiya cookie
-  src/components/      Nav, Guard
-  src/app/             sahifalar
+  src/lib/runner.ts    kodni brauzerda ishga tushirish (Pyodide)
+  src/components/      Nav, Guard, MentorChat
+  src/app/             17 ta sahifa
 panel/                 boshqaruv paneli (/panel/)
   auth.py              xodim kirishi, chiqish, parol tiklash
   reports.py           hisobotlar — FAQAT o'qiydi, hech narsa o'zgartirmaydi
@@ -344,6 +345,13 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 44. **Frontend `/api/*` ni PROXY orqali chaqiradi** (Vercel rewrites).
     Cookie birinchi tomon bo'lib qoladi va Safari uni bloklamaydi.
     Token `localStorage` da saqlanmaydi.
+45. **Topshiriq yechimi ALOHIDA endpointda.** Ro'yxatga yoki topshiriq
+    ma'lumotiga qo'shilsa, u sahifa ochilishidayoq javobga tushib
+    qolardi va topshiriqning ma'nosi qolmasdi.
+46. **Kod BRAUZERDA ishlaydi, serverda emas.** Begona kodni serverda
+    ijro etish — serverni begona odamga topshirish demak.
+47. **Profil serializerida `is_approved` va `level` YO'Q.** Bo'lganda
+    o'quvchi bitta so'rov bilan o'ziga admin ruxsatini berib qo'yardi.
 
 ## Yozma darslar
 

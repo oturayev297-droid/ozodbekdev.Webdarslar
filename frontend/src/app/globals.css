@@ -57,3 +57,20 @@ body {
 }
 .btn:hover { background: #38bdf8; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── AI Mentor javoblari ───
+   HTML serverda `core/ai_mentor.py` dagi `_to_html` bilan tozalanadi:
+   faqat <pre><code>, <code>, <strong>, <br> qoladi. */
+.mentor-bubble p { margin: 0 0 .6em; }
+.mentor-bubble p:last-child { margin-bottom: 0; }
+.mentor-bubble code {
+  font-family: ui-monospace, monospace; font-size: .875em; color: #7dd3fc;
+  background: rgba(56,189,248,.1); padding: .1em .35em; border-radius: .3rem;
+  word-break: break-word;
+}
+.mentor-bubble pre {
+  background: #020617; border: 1px solid rgba(255,255,255,.08);
+  border-radius: .75rem; padding: .75rem .9rem; margin: .6em 0; overflow-x: auto;
+}
+.mentor-bubble pre code { background: none; padding: 0; white-space: pre; }
+.mentor-bubble strong { color: #fff; }

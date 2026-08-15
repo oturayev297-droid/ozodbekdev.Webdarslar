@@ -17,6 +17,7 @@ to'g'ri ekani bilinmasdi.
 """
 
 import logging
+import os
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -27,6 +28,7 @@ from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -38,19 +40,33 @@ from billing.gating import can_access_lesson, can_access_quiz
 from core import ai_mentor, lockout, quiz_scoring
 from core import password_reset as pwreset
 from core.approval import is_approved
-from core.models import Category, Certificate, Lesson, Profile, Quiz, QuizResult, UserProgress
+from core.models import (
+    Category,
+    Certificate,
+    Challenge,
+    Lesson,
+    MentorMessage,
+    Profile,
+    Quiz,
+    QuizResult,
+    UserProgress,
+)
 
 from .permissions import IsApproved
 from .serializers import (
     CategorySerializer,
+    ChallengeDetailSerializer,
+    ChallengeListSerializer,
     CertificateSerializer,
     LessonDetailSerializer,
     LessonListSerializer,
     LockedLessonSerializer,
     LoginSerializer,
     MentorAskSerializer,
+    MentorMessageSerializer,
     PlanOptionSerializer,
     ProfileSerializer,
+    ProfileUpdateSerializer,
     QuizDetailSerializer,
     QuizListSerializer,
     QuizSubmitSerializer,
@@ -705,3 +721,169 @@ def dashboard(request):
         ).count(),
         'level': _profile(request.user).level,
     })
+
+
+# ══════════════════════════ Kod muharriri ══════════════════════════
+
+
+class ChallengeListView(APIView):
+    """
+    Topshiriqlar ro'yxati.
+
+    `?language=python` bilan filtrlanadi. Yechim bu yerda YO'Q —
+    `ChallengeListSerializer` uni umuman bermaydi.
+    """
+
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get(self, request):
+        qs = Challenge.objects.all().order_by('order')
+
+        language = request.query_params.get('language')
+        if language:
+            qs = qs.filter(language=language)
+
+        return Response(ChallengeListSerializer(qs, many=True).data)
+
+
+class ChallengeDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get(self, request, pk):
+        challenge = get_object_or_404(Challenge, pk=pk)
+        data = ChallengeDetailSerializer(challenge).data
+
+        # Keyingi topshiriq — frontend "keyingisi" tugmasini
+        # ko'rsatishi uchun
+        nxt = Challenge.objects.filter(order__gt=challenge.order).order_by('order').first()
+        data['next_id'] = nxt.id if nxt else None
+        return Response(data)
+
+
+class ChallengeSolutionView(APIView):
+    """
+    Yechim.
+
+    ALOHIDA ENDPOINT: o'quvchi ATAYLAB so'raganda beriladi. Topshiriq
+    ma'lumotiga qo'shilsa, u sahifa ochilishidayoq javobga tushib
+    qolardi va topshiriqni yechishning ma'nosi qolmasdi.
+    """
+
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get(self, request, pk):
+        challenge = get_object_or_404(Challenge, pk=pk)
+        return Response({'solution': challenge.solution_code or ''})
+
+
+# ══════════════════════════ Profil ══════════════════════════
+
+
+class ProfileView(APIView):
+    """Profilni o'qish va tahrirlash."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            ProfileSerializer(_profile(request.user), context={'request': request}).data
+        )
+
+    def patch(self, request):
+        serializer = ProfileUpdateSerializer(
+            _profile(request.user), data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            ProfileSerializer(_profile(request.user), context={'request': request}).data
+        )
+
+
+class ProfileAvatarView(APIView):
+    """
+    Profil rasmini yuklash.
+
+    ALOHIDA ENDPOINT: fayl JSON bilan bir so'rovda ketmaydi, u
+    `multipart/form-data` talab qiladi.
+
+    HAJM VA TUR TEKSHIRILADI — shablonli sahifadagi bilan bir xil
+    chegaralar. Tekshiruvsiz kimdir 500 MB fayl yuborib diskni
+    to'ldirib qo'yishi mumkin edi.
+    """
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    MAX_SIZE = 3 * 1024 * 1024  # 3 MB
+    ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.webp')
+
+    def post(self, request):
+        image = request.FILES.get('image')
+        if not image:
+            return Response({'detail': 'Rasm yuborilmadi.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if image.size > self.MAX_SIZE:
+            return Response(
+                {'detail': "Rasm hajmi 3 MB dan oshmasin."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        extension = os.path.splitext(image.name)[1].lower()
+        if extension not in self.ALLOWED_EXTENSIONS:
+            return Response(
+                {'detail': "Faqat JPG, PNG yoki WEBP rasm yuklang."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile = _profile(request.user)
+        profile.image = image
+        profile.save(update_fields=['image'])
+
+        return Response(ProfileSerializer(profile, context={'request': request}).data)
+
+
+class TelegramLinkView(APIView):
+    """
+    Telegram hisobini ulash uchun BIR MARTALIK havola.
+
+    Kodning o'zi bazada saqlanmaydi — faqat SHA-256 xeshi. Havola
+    Telegram tarixida qolib ketadi, baza esa tayyor kalitlar
+    ro'yxatiga aylanmasligi kerak.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not telegram.is_configured():
+            return Response(
+                {'detail': "Telegram bot sozlanmagan."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        return Response({'url': telegram.create_link_token(request.user)})
+
+    def delete(self, request):
+        profile = _profile(request.user)
+        profile.telegram_chat_id = ''
+        profile.save(update_fields=['telegram_chat_id'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ══════════════════════════ AI Mentor tarixi ══════════════════════════
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsApproved])
+def mentor_history(request):
+    """
+    Oxirgi savol-javoblar.
+
+    FAQAT O'ZINIKI: `filter(user=request.user)` — boshqa o'quvchining
+    suhbatini ko'rish imkoni bo'lmasligi kerak.
+    """
+    messages_qs = (
+        MentorMessage.objects.filter(user=request.user)
+        .select_related('lesson')
+        .order_by('-created_at')[:20]
+    )
+    return Response(MentorMessageSerializer(messages_qs, many=True).data)

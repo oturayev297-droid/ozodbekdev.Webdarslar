@@ -408,6 +408,12 @@ def editor(request, challenge_id=None):
     context = {
         'challenges': challenges,
         'current_challenge': current_challenge,
+        # Tavsif endi ODDIY MATN (HTML dan `convert_challenge_html`
+        # bilan o'tkazilgan) va u `richtext` orqali chiqariladi —
+        # dars matni bilan bir xil yo'l.
+        'description_html': (
+            richtext.render(current_challenge.description) if current_challenge else ''
+        ),
         'next_challenge': (
             challenges.filter(order__gt=current_challenge.order).first()
             if current_challenge else None
