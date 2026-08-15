@@ -22,7 +22,7 @@ from urllib.parse import quote
 from billing.gating import can_access_lesson, can_access_quiz, paywall
 from billing.services import get_state
 
-from . import ai_mentor, certificates, lockout
+from . import ai_mentor, certificates, lockout, richtext
 from . import password_reset as pwreset
 from .models import (
     Category,
@@ -74,7 +74,12 @@ def lessons(request, lesson_id=None):
     # so'ralmaydi.
     subscribed = get_state(request.user).active
 
-    categories = Category.objects.all().prefetch_related('modules__lessons')
+    categories = Category.objects.all().prefetch_related(
+        'modules__lessons',
+        # Rasmlarsiz har bir dars uchun alohida so'rov ketardi:
+        # 73 dars = 73 ta qo'shimcha so'rov.
+        'modules__lessons__images',
+    )
 
     for category in categories:
         cat_slug = category.slug.lower()
@@ -105,14 +110,31 @@ def lessons(request, lesson_id=None):
                     video_url = f'/lessons/{lesson.id}/video/'
                 else:
                     video_url = lesson.video_url or ''
-                description = (lesson.theory[:100] + '...') if lesson.theory else "Tavsif yo'q"
+                # Tavsif bezak belgilaridan tozalanadi — kartochkada
+                # "## Sarlavha" ko'rinib qolmasin
+                description = richtext.plain_summary(lesson.theory) or "Tavsif yo'q"
                 code = lesson.practice_code
-                theory = lesson.theory
+                # HTML SERVERDA quriladi: matn to'liq ekranlanadi va
+                # faqat ruxsat etilgan teglar qo'yiladi, shuning uchun
+                # uni brauzerda innerHTML ga berish xavfsiz.
+                theory_html = richtext.render(lesson.theory)
+                images = [
+                    {
+                        'url': img.image.url,
+                        'caption': img.caption,
+                        'alt': img.display_alt,
+                    }
+                    for img in lesson.images.all()
+                    if img.image
+                ]
             else:
                 video_url = ''
                 description = "Bu dars obuna bilan ochiladi."
                 code = ''
-                theory = ''
+                theory_html = ''
+                # RASMLAR HAM YUBORILMAYDI: dars matni rasmda bo'lsa,
+                # ularni qoldirish qulfni ma'nosiz qilardi.
+                images = []
 
             lessons_list.append({
                 'id': lesson.id,
@@ -120,7 +142,9 @@ def lessons(request, lesson_id=None):
                 'description': description,
                 'videoUrl': video_url,
                 'code': code,
-                'full_theory': theory,
+                'theoryHtml': theory_html,
+                'images': images,
+                'hasText': bool(theory_html),
                 'completed': is_completed,
                 'isFree': lesson.is_free,
                 'unlocked': unlocked,
@@ -128,6 +152,10 @@ def lessons(request, lesson_id=None):
 
         course_data[cat_slug] = {
             'name': category.name,
+            # Kurs kartochkasidagi tavsif. Bo'lim tavsifi bo'sh bo'lsa
+            # kartochkada shunchaki matn chiqmaydi — bu sahifani
+            # buzmaydi.
+            'description': category.description or '',
             'color': category_colors.get(cat_slug, 'blue'),
             'totalLessons': len(all_lessons),
             'completedLessons': completed_count,

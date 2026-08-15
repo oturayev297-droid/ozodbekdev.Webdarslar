@@ -13,7 +13,7 @@ bayroq butun kursni bepulga chiqarib yuborardi.
 
 from django import forms
 
-from core.models import Lesson, Module
+from core.models import Lesson, LessonImage, Module
 
 #: Tailwind bilan bo'yalgan maydonlar uchun umumiy sinflar
 INPUT = (
@@ -105,3 +105,30 @@ class LessonForm(forms.ModelForm):
                 "Darsda hech bo'lmasa nazariya matni yoki video bo'lishi kerak."
             )
         return cleaned
+
+
+class LessonImageForm(forms.ModelForm):
+    """
+    Darsga bitta rasm qo'shish.
+
+    NEGA ALOHIDA FORMA (LessonForm ichida emas): rasm qo'shish darsni
+    saqlashdan MUSTAQIL bo'lishi kerak. Bitta formada bo'lganda,
+    o'qituvchi rasm qo'shish uchun har safar butun dars matnini qayta
+    yuborishga majbur bo'lardi va tarmoq uzilsa matn ham yo'qolardi.
+    """
+
+    class Meta:
+        model = LessonImage
+        fields = ['image', 'caption', 'alt_text', 'order']
+        labels = {
+            'image': "Rasm fayli",
+            'caption': "Izoh",
+            'alt_text': "Muqobil matn",
+            'order': "Tartib",
+        }
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'class': INPUT, 'accept': 'image/*'}),
+            'caption': forms.TextInput(attrs={'class': INPUT, 'placeholder': "Rasm tagidagi matn"}),
+            'alt_text': forms.TextInput(attrs={'class': INPUT, 'placeholder': "Rasm ochilmasa ko'rinadi"}),
+            'order': forms.NumberInput(attrs={'class': INPUT}),
+        }

@@ -18,13 +18,20 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    # DIQQAT: dars videolari ATAYLAB /media/ orqali berilmaydi.
-    # Ular faqat /lessons/<id>/video/ endpointi orqali, login talab qilib
-    # uzatiladi. Bu yerda faqat profil rasmlari ochiq.
-    urlpatterns += static(
-        settings.MEDIA_URL + 'profiles/',
-        document_root=settings.MEDIA_ROOT / 'profiles',
-    )
+    # DIQQAT: dars VIDEOLARI ataylab /media/ orqali berilmaydi. Ular
+    # faqat /lessons/<id>/video/ endpointi orqali, huquq tekshirilib
+    # uzatiladi. Bu yerda ochiq turadigan ikkita papka bor, xolos.
+    #
+    # NEGA DARS RASMLARI OCHIQ, VIDEO YOPIQ:
+    # video — darsning O'ZI, uni himoyalash obunaning ma'nosi. Rasm esa
+    # matnning kichik qismi: har bir rasmga alohida huquq so'rovi
+    # qilish sahifani sekinlashtiradi, himoya qiymati esa deyarli nol —
+    # rasmsiz matn baribir qulflangan bo'lib qoladi.
+    for folder in ('profiles', 'lesson_images'):
+        urlpatterns += static(
+            settings.MEDIA_URL + folder + '/',
+            document_root=settings.MEDIA_ROOT / folder,
+        )
 
 handler404 = 'core.views_errors.handler404'
 handler500 = 'core.views_errors.handler500'

@@ -94,6 +94,16 @@ server {
         expires 7d;
     }
 
+    # Dars rasmlari (sxemalar) — ochiq.
+    # Video yopiq, rasm ochiq: video darsning O'ZI, rasm esa matnning
+    # kichik qismi. Bu qator BO'LMASA yozma darslardagi barcha rasmlar
+    # 404 beradi — quyidagi "location /media/ { return 404; }" ularni
+    # ham to'sib qo'yadi.
+    location /media/lesson_images/ {
+        alias /var/www/stitch/media/lesson_images/;
+        expires 7d;
+    }
+
     # DIQQAT: dars videolari FAQAT shu internal location orqali.
     # Tashqaridan bu manzilga murojaat qilib bo'lmaydi — faqat Django
     # X-Accel-Redirect sarlavhasi bilan yo'naltirganda ishlaydi.
@@ -443,7 +453,39 @@ Oylar Asia/Tashkent bo'yicha bo'linadi.
 Kutayotgan to'lov so'rovlari **tushum emas** — ular alohida "kutilmoqda"
 sifatida ko'rsatiladi.
 
-## 13. Ortiqcha video fayllar
+## 13. Yozma darslar va tayyor AI kursi
+
+Yozma dars uchun serverda alohida sozlama kerak emas — faqat nginx da
+rasm papkasi ochiq bo'lsin (5-bo'limdagi `location /media/lesson_images/`).
+Bu qator bo'lmasa barcha dars rasmlari 404 beradi.
+
+Tayyor kursni yozish:
+
+```bash
+python manage.py seed_ai_course --dry-run   # avval ko'rib chiqing
+python manage.py seed_ai_course
+python manage.py collectstatic --noinput
+```
+
+Buyruq QAYTA ISHGA TUSHIRILISHI XAVFSIZ: darslar `(modul, sarlavha)`
+bo'yicha topilib yangilanadi, ikkinchi nusxa yaratilmaydi.
+O'quvchilarning o'zlashtirishi va test natijalari saqlanadi.
+
+Testlar QORALAMA holatida tushadi va o'quvchiga ko'rinmaydi. Savollarni
+o'qib chiqib `/panel/testlar/` da nashr qilasiz. Darhol nashr qilish
+kerak bo'lsa: `--publish-quizzes`.
+
+Sxemalar Pillow bilan chiziladi. Serverda DejaVu shrifti bo'lmasa
+buyruq YIQILMAYDI — oddiyroq shrift ishlatiladi. Debian/Ubuntu da
+yaxshiroq natija uchun:
+
+```bash
+sudo apt install fonts-dejavu-core
+```
+
+Rasmlarsiz yozish kerak bo'lsa: `--no-images`.
+
+## 14. Ortiqcha video fayllar
 
 Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
 yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
@@ -458,7 +500,7 @@ Standart holda **hech narsa o'chirilmaydi**. Backup borligiga ishonch
 hosil qilmasdan `--delete` ishlatmang — video fayllarni qaytarib
 bo'lmaydi.
 
-## 14. Backup
+## 15. Backup
 
 ```bash
 # Baza
@@ -468,6 +510,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 15. Loglar
+## 16. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

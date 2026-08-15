@@ -5,6 +5,8 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 ## Nima bor
 
 - **73 video dars** 4 yo'nalishda (Python 15, Django 13, React 15, JavaScript 30)
+- **Yozma darslar** — matn, sxema-rasmlar va test bilan; «Sun'iy intellekt»
+  kursi (10 dars, 41 savol) tayyor holda kiritilgan
 - **Obuna tizimi** — Payme / Click avtomatik yoki qo'lda tasdiqlash, 1/3/6/12 oy
 - **Testlar** — server tomonda tekshiriladigan, natijasi soxtalashtirilmaydigan
 - **PDF sertifikat** — 80%+ ballda avtomatik, ommaviy tekshirish kodi bilan
@@ -35,6 +37,8 @@ Batafsil: [DEPLOY.md](DEPLOY.md)
 ```
 core/                  kontent va autentifikatsiya
   models.py            Category -> Module -> Lesson -> Quiz -> Question -> Choice
+  richtext.py          dars matnini XAVFSIZ HTML ga aylantirish
+  diagrams.py          dars sxemalarini kod bilan chizish (PNG)
   views.py             sahifalar va API endpointlari
   password_reset.py    6 xonali kod bilan parol tiklash
   lockout.py           login urinishlari cheklovi (brute-force himoyasi)
@@ -256,6 +260,75 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
     raqamga aylanadi.
 32. **Aylanma sanasi — `created_at`** (pul kelgan payt), `start_date` emas.
     Oylar Toshkent vaqti bo'yicha bo'linadi.
+33. **Dars matni HTML ga faqat `core.richtext.render` orqali aylanadi.**
+    U avval HAMMASINI ekranlaydi, keyin faqat o'zi qo'ygan teglarni
+    qaytaradi. "Keraksiz teglarni olib tashlash" yondashuvi hech qachon
+    ishlatilmaydi: `<scr<script>ipt>` kabi hiylalar undan o'tib ketadi.
+34. **Qulflangan darsning rasmlari ham JSON ga tushmaydi.** Dars mazmuni
+    rasmda bo'lsa, ularni qoldirish qulfni ma'nosiz qilardi.
+35. **Kurs kartochkalari shablonda yozilmaydi** — `courseData` dan
+    quriladi. Qo'lda yozilganda yangi bo'lim sahifada ko'rinmasdi va
+    dars sonlari bazadagi haqiqatga bog'lanmagan edi.
+
+## Yozma darslar
+
+Platforma dastlab faqat video uchun qurilgan edi: dars matni serverdan
+kelardi, lekin sahifada **ko'rsatilmasdi** va rasm uchun maydon umuman
+yo'q edi. Endi dars uch qismdan iborat bo'lishi mumkin: video, matn va
+rasmlar. Uchalasi ham ixtiyoriy.
+
+### Matn qanday yoziladi
+
+`Lesson.theory` maydoniga **oddiy matn** yoziladi. HTML yozilmaydi — u
+ekranlanadi va matn bo'lib ko'rinib qoladi. Bezaklar:
+
+```
+## Sarlavha              ### Kichik sarlavha
+**qalin**                *kursiv*
+`kod`                    ``` kod bloki ```
+- ro'yxat                1. raqamli ro'yxat
+> eslatma                ---  (ajratuvchi chiziq)
+[matn](https://...)      (faqat http/https)
+```
+
+Xatboshi ochish uchun **bo'sh qator** qoldiriladi. Bitta qator uzilishi
+bo'sh joyga aylanadi — matn manbada qulay kenglikda yozilaveradi.
+
+Uzun ro'yxat elementining davomi **ichkariga suriladi**:
+
+```
+- **Til modeli** — matn bilan ishlaydigan tur.
+  ChatGPT, Claude, Gemini shu turga kiradi.
+```
+
+### Rasmlar
+
+Rasm matn ichiga havola bilan qo'yilmaydi — u alohida model
+(`LessonImage`). Panelda dars sahifasining pastidan yuklanadi, izoh va
+tartib raqami bilan. Rasmlar matndan keyin, tartib bo'yicha chiqadi.
+
+Rasm fayllari `/media/lesson_images/` da va **ochiq** beriladi. Video esa
+yopiq: video — darsning o'zi, rasm esa matnning kichik qismi.
+
+### Tayyor kurs
+
+```bash
+python manage.py seed_ai_course              # yaratadi yoki yangilaydi
+python manage.py seed_ai_course --dry-run    # faqat ko'rsatadi
+python manage.py seed_ai_course --no-images  # sxemalarsiz
+```
+
+«Sun'iy intellekt va prompt engineering» — 3 modul, 10 dars, 8 sxema,
+10 test (41 savol). Birinchi 3 dars bepul.
+
+Buyruq **qayta ishga tushirilishi xavfsiz**: mavjud darslar yangilanadi,
+ikkinchi nusxa yaratilmaydi, o'quvchilarning o'zlashtirishi saqlanadi.
+Testlar **qoralama** bo'lib tushadi — savollarni o'qib chiqib
+`/panel/testlar/` da nashr qilasiz.
+
+Sxemalar `core/diagrams.py` da **kod bilan chiziladi**. Sababi: `media/`
+git ga tushmaydi, demak yangi serverda rasmlar yo'q bo'lardi — kod esa
+ko'chadi va buyruqni qayta ishga tushirish yetarli.
 
 ## Boshqaruv paneli
 
@@ -297,6 +370,9 @@ python manage.py test billing.tests_gateways  # Payme / Click
 python manage.py test core.tests_mentor       # AI Mentor
 python manage.py test core.tests_generate_quizzes  # savol generatsiyasi
 python manage.py test panel                   # boshqaruv paneli
+python manage.py test core.tests_richtext     # dars matni va xavfsizligi
+python manage.py test core.tests_ai_course    # tayyor AI kursi
+python manage.py test core.tests_lesson_content  # yozma dars va qulf
 ```
 
 ## Hali qilinmagan

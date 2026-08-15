@@ -525,10 +525,13 @@ class ContentGatingTests(BaseBillingTest):
         data = json.loads(response.context['course_data_json'])
         lessons = {l['title']: l for l in data['python']['lessons']}
         self.assertFalse(lessons['Pullik dars']['unlocked'])
-        self.assertEqual(lessons['Pullik dars']['full_theory'], '')
+        self.assertEqual(lessons['Pullik dars']['theoryHtml'], '')
         self.assertEqual(lessons['Pullik dars']['videoUrl'], '')
+        # Rasmlar ham yuborilmaydi: dars mazmuni rasmda bo'lsa,
+        # ularni qoldirish qulfni ma'nosiz qilardi
+        self.assertEqual(lessons['Pullik dars']['images'], [])
         self.assertTrue(lessons['Bepul kirish']['unlocked'])
-        self.assertEqual(lessons['Bepul kirish']['full_theory'], 'Matn')
+        self.assertIn('Matn', lessons['Bepul kirish']['theoryHtml'])
 
     def test_obuna_bilan_mazmun_keladi(self):
         extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
@@ -536,7 +539,9 @@ class ContentGatingTests(BaseBillingTest):
         data = json.loads(self.client.get(reverse('lessons')).context['course_data_json'])
         lessons = {l['title']: l for l in data['python']['lessons']}
         self.assertTrue(lessons['Pullik dars']['unlocked'])
-        self.assertEqual(lessons['Pullik dars']['full_theory'], 'Maxfiy matn')
+        # Matn endi serverda HTML ga aylantiriladi, shuning uchun
+        # aynan tenglik emas, ichida borligi tekshiriladi
+        self.assertIn('Maxfiy matn', lessons['Pullik dars']['theoryHtml'])
 
     def test_pullik_test_yopiq(self):
         response = self.client.get(reverse('quiz_detail', args=[self.paid_quiz.id]))

@@ -3,7 +3,7 @@ from django.contrib.admin.sites import AlreadyRegistered
 from django.urls import reverse
 from django.db.models import Count, Q
 from django.utils.html import format_html
-from .models import Category, Module, Lesson, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress, LoginAttempt, Certificate, MentorMessage
+from .models import Category, Module, Lesson, LessonImage, Challenge, Quiz, Question, Choice, Project, Profile, NewStudent, UserProgress, LoginAttempt, Certificate, MentorMessage
 
 # Helper function to safely register models
 def safe_register(model, admin_class=None):
@@ -66,13 +66,33 @@ try:
     admin.site.unregister(Lesson)
 except admin.sites.NotRegistered:
     pass
+class LessonImageInline(admin.TabularInline):
+    """Rasmlar darsning o'z sahifasida tahrirlanadi — alohida bo'limda emas."""
+
+    model = LessonImage
+    extra = 1
+    fields = ('image', 'preview', 'caption', 'alt_text', 'order')
+    readonly_fields = ('preview',)
+
+    @admin.display(description="Ko'rinishi")
+    def preview(self, obj):
+        if not obj.image:
+            return "—"
+        return format_html(
+            '<img src="{}" style="max-height:80px;border-radius:8px;'
+            'border:1px solid #ddd">',
+            obj.image.url,
+        )
+
+
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module', 'order', 'is_free_badge', 'has_video')
+    list_display = ('title', 'module', 'order', 'is_free_badge', 'has_video', 'has_text')
     list_filter = ('is_free', 'module__category', 'module')
     search_fields = ('title', 'theory')
     list_editable = ('order',)
     actions = ['make_free', 'make_paid']
+    inlines = [LessonImageInline]
 
     @admin.display(description="Kirish", ordering='is_free', boolean=False)
     def is_free_badge(self, obj):
@@ -89,6 +109,12 @@ class LessonAdmin(admin.ModelAdmin):
     @admin.display(description="Video", boolean=True)
     def has_video(self, obj):
         return bool(obj.video_file or obj.video_url)
+
+    @admin.display(description="Matn", boolean=True)
+    def has_text(self, obj):
+        # 200 belgi — `generate_quizzes` dagi chegara bilan bir xil:
+        # shundan kamida savol chiqmaydi va dars ham o'qishga arzimaydi
+        return len((obj.theory or '').strip()) >= 200
 
     @admin.action(description="BEPUL qilish (obunasiz ochiq)")
     def make_free(self, request, queryset):

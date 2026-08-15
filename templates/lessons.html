@@ -90,6 +90,85 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ─── Yozma dars matni ───
+           Teglar serverda `core/richtext.py` da quriladi, shuning uchun
+           bu yerdagi ro'yxat o'sha modul chiqaradigan teglar bilan MOS
+           bo'lishi kerak. Yangi teg qo'shilsa — uslubi ham shu yerga. */
+        .lesson-prose { color: #cbd5e1; font-size: 1rem; line-height: 1.85; }
+        @media (min-width: 640px) { .lesson-prose { font-size: 1.0625rem; } }
+
+        .lesson-prose > *:first-child { margin-top: 0; }
+        .lesson-prose > *:last-child { margin-bottom: 0; }
+
+        .lesson-prose p { margin: 0 0 1.25em; }
+        .lesson-prose h3 {
+            color: #fff; font-size: 1.5rem; font-weight: 900;
+            letter-spacing: -.02em; margin: 2.2em 0 .8em; line-height: 1.25;
+        }
+        .lesson-prose h4 {
+            color: #e2e8f0; font-size: 1.15rem; font-weight: 800;
+            margin: 1.8em 0 .6em;
+        }
+        .lesson-prose strong { color: #fff; font-weight: 700; }
+        .lesson-prose em { color: #e2e8f0; }
+
+        /* `list-style` ATAYLAB qayta yozilgan: Tailwind ning preflight
+           uslubi barcha ul/ol dan markerni olib tashlaydi, natijada
+           ro'yxat oddiy matn bo'lib qolardi. */
+        .lesson-prose ul { list-style: disc; margin: 0 0 1.25em; padding-left: 1.4em; }
+        .lesson-prose ol { list-style: decimal; margin: 0 0 1.25em; padding-left: 1.4em; }
+        .lesson-prose li { margin-bottom: .55em; }
+        .lesson-prose ul li::marker { color: #38bdf8; }
+        .lesson-prose ol li::marker { color: #38bdf8; font-weight: 700; }
+
+        .lesson-prose code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .875em; color: #7dd3fc;
+            background: rgba(56,189,248,.1);
+            border: 1px solid rgba(56,189,248,.15);
+            padding: .12em .4em; border-radius: .375rem;
+            /* Uzun nom qatorni yorib chiqmasin */
+            word-break: break-word;
+        }
+        .lesson-prose pre {
+            background: #020617; border: 1px solid rgba(255,255,255,.08);
+            border-radius: 1rem; padding: 1.15rem 1.25rem;
+            margin: 0 0 1.5em; overflow-x: auto;
+        }
+        .lesson-prose pre code {
+            background: none; border: 0; padding: 0;
+            color: #e2e8f0; font-size: .85rem; line-height: 1.7;
+            word-break: normal; white-space: pre;
+        }
+
+        .lesson-prose blockquote {
+            margin: 0 0 1.5em; padding: 1rem 1.25rem;
+            border-left: 3px solid #0ea5e9;
+            background: rgba(14,165,233,.07);
+            border-radius: 0 .75rem .75rem 0;
+            color: #bae6fd;
+        }
+
+        .lesson-prose hr {
+            border: 0; height: 1px; margin: 2.5em 0;
+            background: rgba(255,255,255,.08);
+        }
+        .lesson-prose a { color: #38bdf8; text-decoration: underline; text-underline-offset: 3px; }
+        .lesson-prose a:hover { color: #7dd3fc; }
+
+        /* ─── Dars rasmlari ─── */
+        .lesson-figure { margin: 2em 0; }
+        .lesson-figure img {
+            width: 100%; height: auto; display: block;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255,255,255,.08);
+            background: #020617;
+        }
+        .lesson-figure figcaption {
+            margin-top: .75rem; text-align: center;
+            font-size: .8125rem; color: #64748b; line-height: 1.6;
+        }
     </style>
 </head>
 <body class="bg-background-dark text-slate-100 flex flex-col h-screen overflow-hidden selection:bg-primary/30">
@@ -156,106 +235,18 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-                    <!-- Python Course -->
-                    <div class="card-reveal course-card group cursor-pointer" onclick="selectCourse('python')" style="transition-delay: 0.1s">
-                        <div class="glass-2 glass-border rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 hover:scale-105 transition-all duration-500 hover:shadow-[0_0_40px_rgba(14,165,233,0.3)] relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-3xl"></div>
-                            <div class="relative z-10">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500">
-                                    <span class="material-icons-round text-white text-2xl sm:text-3xl">code</span>
-                                </div>
-                                <h3 class="text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3">Python</h3>
-                                <p class="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6 leading-relaxed">Dasturlash asoslari va Python tilining barcha imkoniyatlari</p>
-                                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Jarayon</span>
-                                    <span class="text-[10px] sm:text-xs font-bold text-primary">0%</span>
-                                </div>
-                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 w-0"></div>
-                                </div>
-                                <div class="mt-4 sm:mt-6 flex items-center gap-2 text-xs text-slate-500">
-                                    <span class="material-icons-round text-sm">school</span>
-                                    <span class="font-bold">0/20 dars</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {% comment %}
+                KURS KARTOCHKALARI SHABLONDA YOZILMAYDI.
 
-                    <!-- Django Course -->
-                    <div class="card-reveal course-card group cursor-pointer" onclick="selectCourse('django')" style="transition-delay: 0.2s">
-                        <div class="glass-2 glass-border rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 hover:scale-105 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.3)] relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-green-500/20 to-transparent rounded-full blur-3xl"></div>
-                            <div class="relative z-10">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500">
-                                    <span class="material-icons-round text-white text-2xl sm:text-3xl">web</span>
-                                </div>
-                                <h3 class="text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3">Django</h3>
-                                <p class="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6 leading-relaxed">Web ilovalar yaratish va backend dasturlash</p>
-                                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Jarayon</span>
-                                    <span class="text-[10px] sm:text-xs font-bold text-green-500">0%</span>
-                                </div>
-                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 w-0"></div>
-                                </div>
-                                <div class="mt-4 sm:mt-6 flex items-center gap-2 text-xs text-slate-500">
-                                    <span class="material-icons-round text-sm">school</span>
-                                    <span class="font-bold">0/25 dars</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                Ilgari to'rttasi qo'lda yozilgan edi va shu sabab: yangi
+                bo'lim qo'shilganda u sahifada UMUMAN ko'rinmasdi, dars
+                sonlari esa ("0/20 dars") bazadagi haqiqatga bog'lanmagan
+                — qo'lda yozilgan raqam bo'lib qolgandi.
 
-                    <!-- React Course -->
-                    <div class="card-reveal course-card group cursor-pointer" onclick="selectCourse('react')" style="transition-delay: 0.3s">
-                        <div class="glass-2 glass-border rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 hover:scale-105 transition-all duration-500 hover:shadow-[0_0_40px_rgba(99,102,241,0.3)] relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-3xl"></div>
-                            <div class="relative z-10">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500">
-                                    <span class="material-icons-round text-white text-2xl sm:text-3xl">auto_awesome</span>
-                                </div>
-                                <h3 class="text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3">React</h3>
-                                <p class="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6 leading-relaxed">Zamonaviy frontend va interaktiv interfeys yaratish</p>
-                                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Jarayon</span>
-                                    <span class="text-[10px] sm:text-xs font-bold text-indigo-500">0%</span>
-                                </div>
-                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500 w-0"></div>
-                                </div>
-                                <div class="mt-4 sm:mt-6 flex items-center gap-2 text-xs text-slate-500">
-                                    <span class="material-icons-round text-sm">school</span>
-                                    <span class="font-bold">0/30 dars</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- JavaScript Course -->
-                    <div class="card-reveal course-card group cursor-pointer" onclick="selectCourse('javascript')" style="transition-delay: 0.4s">
-                        <div class="glass-2 glass-border rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 hover:scale-105 transition-all duration-500 hover:shadow-[0_0_40px_rgba(245,158,11,0.3)] relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-yellow-500/20 to-transparent rounded-full blur-3xl"></div>
-                            <div class="relative z-10">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500">
-                                    <span class="material-icons-round text-white text-2xl sm:text-3xl">javascript</span>
-                                </div>
-                                <h3 class="text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3">JavaScript</h3>
-                                <p class="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6 leading-relaxed">Web dasturlash tili va zamonaviy texnologiyalar</p>
-                                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                                    <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Jarayon</span>
-                                    <span class="text-[10px] sm:text-xs font-bold text-yellow-500">0%</span>
-                                </div>
-                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full transition-all duration-500 w-0"></div>
-                                </div>
-                                <div class="mt-4 sm:mt-6 flex items-center gap-2 text-xs text-slate-500">
-                                    <span class="material-icons-round text-sm">school</span>
-                                    <span class="font-bold">0/28 dars</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                Endi kartochkalar `courseData` dan quriladi: yangi bo'lim
+                qo'shilsa o'zi paydo bo'ladi, sonlar esa har doim to'g'ri.
+                {% endcomment %}
+                <div id="course-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8"></div>
                 </div>
             </div>
 
@@ -293,6 +284,29 @@
                                 <span class="material-icons-round text-5xl text-white group-hover:text-primary transition-colors">play_arrow</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {% comment %}
+                YOZMA DARS.
+
+                Ichidagi HTML SERVERDA quriladi (`core/richtext.py`):
+                matn to'liq ekranlanadi va faqat ruxsat etilgan teglar
+                qo'yiladi. Shu sabab uni `innerHTML` ga berish xavfsiz.
+                Bu yerga boshqa manbadan kelgan HTML QO'YILMASIN.
+                {% endcomment %}
+                <div id="reading-section" class="card-reveal hidden" style="transition-delay: 0.2s">
+                    <div class="glass-2 glass-border rounded-[2rem] p-6 sm:p-10">
+                        <div class="flex items-center gap-3 mb-6 sm:mb-8">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                <span class="material-icons-round text-primary text-xl">menu_book</span>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Dars matni</p>
+                                <p id="reading-time" class="text-xs text-slate-600"></p>
+                            </div>
+                        </div>
+                        <article id="lesson-theory" class="lesson-prose"></article>
                     </div>
                 </div>
 
@@ -399,6 +413,12 @@
         let currentLessonIndex = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Kartochkalar HAMMA NARSADAN OLDIN quriladi: quyidagi
+            // kuzatuvchi `.card-reveal` elementlarini qidiradi, ular
+            // esa hali mavjud bo'lmasa e'tibordan chetda qolardi.
+            renderCourseGrid();
+            openInitialLesson();
+
             // Reveal Animation Observer
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -450,6 +470,109 @@
         });
 
 
+
+        /**
+         * Kurs kartochkalarini `courseData` dan quradi.
+         *
+         * Bo'lim uchun ko'rinish `COURSE_LOOKS` da. Notanish bo'lim
+         * uchun standart ko'rinish ishlatiladi — shunda yangi bo'lim
+         * qo'shilganda sahifa buzilmaydi va kartochka baribir chiqadi.
+         */
+        const COURSE_LOOKS = {
+            python:     { icon: 'code',         from: 'from-blue-500',   to: 'to-blue-600',   glow: '14,165,233' },
+            django:     { icon: 'web',          from: 'from-green-500',  to: 'to-green-600',  glow: '16,185,129' },
+            react:      { icon: 'auto_awesome', from: 'from-indigo-500', to: 'to-indigo-600', glow: '99,102,241' },
+            javascript: { icon: 'javascript',   from: 'from-yellow-500', to: 'to-yellow-600', glow: '245,158,11' },
+            ai:         { icon: 'psychology',   from: 'from-cyan-500',   to: 'to-teal-500',   glow: '45,212,191' },
+        };
+        const DEFAULT_LOOK = { icon: 'school', from: 'from-slate-500', to: 'to-slate-600', glow: '148,163,184' };
+
+        function renderCourseGrid() {
+            const grid = document.getElementById('course-grid');
+            grid.innerHTML = '';
+
+            Object.keys(courseData).forEach((key, index) => {
+                const course = courseData[key];
+                const look = COURSE_LOOKS[key] || DEFAULT_LOOK;
+
+                // Bo'sh bo'limni ko'rsatmaymiz: darssiz kartochka bosilsa
+                // foydalanuvchi bo'sh ro'yxatga tushib qolardi.
+                if (!course.totalLessons) return;
+
+                const percent = Math.round(
+                    (course.completedLessons / course.totalLessons) * 100
+                );
+
+                const card = document.createElement('div');
+                card.className = 'card-reveal course-card group cursor-pointer';
+                card.style.transitionDelay = `${0.1 * (index + 1)}s`;
+                card.onclick = () => selectCourse(key);
+
+                card.innerHTML = `
+                    <div class="glass-2 glass-border rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 hover:scale-105 transition-all duration-500 hover:shadow-[0_0_40px_rgba(${look.glow},0.3)] relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br ${look.from} ${look.to} flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500">
+                                <span class="material-icons-round text-white text-2xl sm:text-3xl">${look.icon}</span>
+                            </div>
+                            <h3 class="text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3"></h3>
+                            <p class="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6 leading-relaxed course-desc"></p>
+                            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                                <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Jarayon</span>
+                                <span class="text-[10px] sm:text-xs font-bold text-primary">${percent}%</span>
+                            </div>
+                            <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r ${look.from} ${look.to} rounded-full transition-all duration-500" style="width:${percent}%"></div>
+                            </div>
+                            <div class="mt-4 sm:mt-6 flex items-center gap-2 text-xs text-slate-500">
+                                <span class="material-icons-round text-sm">school</span>
+                                <span class="font-bold">${course.completedLessons}/${course.totalLessons} dars</span>
+                                ${course.freeLessons ? `<span class="ml-auto text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">${course.freeLessons} ta bepul</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Nom va tavsif MATN sifatida qo'yiladi: ular bazadan
+                // keladi va ichida `<` bo'lsa HTML ni buzmasin.
+                card.querySelector('h3').textContent = course.name;
+                card.querySelector('.course-desc').textContent = course.description || '';
+
+                grid.appendChild(card);
+            });
+
+            requestAnimationFrame(() => {
+                grid.querySelectorAll('.card-reveal').forEach(el => el.classList.add('visible'));
+            });
+        }
+
+        /**
+         * `/lessons/<id>/` havolasi bo'yicha darsni ochadi.
+         *
+         * ILGARI ISHLAMAGAN: `INITIAL_LESSON_ID` e'lon qilingan-u,
+         * hech qayerda ishlatilmagan edi. Ya'ni darsga to'g'ridan-to'g'ri
+         * havola yuborib bo'lmasdi — odam har safar kurslar
+         * ro'yxatidan boshlab qidirishga majbur bo'lardi.
+         *
+         * Dars topilmasa (o'chirilgan yoki id noto'g'ri) hech narsa
+         * qilinmaydi: foydalanuvchi odatdagi kurslar ro'yxatini
+         * ko'radi, xato xabari chiqmaydi.
+         */
+        function openInitialLesson() {
+            if (!INITIAL_LESSON_ID) return;
+
+            const target = parseInt(INITIAL_LESSON_ID, 10);
+            if (Number.isNaN(target)) return;
+
+            for (const key of Object.keys(courseData)) {
+                const index = courseData[key].lessons.findIndex(l => l.id === target);
+                if (index !== -1) {
+                    selectCourse(key);
+                    loadLesson(index);
+                    return;
+                }
+            }
+        }
 
         function selectCourse(courseKey) {
             if (!courseData[courseKey]) {
@@ -540,6 +663,60 @@
             });
         }
 
+        /**
+         * Yozma darsni chiqaradi.
+         *
+         * `theoryHtml` SERVERDA qurilgan: matn to'liq ekranlangan va
+         * faqat ruxsat etilgan teglar qo'yilgan (`core/richtext.py`).
+         * Shu sabab uni innerHTML ga berish xavfsiz. Boshqa manbadan
+         * kelgan HTML bu yerga TUSHMASLIGI kerak.
+         *
+         * Rasmlar esa alohida quriladi — ular matn ichidan emas,
+         * bazadagi `LessonImage` dan keladi va matndan KEYIN qo'yiladi.
+         */
+        function renderReading(lesson) {
+            const section = document.getElementById('reading-section');
+            const article = document.getElementById('lesson-theory');
+            const timeEl = document.getElementById('reading-time');
+
+            if (!lesson.hasText) {
+                section.classList.add('hidden');
+                article.innerHTML = '';
+                return;
+            }
+
+            article.innerHTML = lesson.theoryHtml;
+
+            (lesson.images || []).forEach(img => {
+                const figure = document.createElement('figure');
+                figure.className = 'lesson-figure';
+
+                const el = document.createElement('img');
+                // Manba bazadan keladi, lekin matnni ATRIBUT sifatida
+                // emas, xossa orqali qo'yamiz — shunda hech qanday
+                // tirnoq yoki belgi HTML ni yorib chiqa olmaydi.
+                el.src = img.url;
+                el.alt = img.alt || '';
+                el.loading = 'lazy';
+                figure.appendChild(el);
+
+                if (img.caption) {
+                    const cap = document.createElement('figcaption');
+                    cap.textContent = img.caption;
+                    figure.appendChild(cap);
+                }
+                article.appendChild(figure);
+            });
+
+            // Taxminiy o'qish vaqti. O'zbek tilida o'rtacha ~180 so'z/daqiqa.
+            const words = (article.textContent || '').trim().split(/\s+/).length;
+            const minutes = Math.max(1, Math.round(words / 180));
+            timeEl.textContent = `${minutes} daqiqalik o'qish`;
+
+            section.classList.remove('hidden');
+            requestAnimationFrame(() => section.classList.add('visible'));
+        }
+
         function loadLesson(index) {
             currentLessonIndex = index;
             const course = courseData[currentCourse];
@@ -548,13 +725,22 @@
             // Update lesson header
             document.getElementById('lesson-badge').textContent = `${index + 1}-DARS`;
             document.getElementById('course-name').textContent = `${course.name} Asoslari`;
-            document.getElementById('lesson-title').innerHTML = lesson.title;
-            document.getElementById('lesson-description').textContent = lesson.description; // or full_theory if available
-            
+            document.getElementById('lesson-title').textContent = lesson.title;
+            document.getElementById('lesson-description').textContent = lesson.description;
+
+            renderReading(lesson);
+
             // Video Player Logic
             const videoContainer = document.getElementById('video-container');
+
+            // VIDEOSIZ DARSDA BLOK UMUMAN KO'RSATILMAYDI.
+            // Ilgari bu yerda har doim "Video mavjud emas" degan katta
+            // quti chiqardi — yozma darsda u shunchaki bo'sh joy egallab,
+            // dars nosozdek ko'rinardi.
+            const showVideo = lesson.unlocked !== true || !!lesson.videoUrl || !lesson.hasText;
+            videoContainer.parentElement.style.display = showVideo ? 'block' : 'none';
             videoContainer.style.display = 'block';
-            
+
             if (lesson.unlocked !== true) {
                 // QULFLANGAN DARS: mazmun serverdan umuman kelmagan —
                 // bu yerda yashiradigan narsa yo'q, faqat taklif ko'rsatiladi.

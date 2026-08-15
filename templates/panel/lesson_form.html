@@ -111,4 +111,74 @@
     </div>
 </form>
 
+{% comment %}
+RASMLAR ALOHIDA FORMADA va yuqoridagi formadan TASHQARIDA turadi.
+
+HTML da forma ichiga forma joylab bo'lmaydi — brauzer ichkisini
+jimgina tashlab yuboradi va tugma umuman ishlamay qoladi. Shu sabab
+rasm bo'limi dars formasi yopilgandan keyin keladi.
+
+Bu ayni paytda foydali ham: rasm qo'shish dars matnini qayta
+yubormaydi, ya'ni yozilgan matn xavf ostida qolmaydi.
+{% endcomment %}
+{% if lesson %}
+    <div class="glass rounded-2xl p-6 mt-6">
+        <h2 class="font-bold mb-1">Rasmlar</h2>
+        <p class="text-xs text-slate-500 mb-5">
+            Rasmlar dars matnidan keyin, tartib raqami bo'yicha ko'rsatiladi.
+        </p>
+
+        {% if images %}
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {% for img in images %}
+                    <div class="rounded-xl overflow-hidden bg-slate-900/60 border border-white/5">
+                        <img src="{{ img.image.url }}" alt="{{ img.display_alt }}"
+                             class="w-full h-36 object-cover bg-slate-950">
+                        <div class="p-3">
+                            <p class="text-xs text-slate-300 truncate">
+                                {{ img.caption|default:"(izohsiz)" }}
+                            </p>
+                            <div class="flex items-center justify-between mt-2">
+                                <span class="text-[11px] text-slate-600">Tartib: {{ img.order }}</span>
+                                <form method="post" action="{% url 'panel:lesson_image_delete' img.pk %}">
+                                    {% csrf_token %}
+                                    <button onclick="return confirm('Rasm o\'chirilsinmi? Fayl ham o\'chadi.')"
+                                            class="text-[11px] text-red-400 hover:text-red-300 transition">
+                                        O'chirish
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-sm text-slate-600 mb-6">Bu darsda hali rasm yo'q.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'panel:lesson_image_add' lesson.pk %}"
+              enctype="multipart/form-data"
+              class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end pt-5 border-t border-white/5">
+            {% csrf_token %}
+            {% for field in image_form %}
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1.5" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <div class="sm:col-span-2 lg:col-span-4">
+                <button class="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                    Rasm qo'shish
+                </button>
+            </div>
+        </form>
+    </div>
+{% else %}
+    <p class="text-xs text-slate-600 mt-6">
+        Rasm qo'shish uchun avval darsni saqlang.
+    </p>
+{% endif %}
+
 {% endblock %}

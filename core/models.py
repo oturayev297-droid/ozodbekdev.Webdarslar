@@ -28,7 +28,19 @@ class Module(models.Model):
 class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=200)
-    theory = models.TextField(default="", help_text="Nazariy ma'lumotlar uchun (HTML/Markdown qo'llab-quvvatlaydi)")
+    #: Dars matni. ODDIY MATN sifatida yoziladi va serverda
+    #: `core.richtext.render` orqali HTML ga aylantiriladi. Bu yerga
+    #: tayyor HTML yozish KERAK EMAS — u ekranlanadi va matn bo'lib
+    #: ko'rinadi. Qo'llab-quvvatlanadigan belgilar ro'yxati
+    #: `core/richtext.py` da.
+    theory = models.TextField(
+        default="",
+        verbose_name="Dars matni",
+        help_text=(
+            "Oddiy matn. Bezaklar: ## sarlavha, **qalin**, `kod`, "
+            "- ro'yxat, > eslatma, ``` kod bloki ```"
+        ),
+    )
     practice_code = models.TextField(blank=True, default="", help_text="Amaliy kod namunalari uchun")
     video_url = models.URLField(blank=True, null=True)
     video_file = models.FileField(upload_to='lesson_videos/', blank=True, null=True, help_text="Dars videosini yuklash")
@@ -52,6 +64,64 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ['order']
+
+
+class LessonImage(models.Model):
+    """
+    Dars matnidagi rasm (sxema, ekran tasviri, misol).
+
+    NEGA ALOHIDA MODEL, matn ichiga havola yozish emas:
+
+    1. Fayl bazada boshqariladi. Matn ichiga qo'lda havola yozilsa,
+       fayl o'chirilganda yoki nomi o'zgarganda "singan rasm"
+       belgisi qolardi va buni hech kim sezmasdi.
+    2. Rasm QULFLANGAN darsdan ham yashirilishi kerak. Alohida model
+       bo'lgani uchun uni JSON ga qo'shmaslik bitta shart bilan hal
+       bo'ladi — matn ichidagi havolani esa ajratib olish kerak edi.
+    3. Bir darsga bir necha rasm, tartib va izoh bilan.
+
+    Rasmlar `/media/lesson_images/` da va ular VIDEODAN FARQLI o'laroq
+    ochiq beriladi: rasm — bu kontentning kichik qismi, uni himoyalash
+    uchun har biriga alohida so'rov qilish arzimaydi. Video esa
+    darsning O'ZI, shuning uchun u faqat `/lessons/<id>/video/` orqali.
+    """
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='images')
+
+    image = models.ImageField(upload_to='lesson_images/', verbose_name="Rasm")
+
+    #: Rasm tagida chiqadi. Bo'sh bo'lsa izoh ko'rsatilmaydi.
+    caption = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="Izoh",
+        help_text="Rasm tagida chiqadigan matn",
+    )
+
+    #: Ko'rmaydiganlar uchun tavsif. Bo'sh bo'lsa `caption` ishlatiladi.
+    alt_text = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Muqobil matn",
+        help_text="Rasm ochilmasa yoki ekran o'qigich uchun tavsif",
+    )
+
+    order = models.PositiveIntegerField(default=0, verbose_name="Tartib")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Dars rasmi"
+        verbose_name_plural = "Dars rasmlari"
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"{self.lesson.title} — rasm #{self.order}"
+
+    @property
+    def display_alt(self) -> str:
+        return self.alt_text or self.caption or self.lesson.title
+
 
 class Quiz(models.Model):
     lesson = models.OneToOneField(Lesson, on_delete=models.CASCADE, related_name='quiz')

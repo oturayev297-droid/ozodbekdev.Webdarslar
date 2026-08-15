@@ -43,11 +43,20 @@ from billing.models import (
     Subscription,
     SubscriptionPeriod,
 )
-from core.models import Category, Certificate, Lesson, LoginAttempt, MentorMessage, Module, Quiz
+from core.models import (
+    Category,
+    Certificate,
+    Lesson,
+    LessonImage,
+    LoginAttempt,
+    MentorMessage,
+    Module,
+    Quiz,
+)
 
 from . import messaging, reports
 from .auth import staff_required
-from .forms import LessonForm, ModuleForm
+from .forms import LessonForm, LessonImageForm, ModuleForm
 from .models import Audience, PanelMessage
 
 logger = logging.getLogger(__name__)
@@ -420,7 +429,54 @@ def lesson_edit(request, lesson_id=None):
         'form': form,
         'lesson': lesson,
         'quiz': getattr(lesson, 'quiz', None) if lesson else None,
+        'images': lesson.images.all() if lesson else [],
+        'image_form': LessonImageForm(),
     })
+
+
+@require_POST
+@staff_required
+def lesson_image_add(request, lesson_id):
+    """Darsga rasm qo'shish."""
+    lesson = get_object_or_404(Lesson, pk=lesson_id)
+    form = LessonImageForm(request.POST, request.FILES)
+
+    if form.is_valid():
+        image = form.save(commit=False)
+        image.lesson = lesson
+        if not image.order:
+            # Tartib berilmasa oxiriga qo'yamiz — barchasi 0 bo'lib
+            # qolsa, ketma-ketlik tasodifiy bo'lardi
+            last = lesson.images.order_by('-order').values_list('order', flat=True).first()
+            image.order = (last or 0) + 1
+        image.save()
+        messages.success(request, "Rasm qo'shildi.")
+    else:
+        messages.error(request, "Rasm yuklanmadi: " + "; ".join(
+            f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
+        ))
+
+    return redirect('panel:lesson_edit', lesson_id=lesson.pk)
+
+
+@require_POST
+@staff_required
+def lesson_image_delete(request, image_id):
+    """
+    Rasmni o'chirish.
+
+    FAYL HAM O'CHIRILADI: aks holda diskda hech kimga kerak bo'lmagan
+    fayllar to'planib borardi (`prune_orphan_videos` bilan bir xil
+    muammo, faqat rasmlarda).
+    """
+    image = get_object_or_404(LessonImage.objects.select_related('lesson'), pk=image_id)
+    lesson_id = image.lesson_id
+
+    image.image.delete(save=False)
+    image.delete()
+    messages.success(request, "Rasm o'chirildi.")
+
+    return redirect('panel:lesson_edit', lesson_id=lesson_id)
 
 
 @staff_required
