@@ -12,6 +12,9 @@ urlpatterns = [
     # ish `/panel/` da, nozik holatlar (model darajasidagi tuzatish)
     # esa shu yerda bajariladi.
     path('admin/', admin.site.urls),
+    # Alohida deploy qilinadigan frontend uchun. Versiya manzilda:
+    # frontend va backend bir vaqtda yangilanmaydi.
+    path('api/v1/', include('api.urls')),
     path('panel/', include('panel.urls')),
     path('obuna/', include('billing.urls')),
     path('', include('core.urls')),

@@ -19,6 +19,8 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **Brute-force himoyasi** — login urinishlari cheklovi
 - **Boshqaruv paneli** (`/panel/`) — hisobotlar, pul aylanmasi, darslik joylash,
   xabar yuborish va kuzatish, o'z kirishi va parol tiklashi bilan
+- **REST API** (`/api/v1/`) — alohida deploy qilinadigan frontend uchun
+- **React frontend** (`frontend/`) — Next.js 16, Vercel uchun tayyor
 
 ## Tez boshlash
 
@@ -40,6 +42,9 @@ core/                  kontent va autentifikatsiya
   models.py            Category -> Module -> Lesson -> Quiz -> Question -> Choice
   richtext.py          dars matnini XAVFSIZ HTML ga aylantirish
   diagrams.py          dars sxemalarini kod bilan chizish (PNG)
+  approval.py          admin ruxsati darvozasi
+  quiz_scoring.py      ball hisoblash (shablon va API bir joydan oladi)
+  video_storage.py     S3/R2 imzolangan havolalar
   views.py             sahifalar va API endpointlari
   password_reset.py    6 xonali kod bilan parol tiklash
   lockout.py           login urinishlari cheklovi (brute-force himoyasi)
@@ -57,6 +62,14 @@ billing/               obuna va to'lov
   gateways/click.py    Click SHOP API (prepare / complete)
   gateway_links.py     to'lov sahifasiga havola qurish
   admin.py             to'lovlarni ko'rib chiqish paneli
+api/                   REST API (/api/v1/)
+  permissions.py       darvozalarni CHAQIRADI, qayta yozmaydi
+  serializers.py       qulflangan mazmun serializerga tushmaydi
+  views.py             biznes mantiq billing/core dan chaqiriladi
+frontend/              Next.js 16 frontend (Vercel)
+  src/lib/api.ts       barcha endpointlar, CSRF, sessiya cookie
+  src/components/      Nav, Guard
+  src/app/             sahifalar
 panel/                 boshqaruv paneli (/panel/)
   auth.py              xodim kirishi, chiqish, parol tiklash
   reports.py           hisobotlar — FAQAT o'qiydi, hech narsa o'zgartirmaydi
@@ -316,6 +329,21 @@ Bularni buzish pul yoki kontent yo'qotadi. O'zgartirishdan oldin
 39. **Ruxsatsiz odam login sahifasiga qaytarilmaydi** — u `/kutish/`
     sahifasiga tushadi. Anonim odam esa login sahifasiga. Bu ikki xil
     holat va ikki xil javob talab qiladi.
+40. **API darvozani QAYTA YOZMAYDI** — `core.approval` va
+    `billing.gating` chaqiriladi. Nusxa yozilsa, API paywallda
+    teshik bo'lardi va buni sezish uchun hech qanday belgi
+    bo'lmasdi.
+41. **Qulflangan darsning mazmuni API javobiga umuman tushmaydi.**
+    "Frontend yashiradi" ishlamaydi: API javobi brauzerning tarmoq
+    bo'limida ochiq ko'rinadi.
+42. **`is_correct` serializerda YO'Q va qo'shilmasin.** Test javobi
+    klientga yuborilsa, test ham, sertifikat ham ma'nosini yo'qotadi.
+43. **Ball `core.quiz_scoring` da, bitta joyda.** Shablonli sahifa ham,
+    API ham o'sha funksiyani chaqiradi — bir xil test ikki joyda ikki
+    xil ball bermasligi kerak.
+44. **Frontend `/api/*` ni PROXY orqali chaqiradi** (Vercel rewrites).
+    Cookie birinchi tomon bo'lib qoladi va Safari uni bloklamaydi.
+    Token `localStorage` da saqlanmaydi.
 
 ## Yozma darslar
 
@@ -421,6 +449,8 @@ python manage.py test core.tests_richtext     # dars matni va xavfsizligi
 python manage.py test core.tests_ai_course    # tayyor AI kursi
 python manage.py test core.tests_lesson_content  # yozma dars va qulf
 python manage.py test core.tests_approval     # admin ruxsati darvozasi
+python manage.py test api                     # REST API va paywall
+python manage.py test core.tests_video_storage  # video ombori
 ```
 
 ## Hali qilinmagan

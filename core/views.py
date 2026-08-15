@@ -23,7 +23,7 @@ from billing import telegram
 from billing.gating import can_access_lesson, can_access_quiz, paywall
 from billing.services import get_state
 
-from . import ai_mentor, certificates, lockout, richtext
+from . import ai_mentor, certificates, lockout, quiz_scoring, richtext, video_storage
 from .approval import approval_required, is_approved
 from . import password_reset as pwreset
 from .models import (
@@ -178,11 +178,19 @@ def lessons(request, lesson_id=None):
 @login_required
 def lesson_video(request, lesson_id):
     """
-    Dars videosini faqat tizimga kirgan foydalanuvchiga uzatadi.
+    Dars videosini FAQAT huquqi bor foydalanuvchiga uzatadi.
 
-    Productionda (USE_X_ACCEL_REDIRECT=True) fayl nginx tomonidan uzatiladi —
-    Django faqat ruxsatni tekshiradi va sarlavha qaytaradi. Bu 5 GB video
-    uchun yagona to'g'ri yechim.
+    UCHTA REJIM, sozlamaga qarab tanlanadi:
+
+      1. Bulut (S3/R2) -> imzolangan vaqtinchalik havolaga yo'naltiradi
+      2. nginx         -> X-Accel-Redirect, faylni nginx uzatadi
+      3. Django        -> faylni o'zi uzatadi (FAQAT lokal)
+
+    Uchalasida ham HUQUQ SHU YERDA, Django tomonida tekshiriladi.
+    Havola faqat tekshiruvdan keyin beriladi.
+
+    3-rejim productionda ishlatilmaydi: 5 GB faylni uzatayotgan
+    Django worker'i butun video davomida band bo'lib qoladi.
     """
     from django.conf import settings
 
@@ -195,21 +203,35 @@ def lesson_video(request, lesson_id):
     if not lesson.video_file:
         raise Http404("Bu darsda video yo'q")
 
+    name = lesson.video_file.name
+
+    # ── 1. Bulut ombori ──
+    if video_storage.is_cloud_enabled():
+        try:
+            url = video_storage.signed_url(name)
+        except video_storage.VideoStorageError:
+            logger.exception("Imzolangan havola olinmadi: %s", name)
+            raise Http404("Video hozircha mavjud emas")
+        # 302: brauzer to'g'ridan-to'g'ri omborga boradi va Django
+        # trafikda umuman qatnashmaydi.
+        return redirect(url)
+
+    # ── 2. nginx ──
     if settings.USE_X_ACCEL_REDIRECT:
         response = HttpResponse()
         # nginx da: location /protected/ { internal; alias /path/to/media/; }
-        response['X-Accel-Redirect'] = f'/protected/{lesson.video_file.name}'
+        response['X-Accel-Redirect'] = f'/protected/{name}'
         response['Content-Type'] = (
-            mimetypes.guess_type(lesson.video_file.name)[0] or 'application/octet-stream'
+            mimetypes.guess_type(name)[0] or 'application/octet-stream'
         )
         del response['Content-Length']
         return response
 
-    # Lokal ishlab chiqish uchun (sekin, faqat development)
+    # ── 3. Django (faqat lokal) ──
     try:
         return FileResponse(lesson.video_file.open('rb'), content_type='video/mp4')
     except FileNotFoundError:
-        logger.error("Video fayl diskda topilmadi: %s", lesson.video_file.name)
+        logger.error("Video fayl diskda topilmadi: %s", name)
         raise Http404("Video fayl topilmadi")
 
 
@@ -488,81 +510,22 @@ def submit_quiz(request, quiz_id):
     if not isinstance(answers, dict):
         return JsonResponse({'success': False, 'error': 'Noto\'g\'ri javoblar'}, status=400)
 
-    question_ids = list(quiz.questions.values_list('id', flat=True))
-    total_questions = len(question_ids)
-    if total_questions == 0:
-        return JsonResponse({'success': False, 'error': 'Testda savol yo\'q'}, status=400)
+    # BALL SHU YERDA HISOBLANMAYDI — `core.quiz_scoring` da.
+    # API ham aynan o'sha funksiyani chaqiradi, shuning uchun ikki
+    # joyda ikki xil ball chiqishi mumkin emas.
+    try:
+        outcome = quiz_scoring.score_quiz(request.user, quiz, answers)
+    except quiz_scoring.ScoringError as exc:
+        return JsonResponse({'success': False, 'error': str(exc)}, status=400)
 
-    # Faqat shu testga tegishli to'g'ri variantlar
-    correct_choice_ids = set(
-        Choice.objects.filter(
-            question__quiz=quiz, is_correct=True
-        ).values_list('id', flat=True)
-    )
-
-    correct_count = 0
-    for qid in question_ids:
-        chosen = answers.get(str(qid), answers.get(qid))
-        if chosen is None:
-            continue
-        try:
-            chosen = int(chosen)
-        except (TypeError, ValueError):
-            continue
-        if chosen in correct_choice_ids:
-            correct_count += 1
-
-    score_percentage = round((correct_count / total_questions) * 100)
-
-    with transaction.atomic():
-        result = QuizResult.objects.select_for_update().filter(
-            user=request.user, quiz=quiz
-        ).first()
-
-        if result is None:
-            result = QuizResult.objects.create(
-                user=request.user,
-                quiz=quiz,
-                score_percentage=score_percentage,
-                correct_count=correct_count,
-                total_questions=total_questions,
-                attempts=1,
-            )
-        else:
-            result.attempts += 1
-            # Eng yaxshi natija saqlanadi
-            if score_percentage > result.score_percentage:
-                result.score_percentage = score_percentage
-                result.correct_count = correct_count
-                result.total_questions = total_questions
-            result.save()
-
-        profile, _ = Profile.objects.get_or_create(user=request.user)
-        old_level = profile.level
-        passed_exams = QuizResult.objects.filter(
-            user=request.user, score_percentage__gte=50
-        ).count()
-        new_level = 1 + passed_exams
-
-        if new_level != old_level:
-            profile.level = new_level
-            profile.save(update_fields=['level'])
-
-    logger.info(
-        "Quiz submit: user=%s quiz=%s score=%s%%", request.user.username, quiz.id, score_percentage
-    )
-
-    # Sertifikat 80%+ da beriladi. Tranzaksiyadan TASHQARIDA: sertifikat
-    # berilmasa ham natija saqlanib qolishi kerak.
-    certificate = certificates.issue_for_result(result)
-
+    certificate = outcome['certificate']
     return JsonResponse({
         'success': True,
-        'score': score_percentage,
-        'correct': correct_count,
-        'total': total_questions,
-        'new_level': new_level,
-        'leveled_up': new_level > old_level,
+        'score': outcome['score'],
+        'correct': outcome['correct'],
+        'total': outcome['total'],
+        'new_level': outcome['new_level'],
+        'leveled_up': outcome['leveled_up'],
         'certificate_url': (
             reverse('certificate_pdf', args=[certificate.code]) if certificate else None
         ),

@@ -499,7 +499,96 @@ sudo apt install fonts-dejavu-core
 
 Rasmlarsiz yozish kerak bo'lsa: `--no-images`.
 
-## 14. Ortiqcha video fayllar
+## 14. Vercel + Railway (frontend/backend alohida)
+
+Bu yo'l ixtiyoriy. Bitta serverdagi nginx + gunicorn sxemasi (5-6 bo'limlar)
+ishlashda davom etadi va oddiyroq.
+
+### MAJBURIY SHART: videolar bulutda bo'lishi
+
+Railway'da fayl tizimi **vaqtinchalik** — har deployda o'chadi. Ustiga
+nginx yo'q, ya'ni `X-Accel-Redirect` ishlamaydi va Django 5 GB faylni
+o'zi uzatishga majbur bo'lardi: bitta tomoshabin bitta worker'ni butun
+video davomida band qilib turardi.
+
+Shuning uchun avval videolarni ko'chiring:
+
+```bash
+# 1) Cloudflare R2 (yoki S3) da bucket yarating. OCHIQ QILMANG.
+# 2) .env ga kalitlarni yozing (VIDEO_STORAGE_*)
+python manage.py migrate_videos --dry-run    # avval ko'ring
+python manage.py migrate_videos
+```
+
+Buyruq lokal fayllarni **o'chirmaydi** va qayta ishga tushirilishi
+xavfsiz. O'chirish alohida, ongli qadam: `--delete-local` (u faqat
+bulutda fayl borligi va hajmi mos kelgani tasdiqlangach o'chiradi).
+
+Sozlama bo'sh qolsa eski yo'l ishlashda davom etadi.
+
+### Backend — Railway
+
+Loyihada `Procfile`, `railway.json` va `runtime.txt` tayyor.
+
+Muhit o'zgaruvchilari (Railway → Variables):
+
+```
+DJANGO_SECRET_KEY=<yangi tasodifiy kalit>
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=<railway-domeningiz>
+DATABASE_URL=<Railway Postgres bergan manzil>
+FRONTEND_ORIGINS=https://<vercel-domeningiz>
+VIDEO_STORAGE_BUCKET=...
+VIDEO_STORAGE_ENDPOINT=...
+VIDEO_STORAGE_ACCESS_KEY=...
+VIDEO_STORAGE_SECRET_KEY=...
+TELEGRAM_BOT_TOKEN=...
+ANTHROPIC_API_KEY=...
+EMAIL_HOST_USER=...
+EMAIL_HOST_PASSWORD=...
+```
+
+`USE_X_ACCEL_REDIRECT` ni **qo'ymang** — Railway'da nginx yo'q.
+
+Migratsiya `Procfile` dagi `release` bosqichida avtomatik bajariladi.
+
+### Frontend — Vercel
+
+1. Loyihani import qiling, **Root Directory** = `frontend`
+2. Muhit o'zgaruvchisi: `BACKEND_URL=https://<railway-domeningiz>`
+3. Boshqa hech narsa kerak emas — `next.config.mjs` qolganini hal qiladi
+
+### Nima uchun `rewrites`, CORS emas
+
+Frontend `/api/*` so'rovlarini Vercel orqali Railway'ga uzatadi. Bu
+xavfsizlik qarori:
+
+- Cookie **birinchi tomon** bo'lib qoladi. Safari va iOS uchinchi tomon
+  cookie'larini bloklaydi — to'g'ridan-to'g'ri murojaatda o'sha
+  brauzerlarda kirish umuman ishlamasdi.
+- Token `localStorage` da saqlanmaydi, ya'ni XSS hisobni o'g'irlay olmaydi.
+
+Agar baribir to'g'ridan-to'g'ri murojaat qilmoqchi bo'lsangiz,
+`FRONTEND_ORIGINS` ni to'ldiring — CORS va CSRF sozlamalari shundan
+o'qiladi.
+
+### Ikkita nozik joy (ular allaqachon hal qilingan)
+
+**Oxiridagi `/`** — Next.js uni olib tashlaydi, Django talab qiladi.
+Ikkalasi `next.config.mjs` da hal qilingan. Busiz har bir POST so'rov
+redirectga tushib GET ga aylanardi va kirish ishlamasdi.
+
+**`CSRF_TRUSTED_ORIGINS`** — Django POST so'rovda `Origin` sarlavhasini
+tekshiradi. `FRONTEND_ORIGINS` to'ldirilmasa har bir forma
+"CSRF Failed: Origin checking failed" bilan rad etiladi.
+
+### Panel va Django admin
+
+Ular **backendda qoladi** va server tomonda render qilinadi:
+`https://<railway-domeningiz>/panel/`. Ularni React'ga ko'chirishning
+hojati yo'q — ular faqat siz uchun.
+
+## 15. Ortiqcha video fayllar
 
 Admin panelda video qayta yuklanganda Django eski faylni **o'chirmaydi** —
 yangi nom bilan yoniga qo'yadi (`1-dars_Xm098yg.mp4`). Vaqt o'tib bu
@@ -514,7 +603,7 @@ Standart holda **hech narsa o'chirilmaydi**. Backup borligiga ishonch
 hosil qilmasdan `--delete` ishlatmang — video fayllarni qaytarib
 bo'lmaydi.
 
-## 15. Backup
+## 16. Backup
 
 ```bash
 # Baza
@@ -524,6 +613,6 @@ pg_dump -U stitch stitch_db | gzip > backup_$(date +%F).sql.gz
 rsync -av /var/www/stitch/media/ /backup/media/
 ```
 
-## 16. Loglar
+## 17. Loglar
 
 `logs/django.log` (5 MB dan oshganda avtomatik aylanadi, 5 nusxa saqlanadi).

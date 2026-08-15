@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #020617;
+  color: #f1f5f9;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.glass {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(30px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Dars matni ───
+   Teglar SERVERDA quriladi (`core/richtext.py`), shuning uchun bu
+   ro'yxat o'sha modul chiqaradigan teglar bilan MOS bo'lishi kerak.
+   Django shablonidagi `.lesson-prose` bilan bir xil. */
+.lesson-prose { color: #cbd5e1; line-height: 1.85; }
+.lesson-prose p { margin: 0 0 1.25em; }
+.lesson-prose h3 { color: #fff; font-size: 1.5rem; font-weight: 900; margin: 2.2em 0 .8em; }
+.lesson-prose h4 { color: #e2e8f0; font-size: 1.15rem; font-weight: 800; margin: 1.8em 0 .6em; }
+.lesson-prose strong { color: #fff; font-weight: 700; }
+/* Tailwind preflight list-style ni o'chiradi — qaytarib qo'yamiz */
+.lesson-prose ul { list-style: disc; margin: 0 0 1.25em; padding-left: 1.4em; }
+.lesson-prose ol { list-style: decimal; margin: 0 0 1.25em; padding-left: 1.4em; }
+.lesson-prose li { margin-bottom: .55em; }
+.lesson-prose ul li::marker, .lesson-prose ol li::marker { color: #38bdf8; }
+.lesson-prose code {
+  font-family: ui-monospace, monospace; font-size: .875em; color: #7dd3fc;
+  background: rgba(56,189,248,.1); border: 1px solid rgba(56,189,248,.15);
+  padding: .12em .4em; border-radius: .375rem; word-break: break-word;
+}
+.lesson-prose pre {
+  background: #020617; border: 1px solid rgba(255,255,255,.08);
+  border-radius: 1rem; padding: 1.15rem 1.25rem; margin: 0 0 1.5em; overflow-x: auto;
+}
+.lesson-prose pre code { background: none; border: 0; padding: 0; color: #e2e8f0; white-space: pre; }
+.lesson-prose blockquote {
+  margin: 0 0 1.5em; padding: 1rem 1.25rem; border-left: 3px solid #0ea5e9;
+  background: rgba(14,165,233,.07); border-radius: 0 .75rem .75rem 0; color: #bae6fd;
+}
+.lesson-prose hr { border: 0; height: 1px; margin: 2.5em 0; background: rgba(255,255,255,.08); }
+.lesson-prose a { color: #38bdf8; text-decoration: underline; }
+
+.field {
+  width: 100%; background: rgba(2,6,23,.6); border: 1px solid rgba(255,255,255,.1);
+  border-radius: .75rem; padding: .8rem 1rem; color: #f1f5f9; outline: none;
+}
+.field:focus { border-color: #0ea5e9; box-shadow: 0 0 0 1px #0ea5e9; }
+
+.btn {
+  padding: .75rem 1.5rem; border-radius: .75rem; font-weight: 700;
+  background: #0ea5e9; color: #020617; transition: .15s;
+}
+.btn:hover { background: #38bdf8; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }

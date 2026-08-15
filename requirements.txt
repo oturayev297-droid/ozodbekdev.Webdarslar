@@ -29,5 +29,14 @@ reportlab==5.0.0
 # --- AI Mentor (Claude API) ---
 anthropic==0.122.0
 
+# --- REST API (frontend alohida deploy qilinadi) ---
+djangorestframework==3.16.0
+django-cors-headers==4.4.0
+
+# --- Video ombori (S3 / Cloudflare R2) ---
+# FAQAT bulut rejimi uchun. VIDEO_STORAGE_* sozlanmagan bo'lsa
+# ishlatilmaydi va loyiha usiz ham to'liq ishlaydi.
+boto3==1.35.36
+
 # --- Production server ---
 gunicorn==23.0.0

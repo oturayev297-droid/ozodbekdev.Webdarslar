@@ -8,6 +8,7 @@ Namuna uchun .env.example ga qarang.
 from pathlib import Path
 
 import environ
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,6 +34,13 @@ env = environ.Env(
     ANTHROPIC_API_KEY=(str, ""),
     ANTHROPIC_MODEL=(str, "claude-opus-5"),
     ANTHROPIC_EFFORT=(str, "low"),
+    FRONTEND_ORIGINS=(list, []),
+    FRONTEND_URL=(str, ""),
+    VIDEO_STORAGE_BUCKET=(str, ""),
+    VIDEO_STORAGE_ENDPOINT=(str, ""),
+    VIDEO_STORAGE_ACCESS_KEY=(str, ""),
+    VIDEO_STORAGE_SECRET_KEY=(str, ""),
+    VIDEO_STORAGE_REGION=(str, "auto"),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -62,13 +70,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'rest_framework',
+    'corsheaders',
     'core',
     'billing',
     'panel',
+    'api',
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # CORS eng tepada — CommonMiddleware javobni qaytarib yuborishidan
+    # OLDIN sarlavhalarni qo'shishi kerak, aks holda redirect va xato
+    # javoblarda CORS sarlavhasi bo'lmaydi va brauzer ularni bloklaydi.
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -284,7 +299,122 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
-    CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if h not in ("localhost", "127.0.0.1")]
+    # O'z domenlarimiz qo'shiladi. Frontend manzillari yuqorida
+    # allaqachon kiritilgan — ular ustiga YOZILMAYDI.
+    CSRF_TRUSTED_ORIGINS += [
+        f"https://{h}" for h in ALLOWED_HOSTS if h not in ("localhost", "127.0.0.1")
+    ]
+
+
+# --------------------------------------------------------------------------
+# Video ombori — S3 mos bulut (Cloudflare R2, AWS S3, Backblaze B2)
+# --------------------------------------------------------------------------
+#
+# BO'SH BO'LSA ESKI YO'L ISHLAYDI: nginx X-Accel-Redirect yoki lokal
+# fayl. Ya'ni bu sozlama QO'SHIMCHA, o'rnini bosuvchi emas — mavjud
+# server hech narsa o'zgartirmasdan ishlashda davom etadi.
+#
+# NEGA KERAK: Railway va shunga o'xshash platformalarda fayl tizimi
+# vaqtinchalik (har deployda o'chadi) va nginx yo'q. 5 GB video u yerda
+# yashay olmaydi.
+#
+# R2 UCHUN endpoint: https://<account_id>.r2.cloudflarestorage.com
+# Bucket OCHIQ BO'LMASLIGI kerak — kirish faqat imzolangan havola bilan.
+
+VIDEO_STORAGE_BUCKET = env("VIDEO_STORAGE_BUCKET").strip()
+VIDEO_STORAGE_ENDPOINT = env("VIDEO_STORAGE_ENDPOINT").strip().rstrip('/')
+VIDEO_STORAGE_ACCESS_KEY = env("VIDEO_STORAGE_ACCESS_KEY").strip()
+VIDEO_STORAGE_SECRET_KEY = env("VIDEO_STORAGE_SECRET_KEY").strip()
+VIDEO_STORAGE_REGION = env("VIDEO_STORAGE_REGION").strip()
+
+
+# --------------------------------------------------------------------------
+# REST API — alohida deploy qilinadigan frontend uchun
+# --------------------------------------------------------------------------
+#
+# AUTENTIFIKATSIYA — SESSIYA COOKIE, token emas.
+#
+# Token localStorage da saqlanadi va sahifadagi HAR QANDAY skript uni
+# o'qiy oladi. Sessiya cookie esa `HttpOnly` — JavaScript unga umuman
+# yeta olmaydi. Bu XSS ning eng og'ir oqibatini (hisobni butunlay
+# o'g'irlash) yo'qotadi.
+#
+# BUNING NARXI: cookie ishlashi uchun frontend va backend BIR XIL
+# saytdan ko'rinishi kerak. Vercel'da buni `rewrites` hal qiladi:
+#
+#     /api/*  ->  https://<railway-domeni>/api/*
+#
+# Shunda brauzer uchun cookie BIRINCHI TOMON bo'lib qoladi va Safari
+# ning uchinchi tomon cookie bloklashiga tushmaydi. Boshqa yo'l —
+# `SameSite=None` — Safari va iOS da ishonchsiz.
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        # FAIL CLOSED: yangi manzil huquq belgilashni unutsa ham
+        # ochiq qolmaydi.
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "UNAUTHENTICATED_USER": "django.contrib.auth.models.AnonymousUser",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        # Anonim so'rovlar: login va parol tiklashni bombardimon
+        # qilishdan himoya. Ichkaridagi cheklovlar (`core.lockout`,
+        # `ai_mentor`) bundan MUSTAQIL ishlaydi.
+        "anon": "60/min",
+    },
+}
+
+# DEBUG da brauzerda ochib ko'rish qulay bo'lsin
+if DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
+        "rest_framework.renderers.BrowsableAPIRenderer"
+    )
+
+# Frontend manzillari: "https://oson.vercel.app,https://oson.uz"
+FRONTEND_ORIGINS = [o.strip().rstrip('/') for o in env("FRONTEND_ORIGINS") if o.strip()]
+FRONTEND_URL = env("FRONTEND_URL").strip().rstrip('/')
+
+# NUSXA, ishora emas: `+=` ro'yxatni JOYIDA o'zgartiradi va ikkalasi
+# bir obyekt bo'lsa, quyidagi lokal manzillar FRONTEND_ORIGINS ga ham
+# yopishib qolardi.
+CORS_ALLOWED_ORIGINS = list(FRONTEND_ORIGINS)
+# Cookie yuborilishi uchun MAJBURIY. Busiz brauzer sessiyani
+# jo'natmaydi va har so'rov 403 bo'lardi.
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]
+
+if DEBUG:
+    # Lokal frontend (Vite 5173, Next 3000)
+    CORS_ALLOWED_ORIGINS += [
+        "http://localhost:3000", "http://127.0.0.1:3000",
+        "http://localhost:5173", "http://127.0.0.1:5173",
+    ]
+
+# ─── CSRF ISHONCHLI MANZILLARI ───
+#
+# Django 4 dan boshlab POST so'rovda `Origin` sarlavhasi shu ro'yxat
+# bilan solishtiriladi. Frontend BOSHQA PORTDA yoki boshqa domenda
+# tursa, u bu yerda bo'lishi SHART — aks holda har bir kirish, har bir
+# forma "CSRF Failed: Origin checking failed" bilan rad etiladi.
+#
+# Bu ro'yxat DEBUG da ham kerak: lokal frontend :3000 da, backend
+# :8000 da ishlaydi va brauzer uchun bu ikki xil manba.
+CSRF_TRUSTED_ORIGINS = list(FRONTEND_ORIGINS)
+
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS += [
+        "http://localhost:3000", "http://127.0.0.1:3000",
+        "http://localhost:5173", "http://127.0.0.1:5173",
+        "http://localhost:8000", "http://127.0.0.1:8000",
+    ]
 
 
 # --------------------------------------------------------------------------
