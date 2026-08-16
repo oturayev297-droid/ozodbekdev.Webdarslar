@@ -65,12 +65,20 @@ export function Nav() {
                 </Link>
               )}
 
-              {/* Ota-ona havolasi HAR DOIM ko'rinadi: ota-onaga dars
-                  ruxsati kerak emas va u `is_approved` bo'lmasligi
-                  mumkin. Farzandi yo'q bo'lsa sahifa buni aytadi. */}
-              <Link href="/farzandlarim" className="text-slate-300 hover:text-white">
-                Farzandlarim
-              </Link>
+              {/*
+                Havola FAQAT farzandi bo'lganga ko'rinadi va
+                `is_approved` ga BOG'LIQ EMAS: ota-onaga dars ruxsati
+                kerak emas, u tasdiqlanmagan bo'lishi mumkin.
+
+                Ilgari havola hammaga ko'rinardi va bosgan o'quvchi
+                doim bo'sh sahifaga tushardi — menyuda hech qachon
+                ishlamaydigan band turardi.
+              */}
+              {user.is_parent && (
+                <Link href="/farzandlarim" className="text-slate-300 hover:text-white">
+                  Farzandlarim
+                </Link>
+              )}
               <Link href="/profil" className="text-slate-500 hover:text-slate-300">
                 {user.username}
               </Link>
@@ -112,13 +120,15 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
-          <Link
-            href="/farzandlarim"
-            onClick={() => setMenuOpen(false)}
-            className="block py-2 text-slate-300"
-          >
-            Farzandlarim
-          </Link>
+          {user.is_parent && (
+            <Link
+              href="/farzandlarim"
+              onClick={() => setMenuOpen(false)}
+              className="block py-2 text-slate-300"
+            >
+              Farzandlarim
+            </Link>
+          )}
           <Link
             href="/profil"
             onClick={() => setMenuOpen(false)}

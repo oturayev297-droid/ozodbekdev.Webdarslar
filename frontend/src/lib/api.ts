@@ -120,6 +120,8 @@ export interface User {
   rejection_reason: string;
   telegram_linked: boolean;
   avatar: string | null;
+  /** Bu odamga o'quvchi biriktirilganmi — menyuda "Farzandlarim" shunga bog'liq */
+  is_parent: boolean;
 }
 
 export interface SubscriptionState {

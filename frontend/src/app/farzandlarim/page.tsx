@@ -92,7 +92,15 @@ function Report({ studentId }: { studentId: number }) {
           Har kuni sahifada faol o&apos;tkazilgan vaqt
         </p>
 
-        <div className="flex items-end gap-1.5 h-40">
+        {/*
+          `items-stretch` — ATAYLAB, `items-end` emas.
+
+          `items-end` bilan har bir ustun o'z kontenti balandligiga
+          qisqarardi (~45px), ustunning o'zi esa `flex-1` bilan
+          qolgan joyni to'ldiradi — joy qolmagach balandligi nolga
+          tushib, grafik BO'SH ko'rinardi.
+        */}
+        <div className="flex items-stretch gap-1.5 h-40">
           {data.study.series.map((day) => (
             <Bar key={day.date} day={day} peak={peak} />
           ))}

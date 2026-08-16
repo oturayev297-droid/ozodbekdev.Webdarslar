@@ -26,6 +26,7 @@ from core.models import (
     Lesson,
     LessonImage,
     MentorMessage,
+    ParentLink,
     Profile,
     Project,
     Question,
@@ -265,9 +266,20 @@ class ProfileSerializer(serializers.Serializer):
     rejection_reason = serializers.CharField()
     telegram_linked = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    is_parent = serializers.SerializerMethodField()
 
     def get_telegram_linked(self, obj):
         return bool(obj.telegram_chat_id)
+
+    def get_is_parent(self, obj):
+        """
+        Bu odamga biror o'quvchi biriktirilganmi.
+
+        FRONTEND MENYUSI UCHUN. Busiz "Farzandlarim" havolasi HAR BIR
+        o'quvchiga ko'rinardi va bosgan odam doim bo'sh sahifaga
+        tushardi — menyuda hech qachon ishlamaydigan band turardi.
+        """
+        return ParentLink.objects.filter(parent=obj.user).exists()
 
     def get_avatar(self, obj):
         if not obj.image:

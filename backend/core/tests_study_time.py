@@ -249,6 +249,43 @@ class ParentAccessTests(TestCase):
         self.assertIn('lessons', data)
 
 
+class ParentFlagTests(TestCase):
+    """
+    `/api/v1/auth/me/` dagi `is_parent`.
+
+    NEGA KERAK: frontend menyusida "Farzandlarim" havolasi shu
+    bayroqqa bog'liq. Busiz havola HAR BIR o'quvchiga ko'rinardi va
+    bosgan odam doim bo'sh sahifaga tushardi.
+    """
+
+    def setUp(self):
+        self.parent = make_user('otasi3')
+        self.child = make_user('farzand3')
+
+    def _flag(self, user):
+        self.client.force_login(user)
+        # Javob `user` va `subscription` ga bo'lingan
+        return self.client.get(reverse('api:me')).json()['user']['is_parent']
+
+    def test_farzandi_borga_true(self):
+        ParentLink.objects.create(parent=self.parent, student=self.child)
+
+        self.assertTrue(self._flag(self.parent))
+
+    def test_farzandi_yoqqa_false(self):
+        self.assertFalse(self._flag(self.parent))
+
+    def test_OQUVCHIga_false(self):
+        """
+        Bola o'zi ham bog'lanishda qatnashadi — lekin O'QUVCHI
+        sifatida. Unga bayroq yonsa, o'z hisobotini ko'rmoqchi bo'lib
+        bo'sh sahifaga tushardi.
+        """
+        ParentLink.objects.create(parent=self.parent, student=self.child)
+
+        self.assertFalse(self._flag(self.child))
+
+
 class ParentPanelTests(TestCase):
     """Paneldagi bog'lash."""
 
