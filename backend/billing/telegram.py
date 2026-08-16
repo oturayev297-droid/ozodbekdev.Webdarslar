@@ -192,7 +192,7 @@ def notify_request_created(payment_request):
     """Adminga: yangi to'lov so'rovi keldi."""
     user = payment_request.user
     name = getattr(getattr(user, 'profile', None), 'full_name', '') or user.username
-    send_to_admins(
+    return send_to_admins(
         f"💳 <b>Yangi to'lov so'rovi</b>\n\n"
         f"O'quvchi: <b>{name}</b> (@{user.username})\n"
         f"Muddat: {payment_request.months} oy\n"
@@ -205,11 +205,15 @@ def notify_card_issued(payment_request, cards):
     """O'quvchiga: karta rekvizitlari."""
     chat_id = user_chat_id(payment_request.user)
     if not chat_id:
-        return
+        # Telegrami ulanmagan o'quvchi — bu xato emas. Rekvizitlarni
+        # u saytdan ko'radi, shuning uchun to'lov oqimi to'xtamaydi.
+        return False
 
     if not cards:
-        send(chat_id, "Karta rekvizitlari hali kiritilmagan. Administrator bilan bog'laning.")
-        return
+        return send(
+            chat_id,
+            "Karta rekvizitlari hali kiritilmagan. Administrator bilan bog'laning.",
+        )
 
     lines = [
         f"💳 <b>To'lov uchun rekvizitlar</b>\n",
@@ -228,14 +232,14 @@ def notify_card_issued(payment_request, cards):
     lines.append("Pulni o'tkazgach chek rasmini shu yerga yuboring va saytdagi")
     lines.append("<b>«Chekni yubordim»</b> tugmasini bosing.")
 
-    send(chat_id, "\n".join(lines))
+    return send(chat_id, "\n".join(lines))
 
 
 def notify_receipt_sent(payment_request, hold_days):
     """Adminga: chek yuborildi, tekshirish kerak."""
     user = payment_request.user
     name = getattr(getattr(user, 'profile', None), 'full_name', '') or user.username
-    send_to_admins(
+    return send_to_admins(
         f"🧾 <b>Chek yuborildi — tekshirish kerak</b>\n\n"
         f"O'quvchi: <b>{name}</b> (@{user.username})\n"
         f"Muddat: {payment_request.months} oy\n"
@@ -247,7 +251,7 @@ def notify_receipt_sent(payment_request, hold_days):
 
 def notify_confirmed(user, months, amount_tiyin, new_end):
     """O'quvchiga: to'lov tasdiqlandi."""
-    send(
+    return send(
         user_chat_id(user),
         f"✅ <b>To'lovingiz tasdiqlandi</b>\n\n"
         f"Muddat: {months} oy\n"
@@ -259,7 +263,7 @@ def notify_confirmed(user, months, amount_tiyin, new_end):
 
 def notify_rejected(user, reason):
     """O'quvchiga: to'lov rad etildi."""
-    send(
+    return send(
         user_chat_id(user),
         f"❌ <b>To'lov rad etildi</b>\n\n"
         f"Sabab: {reason}\n\n"

@@ -268,6 +268,15 @@ TELEGRAM_WEBHOOK_SECRET=uzun-tasodifiy-satr
 
 Chat ID ingizni bilish uchun [@userinfobot](https://t.me/userinfobot) ga yozing.
 
+> **DIQQAT — kalit nomi KO'PLIKDA:** `TELEGRAM_ADMIN_CHAT_IDS`.
+> Birlikda (`..._CHAT_ID`) yozilsa `django-environ` uni umuman
+> ko'rmaydi va standart bo'sh ro'yxatni oladi — **hech qanday xato
+> chiqmaydi**. Natijada bot ishlaydi, o'quvchilarga xabar boradi,
+> lekin adminga hech narsa kelmaydi.
+>
+> Shu sababli `manage.py check` endi buni ogohlantirish bilan
+> ushlaydi (`billing.W001`). Deploydan keyin bir marta yuriting.
+
 ### Lokal ishlash — webhooksiz
 
 Webhook OCHIQ HTTPS manzil talab qiladi: Telegram `127.0.0.1` ga
