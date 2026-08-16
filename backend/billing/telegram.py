@@ -323,3 +323,71 @@ def notify_rejected_registration(user, reason: str) -> bool:
         text += f"\n\nSabab: {reason}"
     text += "\n\nSavollaringiz bo'lsa biz bilan bog'laning."
     return send(user_chat_id(user), text)
+
+
+# ==========================================================================
+# Kiruvchi yangilanishlar
+# ==========================================================================
+
+
+def handle_update(update: dict) -> bool:
+    """
+    Telegram dan kelgan bitta yangilanishni qayta ishlaydi.
+
+    IKKI JOYDAN CHAQIRILADI va shuning uchun shu yerda turibdi:
+
+      * `billing.views.telegram_webhook` — productionda, Telegram
+        o'zi HTTPS orqali yuborganda;
+      * `manage.py telegram_poll` — lokal ishlashda va HTTPS hali
+        yo'q paytda, Telegram dan xabar SO'RAB olinadi.
+
+    Ikkalasi bir xil ishlashi SHART: aks holda lokalda ishlagan
+    narsa serverda ishlamay qolardi yoki teskarisi.
+
+    `True` qaytarsa — yangilanish tanildi va javob berildi.
+    """
+    message = update.get('message') or {}
+    chat_id = (message.get('chat') or {}).get('id')
+    text = (message.get('text') or '').strip()
+
+    if not chat_id or not text.startswith('/start'):
+        # Boshqa xabarlarga javob berilmaydi. Bot suhbatdosh emas —
+        # u faqat xabarnoma yetkazadi.
+        return False
+
+    parts = text.split(maxsplit=1)
+    token = parts[1] if len(parts) > 1 else ''
+
+    if not token:
+        # BOTNI BIRINCHI MARTA OCHGAN ODAM shu yerga tushadi: u
+        # Telegram'dagi «Start» tugmasini bosadi va hech qanday
+        # token bo'lmaydi. Ilgari unga "Havola eskirgan" deb javob
+        # berilardi — u hech qanday havola ochmagan bo'lsa ham.
+        send(
+            chat_id,
+            "👋 <b>Salom!</b>\n\n"
+            "Bu bot to'lov rekvizitlari, tasdiq javobi va obuna "
+            "eslatmalarini yetkazadi.\n\n"
+            "Ulash uchun saytdagi <b>Profil</b> sahifasiga kiring va "
+            "«Telegramni ulash» tugmasini bosing — havola shu yerga "
+            "olib keladi."
+        )
+        return True
+
+    user = consume_link_token(token, chat_id)
+
+    if user:
+        name = getattr(getattr(user, 'profile', None), 'full_name', '') or user.username
+        send(
+            chat_id,
+            f"✅ <b>Hisob ulandi</b>\n\nSalom, {name}!\n\n"
+            f"Endi to'lov rekvizitlari, tasdiq javobi va obuna "
+            f"eslatmalari shu yerga keladi."
+        )
+    else:
+        send(
+            chat_id,
+            "Havola eskirgan yoki allaqachon ishlatilgan.\n\n"
+            "Saytdagi profil sahifasidan yangi havola oling."
+        )
+    return True

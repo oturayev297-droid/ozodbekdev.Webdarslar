@@ -95,29 +95,10 @@ def telegram_webhook(request, secret):
     except json.JSONDecodeError:
         return JsonResponse({'ok': True})  # Telegram qayta yubormasin
 
-    message = update.get('message') or {}
-    chat_id = (message.get('chat') or {}).get('id')
-    text = (message.get('text') or '').strip()
-
-    if chat_id and text.startswith('/start'):
-        parts = text.split(maxsplit=1)
-        token = parts[1] if len(parts) > 1 else ''
-        user = telegram.consume_link_token(token, chat_id) if token else None
-
-        if user:
-            name = getattr(getattr(user, 'profile', None), 'full_name', '') or user.username
-            telegram.send(
-                chat_id,
-                f"✅ <b>Hisob ulandi</b>\n\nSalom, {name}!\n\n"
-                f"Endi to'lov rekvizitlari, tasdiq javobi va obuna "
-                f"eslatmalari shu yerga keladi."
-            )
-        else:
-            telegram.send(
-                chat_id,
-                "Havola eskirgan yoki allaqachon ishlatilgan.\n\n"
-                "Saytdagi profil sahifasidan yangi havola oling."
-            )
+    # Qayta ishlash `telegram.handle_update` da — u `telegram_poll`
+    # buyrug'idan ham chaqiriladi. Ikki nusxa bo'lsa, biri o'zgarib
+    # ikkinchisi eskirib qolardi.
+    telegram.handle_update(update)
 
     # Telegram HAR DOIM 200 kutadi — aks holda yangilanishni qayta-qayta
     # yuboraveradi.

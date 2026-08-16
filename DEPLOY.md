@@ -268,6 +268,31 @@ TELEGRAM_WEBHOOK_SECRET=uzun-tasodifiy-satr
 
 Chat ID ingizni bilish uchun [@userinfobot](https://t.me/userinfobot) ga yozing.
 
+### Lokal ishlash — webhooksiz
+
+Webhook OCHIQ HTTPS manzil talab qiladi: Telegram `127.0.0.1` ga
+yeta olmaydi va `http://` ni qabul qilmaydi. Ya'ni deploydan oldin
+webhook o'rnatib bo'lmaydi.
+
+Shu vaqtgacha bot teskari yo'l bilan ishlaydi — Telegram bizga
+yubormaydi, **biz undan so'rab turamiz**:
+
+```bash
+python manage.py telegram_poll
+```
+
+Hech qanday tunnel, ochiq port yoki sertifikat kerak emas. Xabarlar
+webhook bilan **bir xil** qayta ishlanadi (ikkalasi ham
+`telegram.handle_update` ni chaqiradi), shuning uchun lokalda
+ishlagan narsa serverda ham ishlaydi.
+
+Ikkalasi bir vaqtda ishlamaydi — Telegram webhook o'rnatilgan
+bo'lsa `getUpdates` ga xato beradi. Buyruq buni tekshiradi va
+kerak bo'lsa `--drop-webhook` bilan o'chiradi.
+
+Productionda esa **webhook afzal**: doim ishlab turadigan jarayon
+kerak emas, tezroq va arzonroq.
+
 3. Webhook ni ro'yxatdan o'tkazing (HTTPS majburiy):
 
 ```bash
