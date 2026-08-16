@@ -13,7 +13,7 @@ bayroq butun kursni bepulga chiqarib yuborardi.
 
 from django import forms
 
-from core.models import Category, Lesson, LessonImage, Module
+from core.models import Category, Lesson, LessonImage, Module, Project
 
 #: Tailwind bilan bo'yalgan maydonlar uchun umumiy sinflar
 INPUT = (
@@ -158,4 +158,49 @@ class CategoryForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': INPUT}),
             'slug': forms.TextInput(attrs={'class': INPUT}),
             'description': forms.Textarea(attrs={'class': INPUT, 'rows': 3}),
+        }
+
+
+class ProjectForm(forms.ModelForm):
+    """
+    Amaliy loyiha.
+
+    NEGA PANELGA KO'CHIRILDI: ilgari loyiha qo'shish uchun `manage.py
+    shell` ochish kerak edi. Loyiha — o'quvchi ko'radigan kontent,
+    uni qo'shish kundalik ish bo'lishi kerak.
+
+    `tech_stack` vergul bilan ajratilgan matn bo'lib saqlanadi —
+    frontend uni o'zi bo'laklarga ajratadi.
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            'title', 'description', 'difficulty', 'tech_stack',
+            'image_url', 'demo_url', 'repo_url', 'order',
+        ]
+        labels = {
+            'title': 'Loyiha nomi',
+            'description': 'Tavsif',
+            'difficulty': 'Daraja',
+            'tech_stack': 'Texnologiyalar',
+            'image_url': 'Rasm havolasi',
+            'demo_url': 'Namuna havolasi',
+            'repo_url': 'Kod havolasi',
+            'order': 'Tartib',
+        }
+        help_texts = {
+            'tech_stack': "Vergul bilan ajrating: Python, Django, React",
+            'description': "O'quvchi nima qilishi kerakligi",
+            'order': "Kichik raqam yuqorida turadi",
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={'class': INPUT}),
+            'description': forms.Textarea(attrs={'class': INPUT, 'rows': 5}),
+            'difficulty': forms.Select(attrs={'class': INPUT}),
+            'tech_stack': forms.TextInput(attrs={'class': INPUT}),
+            'image_url': forms.URLInput(attrs={'class': INPUT}),
+            'demo_url': forms.URLInput(attrs={'class': INPUT}),
+            'repo_url': forms.URLInput(attrs={'class': INPUT}),
+            'order': forms.NumberInput(attrs={'class': INPUT}),
         }

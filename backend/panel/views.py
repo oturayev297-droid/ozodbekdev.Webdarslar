@@ -56,13 +56,14 @@ from core.models import (
     MentorMessage,
     Module,
     ParentLink,
+    Project,
     Question,
     Quiz,
 )
 
 from . import messaging, reports
 from .auth import staff_required
-from .forms import CategoryForm, LessonForm, LessonImageForm, ModuleForm
+from .forms import CategoryForm, LessonForm, LessonImageForm, ModuleForm, ProjectForm
 from .models import Audience, PanelMessage
 
 logger = logging.getLogger(__name__)
@@ -1023,3 +1024,56 @@ def question_delete(request, question_id):
     question.delete()
     messages.success(request, "Savol o'chirildi.")
     return redirect('panel:quiz_questions', quiz_id=quiz_id)
+
+
+# ─────────────────────────── Loyihalar ───────────────────────────
+
+
+@staff_required
+def projects(request):
+    """
+    Amaliy loyihalar ro'yxati.
+
+    NEGA PANELGA KO'CHIRILDI: ilgari loyiha qo'shish uchun `manage.py
+    shell` ochish kerak edi va model faqat Django adminda ko'rinardi.
+    """
+    return render(request, 'panel/projects.html', {
+        'page_obj': _page(request, Project.objects.order_by('order', 'title')),
+    })
+
+
+@staff_required
+def project_edit(request, project_id=None):
+    """Loyiha qo'shish yoki tahrirlash."""
+    project = get_object_or_404(Project, pk=project_id) if project_id else None
+
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            obj = form.save()
+            messages.success(request, f"Loyiha saqlandi: {obj.title}")
+            return redirect('panel:projects')
+        messages.error(request, "Formada xato bor.")
+    else:
+        form = ProjectForm(instance=project)
+
+    return render(request, 'panel/project_form.html', {
+        'form': form,
+        'project': project,
+    })
+
+
+@require_POST
+@staff_required
+def project_delete(request, project_id):
+    """
+    Loyihani o'chiradi.
+
+    Bo'limdan farqli — loyiha hech narsani yetaklab ketmaydi, unga
+    bog'langan o'quvchi ma'lumoti yo'q.
+    """
+    project = get_object_or_404(Project, pk=project_id)
+    title = project.title
+    project.delete()
+    messages.success(request, f"Loyiha o'chirildi: {title}")
+    return redirect('panel:projects')

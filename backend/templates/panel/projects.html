@@ -1,0 +1,62 @@
+{% extends 'panel/_base.html' %}
+
+{% block title %}Loyihalar{% endblock %}
+{% block heading %}Loyihalar{% endblock %}
+
+{% block content %}
+
+<div class="flex items-start justify-between gap-4 mb-6">
+    <p class="text-sm text-slate-500 leading-relaxed max-w-2xl">
+        O'quvchi mustaqil bajaradigan amaliy ishlar. Saytda
+        <b class="text-slate-300">Loyihalar</b> sahifasida ko'rinadi,
+        tartib raqami bo'yicha.
+    </p>
+
+    <a href="{% url 'panel:project_new' %}"
+       class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-sky-400 text-slate-950 text-sm font-bold transition">
+        <span class="material-icons-round text-base">add</span> Yangi loyiha
+    </a>
+</div>
+
+<div class="glass rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="data w-full text-sm">
+            <thead><tr class="border-b border-white/5">
+                <th>#</th><th>Nomi</th><th>Daraja</th><th>Texnologiyalar</th><th></th>
+            </tr></thead>
+            <tbody>
+            {% for project in page_obj %}
+                <tr>
+                    <td class="text-slate-500">{{ project.order }}</td>
+                    <td>
+                        <a href="{% url 'panel:project_edit' project.pk %}"
+                           class="font-semibold hover:text-primary">{{ project.title }}</a>
+                        {% if project.demo_url %}
+                            <span class="block text-xs text-slate-500">Namuna havolasi bor</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="px-2 py-0.5 rounded-full bg-white/5 text-xs text-slate-300">
+                            {{ project.get_difficulty_display }}
+                        </span>
+                    </td>
+                    <td class="text-slate-400">{{ project.tech_stack|truncatechars:44 }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'panel:project_edit' project.pk %}"
+                           class="text-xs text-slate-400 hover:text-primary">Tahrirlash</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="text-center text-slate-500 py-12">
+                    Hali loyiha yo'q. <a href="{% url 'panel:project_new' %}"
+                        class="text-primary hover:underline">Birinchisini qo'shing</a>.
+                </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'panel/includes/pagination.html' %}
+
+{% endblock %}

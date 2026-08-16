@@ -26,7 +26,9 @@ from billing.models import (
     SubscriptionPeriod,
 )
 from billing.services import extend_subscription
-from core.models import Category, Choice, Lesson, Module, ParentLink, Question, Quiz
+from core.models import (
+    Category, Choice, Lesson, Module, ParentLink, Project, Question, Quiz,
+)
 
 from .tests import make_plan, make_user
 
@@ -350,6 +352,88 @@ class ParentLinkFormTests(TestCase):
         self.assertContains(response, 'farzand')
 
 
+class ProjectTests(TestCase):
+    """
+    Amaliy loyihalar.
+
+    Ilgari loyiha qo'shish uchun `manage.py shell` ochish kerak edi —
+    model bor edi, lekin uni faqat Django admini ko'rsatardi.
+    """
+
+    def setUp(self):
+        make_plan()
+        self.staff = make_user('loyihachi', staff=True)
+        self.client.force_login(self.staff)
+
+    def _data(self, **overrides):
+        data = {
+            'title': "To'lov boti",
+            'description': "Telegram bot yozing",
+            'difficulty': 'Entry',
+            'tech_stack': 'Python, Django',
+            'image_url': '', 'demo_url': '', 'repo_url': '',
+            'order': '1',
+        }
+        data.update(overrides)
+        return data
+
+    def test_loyiha_yaratiladi(self):
+        response = self.client.post(reverse('panel:project_new'), self._data())
+
+        self.assertRedirects(response, reverse('panel:projects'))
+        project = Project.objects.get(title="To'lov boti")
+        self.assertEqual(project.tech_stack, 'Python, Django')
+
+    def test_nomsiz_loyiha_saqlanmaydi(self):
+        self.client.post(reverse('panel:project_new'), self._data(title=''))
+
+        self.assertEqual(Project.objects.count(), 0)
+
+    def test_notogri_havola_qabul_qilinmaydi(self):
+        self.client.post(reverse('panel:project_new'), self._data(demo_url='shunchaki matn'))
+
+        self.assertEqual(Project.objects.count(), 0)
+
+    def test_loyiha_tahrirlanadi(self):
+        project = Project.objects.create(
+            title='Eski', description='x', tech_stack='Python',
+        )
+
+        self.client.post(
+            reverse('panel:project_edit', args=[project.id]),
+            self._data(title='Yangi nom'),
+        )
+
+        project.refresh_from_db()
+        self.assertEqual(project.title, 'Yangi nom')
+
+    def test_loyiha_ochiriladi(self):
+        project = Project.objects.create(
+            title="O'chadi", description='x', tech_stack='Python',
+        )
+
+        self.client.post(reverse('panel:project_delete', args=[project.id]))
+
+        self.assertFalse(Project.objects.filter(pk=project.pk).exists())
+
+    def test_royxat_tartib_boyicha(self):
+        Project.objects.create(title='Ikkinchi', description='x', tech_stack='y', order=2)
+        Project.objects.create(title='Birinchi', description='x', tech_stack='y', order=1)
+
+        response = self.client.get(reverse('panel:projects'))
+
+        titles = [p.title for p in response.context['page_obj']]
+        self.assertEqual(titles, ['Birinchi', 'Ikkinchi'])
+
+    def test_oquvchi_loyiha_qosha_olmaydi(self):
+        self.client.force_login(make_user('oddiy3'))
+
+        response = self.client.post(reverse('panel:project_new'), self._data())
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Project.objects.count(), 0)
+
+
 class NewPageRenderTests(TestCase):
     """Yangi sahifalar bo'sh bazada ham ochilishi."""
 
@@ -358,12 +442,13 @@ class NewPageRenderTests(TestCase):
         self.client.force_login(make_user('admin7', staff=True))
 
     def test_bosh_bazada_ochiladi(self):
-        for name in ('settings', 'parents'):
+        for name in ('settings', 'parents', 'projects'):
             with self.subTest(page=name):
                 self.assertEqual(self.client.get(reverse(f'panel:{name}')).status_code, 200)
 
     def test_yangi_bolim_formasi_ochiladi(self):
         self.assertEqual(self.client.get(reverse('panel:category_new')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('panel:project_new')).status_code, 200)
 
     def test_sozlamalarda_karta_va_narx_korinadi(self):
         AdminSetting.objects.update_or_create(

@@ -1,22 +1,31 @@
+# Repozitoriy ikki mustaqil qismdan iborat:
+#
+#   backend/   Django + DRF  -> Railway (Root Directory = backend)
+#   frontend/  Next.js       -> Vercel  (Root Directory = frontend)
+#
+# Ular alohida joylashtiriladi va bir-birining fayllarini bilmaydi.
+# Bog'lanish faqat HTTP orqali: frontend `NEXT_PUBLIC_BACKEND_URL` ga
+# so'rov yuboradi.
 
-# Python
+# --- Python / Django ---
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Django
 *.log
-logs/
+backend/logs/
 local_settings.py
-db.sqlite3
-db.sqlite3.backup
-media/
-staticfiles/
+backend/db.sqlite3
+backend/db.sqlite3.backup
+backend/media/
+backend/staticfiles/
 *.sql
 *.dump
 
-# Environments
+# --- Muhit o'zgaruvchilari ---
+# Backend maxfiy qiymatlari FAQAT backend/.env da. Ilgari ular ildizda
+# turardi va frontend bilan bitta joyda aralashib ketardi.
 .env
+backend/.env
 .venv
 env/
 venv/
@@ -24,7 +33,7 @@ ENV/
 env.bak/
 venv.bak/
 
-# IDE
+# --- IDE ---
 .vscode
 .idea
 

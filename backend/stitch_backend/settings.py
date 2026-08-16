@@ -124,9 +124,30 @@ WSGI_APPLICATION = "stitch_backend.wsgi.application"
 # --------------------------------------------------------------------------
 
 if env("DATABASE_URL"):
+    # Railway Postgres qo'shilganda `DATABASE_URL` ni O'ZI beradi —
+    # qo'lda yozish shart emas va yozilmasligi ham kerak: parol
+    # almashtirilganda Railway o'zgaruvchini yangilaydi, qo'lda
+    # yozilgani esa eskirib qoladi va deploy bazaga ulana olmaydi.
     DATABASES = {"default": env.db("DATABASE_URL")}
+
+    # Ulanishni 60 soniya ochiq saqlaymiz. Har so'rovda yangi ulanish
+    # ochish Postgres uchun sezilarli qo'shimcha yuk.
     DATABASES["default"]["CONN_MAX_AGE"] = 60
+
+    # Uzilib qolgan ulanishni Django o'zi tekshiradi. Bunisiz
+    # `CONN_MAX_AGE` bilan saqlangan o'lik ulanish keyingi so'rovda
+    # "server closed the connection unexpectedly" xatosini berardi —
+    # bulutli bazalarda bu odatiy hol.
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
+    # Railway ichki tarmog'ida (`*.railway.internal`) TLS shart emas,
+    # tashqi manzilda esa majburiy. Manzilning o'ziga qarab hal
+    # qilamiz — majburan qo'ysak ichki ulanish ishlamay qolardi.
+    if "railway.internal" not in env("DATABASE_URL"):
+        DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
 else:
+    # Lokal ishlash uchun. Railway'da bu tarmoqqa hech qachon
+    # tushmaydi: u yerda `DATABASE_URL` doim mavjud.
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

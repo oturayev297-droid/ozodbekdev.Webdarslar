@@ -22,9 +22,29 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **REST API** (`/api/v1/`) — alohida deploy qilinadigan frontend uchun
 - **React frontend** (`frontend/`) — Next.js 16, 17 sahifa, Vercel uchun tayyor
 
+## Ikki mustaqil qism
+
+Repozitoriy ikkiga bo'lingan va ular **alohida joylashtiriladi**:
+
+```
+backend/    Django + DRF   ->  Railway  (Root Directory = backend)
+frontend/   Next.js        ->  Vercel   (Root Directory = frontend)
+```
+
+Backendning hamma narsasi — `.env`, `requirements.txt`, `Procfile`,
+`railway.json` — `backend/` ichida. Railway boshqa hech narsani
+ko'rmaydi: frontend o'zgarsa backend qayta qurilmaydi va aksincha.
+
+Bog'lanish faqat HTTP orqali. Frontend `/api/*` so'rovlarini o'z
+domenidan backendga uzatadi (`next.config.mjs` dagi `rewrites`) —
+shu sabab sessiya cookie birinchi tomon bo'lib qoladi.
+
 ## Tez boshlash
 
+**Backend** (birinchi oyna):
+
 ```bash
+cd backend
 python -m venv venv && venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
@@ -33,53 +53,71 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+**Frontend** (ikkinchi oyna):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Sayt `http://localhost:3000`, panel `http://127.0.0.1:8000/panel/`.
+
 Batafsil: [DEPLOY.md](DEPLOY.md)
 
 ## Loyiha tuzilishi
 
 ```
-core/                  kontent va autentifikatsiya
-  models.py            Category -> Module -> Lesson -> Quiz -> Question -> Choice
-  richtext.py          dars matnini XAVFSIZ HTML ga aylantirish
-  diagrams.py          dars sxemalarini kod bilan chizish (PNG)
-  approval.py          admin ruxsati darvozasi
-  quiz_scoring.py      ball hisoblash (shablon va API bir joydan oladi)
-  video_storage.py     S3/R2 imzolangan havolalar
-  views.py             sahifalar va API endpointlari
-  password_reset.py    6 xonali kod bilan parol tiklash
-  lockout.py           login urinishlari cheklovi (brute-force himoyasi)
-  certificates.py      PDF sertifikat generatsiyasi va tekshirish
-  ai_mentor.py         Claude API orqali o'qituvchi chat
-  study_time.py        o'quv vaqtini serverda o'lchash
-billing/               obuna va to'lov
-  models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
-  dates.py             Toshkent vaqti bo'yicha sana hisobi
-  services.py          obunani uzaytirish (YAGONA yo'l) va holat
-  payment_requests.py  to'lov so'rovi oqimi
-  gating.py            kontent darvozasi (bepul dars / obuna)
-  telegram.py          xabarnomalar va hisobni ulash
-  gateways/payme.py    Payme Merchant API (JSON-RPC)
-  gateways/click.py    Click SHOP API (prepare / complete)
-  gateway_links.py     to'lov sahifasiga havola qurish
-api/                   REST API (/api/v1/)
-  permissions.py       darvozalarni CHAQIRADI, qayta yozmaydi
-  serializers.py       qulflangan mazmun serializerga tushmaydi
-  views.py             biznes mantiq billing/core dan chaqiriladi
-frontend/              Next.js 16 frontend (Vercel)
-  src/lib/api.ts       barcha endpointlar, CSRF, sessiya cookie
-  src/lib/runner.ts    kodni brauzerda ishga tushirish (Pyodide)
-  src/components/      Nav, Guard, MentorChat
-  src/app/             17 ta sahifa
-panel/                 boshqaruv paneli (/panel/)
-  auth.py              xodim kirishi, chiqish, parol tiklash
-  reports.py           hisobotlar — FAQAT o'qiydi, hech narsa o'zgartirmaydi
-  messaging.py         Telegramga xabar yuborish (navbat bilan)
-  views.py             sahifalar — biznes mantiqni billing dan CHAQIRADI
-  forms.py             dars va modul formalari
-  context.py           menyudagi hisoblagichlar
-stitch_backend/        Django proyekt sozlamalari
-templates/             HTML shablonlar (Tailwind CDN)
-media/lesson_videos/   dars videolari (git ga tushmaydi, ~5 GB)
+backend/                 Django + DRF  ->  Railway
+  manage.py
+  .env                   maxfiy qiymatlar (git ga tushmaydi)
+  requirements.txt
+  Procfile / railway.json
+  core/                  kontent va autentifikatsiya
+    models.py            Category -> Module -> Lesson -> Quiz -> Question -> Choice
+    richtext.py          dars matnini XAVFSIZ HTML ga aylantirish
+    diagrams.py          dars sxemalarini kod bilan chizish (PNG)
+    approval.py          admin ruxsati darvozasi
+    quiz_scoring.py      ball hisoblash (panel va API bir joydan oladi)
+    video_storage.py     S3/R2 imzolangan havolalar
+    study_time.py        o'quv vaqtini SERVERDA o'lchash
+    password_reset.py    6 xonali kod bilan parol tiklash
+    lockout.py           login urinishlari cheklovi (brute-force himoyasi)
+    certificates.py      PDF sertifikat generatsiyasi va tekshirish
+    ai_mentor.py         Claude API orqali o'qituvchi chat
+    views.py             video uzatish va sertifikat PDF (boshqasi API da)
+  billing/               obuna va to'lov
+    models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
+    dates.py             Toshkent vaqti bo'yicha sana hisobi
+    services.py          obunani uzaytirish (YAGONA yo'l) va holat
+    payment_requests.py  to'lov so'rovi oqimi
+    gating.py            kontent darvozasi (bepul dars / obuna)
+    telegram.py          xabarnomalar va hisobni ulash
+    gateways/payme.py    Payme Merchant API (JSON-RPC)
+    gateways/click.py    Click SHOP API (prepare / complete)
+    gateway_links.py     to'lov sahifasiga havola qurish
+  api/                   REST API (/api/v1/)
+    permissions.py       darvozalarni CHAQIRADI, qayta yozmaydi
+    serializers.py       qulflangan mazmun serializerga tushmaydi
+    views.py             biznes mantiq billing/core dan chaqiriladi
+  panel/                 boshqaruv paneli (/panel/)
+    auth.py              xodim kirishi, chiqish, parol tiklash
+    reports.py           hisobotlar — FAQAT o'qiydi, hech narsa o'zgartirmaydi
+    messaging.py         Telegramga xabar yuborish (navbat bilan)
+    views.py             sahifalar — biznes mantiqni billing dan CHAQIRADI
+    forms.py             dars, modul, bo'lim va loyiha formalari
+    context.py           menyudagi hisoblagichlar
+  stitch_backend/        Django proyekt sozlamalari
+  templates/panel/       panel shablonlari (Tailwind CDN)
+  media/lesson_videos/   dars videolari (git ga tushmaydi, ~5 GB)
+
+frontend/                Next.js 16  ->  Vercel
+  next.config.mjs        /api/* ni backendga uzatish (rewrites)
+  src/lib/api.ts         barcha endpointlar, CSRF, sessiya cookie
+  src/lib/runner.ts      kodni brauzerda ishga tushirish (Pyodide)
+  src/lib/use-study-timer.ts   o'quv vaqti signali
+  src/components/        Nav, Guard, MentorChat
+  src/app/               19 ta sahifa
 ```
 
 ## Kirish qoidasi
@@ -434,6 +472,7 @@ tarif narxi, bo'limlar, test savollari) endi panelda o'z bo'limiga ega.
 | Xabar yuborish | Telegramga guruh yoki shaxsiy xabar |
 | Kuzatish | Kirish urinishlari, AI Mentor, sertifikatlar |
 | Ota-onalar | O'quvchini ota-onasiga bog'lash — **faqat admin qo'lida** |
+| Loyihalar | Amaliy ishlar — qo'shish, tahrirlash, o'chirish |
 | Sozlamalar | Karta rekvizitlari va obuna narxi |
 
 Xodim yaratish:
@@ -464,7 +503,8 @@ python manage.py test core.tests_approval     # admin ruxsati darvozasi
 python manage.py test api                     # REST API va paywall
 python manage.py test core.tests_video_storage  # video ombori
 python manage.py test core.tests_study_time   # o'quv vaqti va ota-ona paneli
-python manage.py test panel.tests_sections    # kartalar, narx, savollar
+python manage.py test panel.tests_sections    # kartalar, narx, savollar, loyihalar
+python manage.py test core.tests_parent_report  # ota-onaga haftalik hisobot
 ```
 
 ## Ota-ona paneli
@@ -483,6 +523,13 @@ O'quv vaqti brauzerdan har daqiqada keladigan signal bilan o'lchanadi
   * ikki signal orasi 45 soniyadan kam bo'lsa hisoblanmaydi
   * kuniga eng ko'pi 14 soat yoziladi
   * varaq ko'rinmayotgan yoki 3 daqiqa harakatsiz bo'lsa signal ketmaydi
+
+Haftada bir marta Telegramga qisqa hisobot yuboriladi (cron):
+
+```bash
+python manage.py parent_weekly_report            # yuboradi
+python manage.py parent_weekly_report --dry-run  # faqat matnni ko'rsatadi
+```
 
 Ota-onaga `is_approved` kerak emas — u o'quvchi emas, shuning uchun
 darsga ruxsat talab qilinsa hisobotni umuman ko'ra olmasdi.

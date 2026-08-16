@@ -1,8 +1,27 @@
 # Ishga tushirish qo'llanmasi
 
+## 0. Tuzilma
+
+Repozitoriy ikki MUSTAQIL qismdan iborat:
+
+```
+backend/    Django + DRF   ->  Railway  (Root Directory = backend)
+frontend/   Next.js        ->  Vercel   (Root Directory = frontend)
+```
+
+Backendning hamma narsasi — `.env`, `requirements.txt`, `Procfile`,
+`railway.json`, `runtime.txt` — `backend/` ichida. Railway boshqa hech
+narsani ko'rmaydi.
+
+**Quyidagi barcha `python manage.py ...` buyruqlari `backend/` ichida
+bajariladi.**
+
 ## 1. Lokal ishlab chiqish
 
+Backend (birinchi oyna):
+
 ```bash
+cd backend
 python -m venv venv
 venv\Scripts\activate          # Windows
 pip install -r requirements.txt
@@ -15,10 +34,19 @@ python manage.py runserver
 
 `.env` da lokal uchun `DJANGO_DEBUG=True` va `DATABASE_URL=` (bo'sh — SQLite ishlatiladi).
 
+Frontend (ikkinchi oyna):
+
+```bash
+cd frontend
+npm install
+npm run dev                    # http://localhost:3000
+```
+
 ## 2. Testlarni ishga tushirish
 
 ```bash
-python manage.py test           # hammasi
+cd backend
+python manage.py test           # hammasi (464 ta)
 python manage.py test billing   # faqat obuna va to'lov
 ```
 
@@ -188,7 +216,13 @@ Javobsiz to'lov so'rovlarini kuydiradi va 7/3/0 kun qolganda eslatma yuboradi.
 
 # Paneldan yuborilgan, navbatda qolgan xabarlarni yuborish (12-bo'limga qarang)
 */5 * * * * cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py send_panel_messages --budget 240 >> logs/cron.log 2>&1
+
+# Ota-onalarga farzandi haqida haftalik hisobot (dushanba ertalab)
+0 8 * * 1  cd /var/www/stitch && /var/www/stitch/venv/bin/python manage.py parent_weekly_report >> logs/cron.log 2>&1
 ```
+
+> Yo'llarda `/var/www/stitch` — bu **backend** papkasi (`.../stitch/backend`),
+> chunki `manage.py` o'sha yerda.
 
 Avval quruq sinab ko'ring: `python manage.py subscription_daily --dry-run`
 
@@ -402,7 +436,8 @@ tokenlarni ko'rsatadi.
 ## 12. Boshqaruv paneli (`/panel/`)
 
 Kundalik ish shu panelda: hisobotlar, to'lovlarni tasdiqlash, dars
-joylash, xabar yuborish, kuzatish, ota-onalarni bog'lash va sozlamalar.
+joylash, loyihalar, xabar yuborish, kuzatish, ota-onalarni bog'lash va
+sozlamalar.
 
 Django'ning standart `/admin/` paneli **o'chirilgan**. Ilgari faqat u
 orqali kiritiladigan ma'lumotlar panelga ko'chirildi:
@@ -414,6 +449,7 @@ orqali kiritiladigan ma'lumotlar panelga ko'chirildi:
 | Bo'limlar (`Category`) | Darsliklar -> Bo'limlar |
 | Test savollari (`Question`, `Choice`) | Testlar -> Savollar |
 | Ota-ona bog'lanishi | Ota-onalar |
+| Loyihalar (`Project`) | Loyihalar |
 
 ### Kirish huquqi
 
@@ -537,7 +573,16 @@ Sozlama bo'sh qolsa eski yo'l ishlashda davom etadi.
 
 ### Backend — Railway
 
-Loyihada `Procfile`, `railway.json` va `runtime.txt` tayyor.
+**Root Directory = `backend`** — buni albatta qo'ying. Aks holda
+Railway ildizda `requirements.txt` topa olmay quruvni to'xtatadi.
+
+`backend/` ichida `Procfile`, `railway.json` va `runtime.txt` tayyor.
+
+**Bazani ulash:** Railway'da `+ New` → `Database` → `PostgreSQL`, so'ng
+uni backend xizmatiga bog'lang. `DATABASE_URL` **o'zi qo'shiladi** —
+qo'lda yozmang. Qo'lda yozilsa, parol almashtirilganda Railway o'z
+qiymatini yangilaydi, sizniki eskirib qoladi va deploy bazaga ulana
+olmaydi.
 
 Muhit o'zgaruvchilari (Railway → Variables):
 
@@ -545,7 +590,7 @@ Muhit o'zgaruvchilari (Railway → Variables):
 DJANGO_SECRET_KEY=<yangi tasodifiy kalit>
 DJANGO_DEBUG=False
 DJANGO_ALLOWED_HOSTS=<railway-domeningiz>
-DATABASE_URL=<Railway Postgres bergan manzil>
+FRONTEND_URL=https://<vercel-domeningiz>
 FRONTEND_ORIGINS=https://<vercel-domeningiz>
 VIDEO_STORAGE_BUCKET=...
 VIDEO_STORAGE_ENDPOINT=...
@@ -559,7 +604,13 @@ EMAIL_HOST_PASSWORD=...
 
 `USE_X_ACCEL_REDIRECT` ni **qo'ymang** — Railway'da nginx yo'q.
 
-Migratsiya `Procfile` dagi `release` bosqichida avtomatik bajariladi.
+`FRONTEND_URL` ni ham unutmang: sertifikatdagi QR kod va to'lovdan
+keyin qaytish manzili shundan quriladi.
+
+Migratsiya `railway.json` dagi `startCommand` da avtomatik bajariladi —
+har deployda `migrate` ishlaydi va faqat undan keyin gunicorn
+ko'tariladi. Migratsiya yiqilsa xizmat ishga tushmaydi: yarim
+ko'chirilgan baza bilan ishlagandan ko'ra shu yaxshi.
 
 ### Frontend — Vercel
 

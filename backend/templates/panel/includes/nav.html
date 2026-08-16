@@ -62,6 +62,11 @@ eskirib qolardi.
         {% endif %}
     </a>
 
+    <a href="{% url 'panel:projects' %}"
+       class="nav-item {% if u == 'projects' or u == 'project_edit' or u == 'project_new' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
+        <span class="material-icons-round text-lg">rocket_launch</span> Loyihalar
+    </a>
+
     <a href="{% url 'panel:parents' %}"
        class="nav-item {% if u == 'parents' %}active{% endif %} flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 border-transparent text-slate-400 hover:text-slate-100 hover:bg-white/5 transition">
         <span class="material-icons-round text-lg">family_restroom</span> Ota-onalar
