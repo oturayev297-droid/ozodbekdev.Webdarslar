@@ -14,6 +14,8 @@ E'TIBOR QARATILGAN JOYLAR:
   * SAVOL — to'g'ri javobsiz savol saqlanmasligi
 """
 
+import re
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
@@ -464,3 +466,69 @@ class NewPageRenderTests(TestCase):
         self.assertContains(response, '8600')
         # Narx SO'MDA ko'rsatiladi — formaga ham so'mda kiritiladi
         self.assertContains(response, str(services.get_plan().price_per_month_tiyin // 100))
+
+
+class ChartRenderTests(TestCase):
+    """
+    Moliyaviy grafiklar.
+
+    IKKI XIL NUQSON BOR EDI VA IKKALASI HAM TESTLARDA KO'RINMAGAN —
+    sahifa 200 qaytarardi, faqat grafik bo'sh edi. Egasi tushumni
+    aynan shu grafikdan ko'radi.
+
+      1. `items-end` har bir ustunni kontent balandligiga qisqartirardi
+      2. `LANGUAGE_CODE = "uz"` bo'lgani uchun Django kasr sonni VERGUL
+         bilan chiqarardi (`height: 100,0%`) — CSS bunday qiymatni
+         butunlay tashlab yuboradi
+
+    Quyidagi testlar ikkalasini ham ushlaydi.
+    """
+
+    def setUp(self):
+        make_plan()
+        self.client.force_login(make_user('grafikchi', staff=True))
+        student = make_user('tolagan')
+        extend_subscription(
+            student, months=1, source=PeriodSource.PAYMENT,
+            payment_method=PaymentMethod.CASH, amount_tiyin=10_000_000,
+        )
+
+    def _styles(self, url):
+        html = self.client.get(url).content.decode()
+        return re.findall(r'style="(?:height|width): ([^"]+)"', html)
+
+    def test_balandlikda_VERGUL_bolmaydi(self):
+        """
+        Vergulli qiymatni CSS tushunmaydi va ustun ko'rinmay qoladi.
+        """
+        for url in (reverse('panel:dashboard'), reverse('panel:finance')):
+            with self.subTest(url=url):
+                for value in self._styles(url):
+                    self.assertNotIn(
+                        ',', value,
+                        f"CSS qiymatida vergul: {value!r} — `|unlocalize` qo'shing"
+                    )
+
+    def test_tolov_bolgan_oyda_ustun_bor(self):
+        """Tushum bor, demak kamida bitta ustun noldan katta bo'lishi kerak."""
+        for url in (reverse('panel:dashboard'), reverse('panel:finance')):
+            with self.subTest(url=url):
+                values = [float(v.rstrip('%')) for v in self._styles(url)]
+                self.assertTrue(values, "Grafikda ustun umuman yo'q")
+                self.assertGreater(
+                    max(values), 0,
+                    'Tushum bor, lekin hamma ustun nolga teng'
+                )
+
+    def test_ustunlar_qisqarmaydi(self):
+        """
+        `items-end` ustunni kontent balandligiga qisqartiradi va
+        ustun tanasiga joy qolmaydi.
+        """
+        for url in (reverse('panel:dashboard'), reverse('panel:finance')):
+            with self.subTest(url=url):
+                html = self.client.get(url).content.decode()
+                self.assertNotIn(
+                    'flex items-end', html,
+                    "Grafik qatorida `items-end` — ustunlar qisqarib ko'rinmay qoladi"
+                )

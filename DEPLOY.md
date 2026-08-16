@@ -283,6 +283,28 @@ yoziladi, to'lov oqimi buzilmaydi.
 O'quvchi profil sahifasidan bir martalik havola oladi va bosadi — telefon
 raqami so'ralmaydi.
 
+### Bot NIMA UCHUN kerak
+
+Bot chat emas — u **yetkazib berish kanali**. O'zbekistonda email
+kamdan-kam ochiladi, SMS esa pullik. Telegram hammada bor va xabar
+darhol yetadi. Botsiz quyidagilar ishlamaydi yoki juda sekinlashadi:
+
+| Vaziyat | Botsiz | Bot bilan |
+|---|---|---|
+| O'quvchi to'lamoqchi | Admin kartani qo'lda yozib beradi | Karta rekvizitlari avtomatik yetadi |
+| Admin to'lovni tasdiqladi | O'quvchi bilmaydi, qayta so'raydi | Darhol «tasdiqlandi» xabari |
+| Obuna 3 kunda tugaydi | Jimgina yopiladi, o'quvchi ketadi | Eslatma keladi, ko'pchilik uzaytiradi |
+| Yangi ro'yxatdan o'tish | Admin panelga kirib ko'rishi kerak | Adminga darhol xabar |
+| Ota-onaga hisobot | Sahifaga o'zi kirishi kerak | Haftada bir marta o'zi keladi |
+
+Eng muhimi **muddat eslatmasi**: obuna jimgina tugasa o'quvchi
+qaytmaydi, eslatma kelsa esa ko'pchilik uzaytiradi. Bu to'g'ridan-
+to'g'ri daromadga ta'sir qiladi.
+
+Token bo'sh bo'lsa sayt ishlashda davom etadi — xabarlar faqat logga
+yoziladi va to'lov oqimi buzilmaydi. Ya'ni bot **qo'shimcha**, lekin
+usiz tizim sekin va qo'lda ishlaydi.
+
 ## 9. To'lov tizimlari (Payme / Click)
 
 Kalitlar bo'sh bo'lsa tugmalar ko'rinmaydi va **qo'lda tasdiqlash oqimi

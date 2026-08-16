@@ -1,4 +1,14 @@
 {% extends 'panel/_base.html' %}
+{% load l10n %}
+
+{% comment %}
+`unlocalize` — MAJBURIY, chiroy uchun emas.
+
+`LANGUAGE_CODE = "uz"` bo'lgani uchun Django kasr sonni VERGUL bilan
+chiqaradi: `height: 100,0%`. CSS esa faqat nuqtani tushunadi va
+bunday qiymatni butunlay tashlab yuboradi — ustun ko'rinmay,
+grafik BO'SH bo'lib qolardi.
+{% endcomment %}
 {% load money %}
 
 {% block title %}Pul aylanmasi{% endblock %}
@@ -48,7 +58,15 @@ raqamlarni noto'g'ri tushunib qoladi.
         </div>
     </div>
 
-    <div class="flex items-end gap-1.5 h-52 overflow-x-auto pb-1">
+    {% comment %}
+    `items-stretch` — ATAYLAB, `items-end` emas.
+    
+    `items-end` bilan har bir ustun O'Z KONTENTI balandligiga
+    qisqaradi, ustun tanasi esa qolgan joyni to'ldirishi kerak edi —
+    joy qolmagach balandligi nolga tushib, grafik BO'SH ko'rinardi.
+    Ota-ona panelidagi grafikda ham aynan shu nuqson bor edi.
+    {% endcomment %}
+    <div class="flex items-stretch gap-1.5 h-52 overflow-x-auto pb-1">
         {% for row in series %}
             <div class="flex-1 min-w-[28px] flex flex-col items-center gap-2 group">
                 <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition whitespace-nowrap font-semibold">
@@ -56,7 +74,7 @@ raqamlarni noto'g'ri tushunib qoladi.
                 </span>
                 <div class="w-full bg-slate-800/50 rounded-t relative flex-1">
                     <div class="absolute bottom-0 w-full rounded-t bg-gradient-to-t from-primary to-secondary"
-                         style="height: {{ row.height_percent }}%"></div>
+                         style="height: {{ row.height_percent|unlocalize }}%"></div>
                 </div>
                 <span class="text-[9px] text-slate-500 whitespace-nowrap">{{ row.label }}</span>
             </div>
@@ -83,7 +101,7 @@ raqamlarni noto'g'ri tushunib qoladi.
                         </div>
                         <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
                             <div class="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
-                                 style="width: {{ row.percent }}%"></div>
+                                 style="width: {{ row.percent|unlocalize }}%"></div>
                         </div>
                     </div>
                 {% endfor %}

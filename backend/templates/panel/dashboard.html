@@ -1,4 +1,14 @@
 {% extends 'panel/_base.html' %}
+{% load l10n %}
+
+{% comment %}
+`unlocalize` — MAJBURIY, chiroy uchun emas.
+
+`LANGUAGE_CODE = "uz"` bo'lgani uchun Django kasr sonni VERGUL bilan
+chiqaradi: `height: 100,0%`. CSS esa faqat nuqtani tushunadi va
+bunday qiymatni butunlay tashlab yuboradi — ustun ko'rinmay,
+grafik BO'SH bo'lib qolardi.
+{% endcomment %}
 {% load money %}
 
 {% block title %}Bosh sahifa{% endblock %}
@@ -77,15 +87,23 @@
         </div>
 
         {% if series %}
-            <div class="flex items-end justify-between gap-2 h-40">
+            {% comment %}
+            `items-stretch` — ATAYLAB, `items-end` emas.
+            
+            `items-end` bilan har bir ustun O'Z KONTENTI balandligiga
+            qisqaradi, ustun tanasi esa qolgan joyni to'ldirishi kerak edi —
+            joy qolmagach balandligi nolga tushib, grafik BO'SH ko'rinardi.
+            Ota-ona panelidagi grafikda ham aynan shu nuqson bor edi.
+            {% endcomment %}
+            <div class="flex items-stretch justify-between gap-2 h-40">
                 {% for row in series %}
                     <div class="flex-1 flex flex-col items-center gap-2 group">
                         <span class="text-[10px] text-slate-500 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
                             {{ row.total_display }}
                         </span>
-                        <div class="w-full bg-slate-800/60 rounded-t-lg relative" style="height:100%">
+                        <div class="w-full bg-slate-800/60 rounded-t-lg relative flex-1">
                             <div class="absolute bottom-0 w-full rounded-t-lg bg-gradient-to-t from-primary to-secondary transition-all"
-                                 style="height: {{ row.height_percent }}%"></div>
+                                 style="height: {{ row.height_percent|unlocalize }}%"></div>
                         </div>
                         <span class="text-[10px] text-slate-500">{{ row.label }}</span>
                     </div>
