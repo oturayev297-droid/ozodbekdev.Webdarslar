@@ -34,6 +34,7 @@ from .services import (
     extend_subscription,
     get_cards,
     get_plan,
+    plan_for,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,7 +74,8 @@ def create_request(user, months) -> PaymentRequest:
             status=409,
         )
 
-    plan = get_plan()
+    # TARIF ODAMGA QARAB tanlanadi: ota-ona ota-ona tarifiga to'laydi.
+    plan = plan_for(user)
     ensure_subscription(user)
 
     # SUMMA SERVERDA HISOBLANADI. Klientdan kelgan qiymat umuman

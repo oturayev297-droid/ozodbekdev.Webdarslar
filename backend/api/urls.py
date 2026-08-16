@@ -84,6 +84,11 @@ urlpatterns = [
         views.ParentChildReportView.as_view(),
         name='parent_child_report',
     ),
+    path(
+        'parent/children/<int:student_id>/pay/',
+        views.ParentChildPaymentView.as_view(),
+        name='parent_child_pay',
+    ),
 
     # ── Dashboard ──
     path('dashboard/', views.dashboard, name='dashboard'),

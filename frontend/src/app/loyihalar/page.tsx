@@ -26,7 +26,7 @@ function ProjectList() {
 
   return (
     <>
-      <h1 className="text-3xl font-extrabold mb-2">Loyihalar</h1>
+      <h1 className="text-3xl font-extrabold mb-2 gradient-text">Loyihalar</h1>
       <p className="text-slate-400 mb-8 max-w-2xl leading-relaxed">
         Portfolio uchun amaliy loyihalar. Har birini o&apos;zingiz qilib
         ko&apos;ring — bu darsdan ko&apos;ra ko&apos;proq o&apos;rgatadi.
@@ -35,9 +35,9 @@ function ProjectList() {
       {items.length === 0 ? (
         <p className="text-slate-500 text-center py-12">Hozircha loyiha yo&apos;q.</p>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-5">
+        <div className="grid stagger sm:grid-cols-2 gap-5">
           {items.map((project) => (
-            <article key={project.id} className="glass rounded-2xl overflow-hidden flex flex-col">
+            <article key={project.id} className="glass lift rounded-2xl overflow-hidden flex flex-col">
               {project.image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

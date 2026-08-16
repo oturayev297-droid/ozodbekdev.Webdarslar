@@ -62,7 +62,7 @@ function Lesson({ id }: { id: number }) {
       </h1>
 
       {locked ? (
-        <div className="glass rounded-2xl p-8 text-center">
+        <div className="glass lift rounded-2xl p-8 text-center">
           <p className="text-lg font-bold mb-2">Bu dars obuna bilan ochiladi</p>
           <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
             Tanishtiruv darslari sizga ochiq. Qolgan darslar, videolar va testlar
@@ -81,7 +81,7 @@ function Lesson({ id }: { id: number }) {
           )}
 
           {lesson.theory_html && (
-            <div className="glass rounded-2xl p-6 sm:p-8 mb-8">
+            <div className="glass lift rounded-2xl p-6 sm:p-8 mb-8">
               {/*
                 HTML SERVERDA qurilgan (`core/richtext.py`): matn to'liq
                 ekranlangan va faqat ruxsat etilgan teglar qo'yilgan.
@@ -113,7 +113,7 @@ function Lesson({ id }: { id: number }) {
           )}
 
           {lesson.practice_code && (
-            <pre className="glass rounded-2xl p-6 mb-8 overflow-x-auto text-sm">
+            <pre className="glass lift rounded-2xl p-6 mb-8 overflow-x-auto text-sm">
               <code>{lesson.practice_code}</code>
             </pre>
           )}

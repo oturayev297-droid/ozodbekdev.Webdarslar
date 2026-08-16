@@ -8,10 +8,171 @@ body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
+/* ══════════════════════════ Orqa fon ══════════════════════════
+   Uch qatlam: rangli dog'lar (aurora), 3D zarralar (canvas) va
+   perspektivada yotgan to'r. Hammasi `position: fixed` va
+   `pointer-events: none` — sahifa bilan ishlashga xalaqit bermaydi.
+
+   `z-index: -1` EMAS, `0` ishlatiladi va mazmun `1` ga qo'yiladi:
+   manfiy qiymatda fon `body` fonining ORQASIGA tushib ko'rinmay
+   qolardi. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backdrop-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Perspektivada yotgan to'r — "chuqurlikka ketayotgan pol" hissi.
+   Bitta element, faqat CSS: gradient bilan chiziladi va cheksiz
+   surilib turadi. */
+.backdrop-grid {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -30vh;
+  height: 90vh;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.13) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(340px) rotateX(62deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, #000 0%, transparent 72%);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 72%);
+  animation: grid-drift 14s linear infinite;
+}
+
+@keyframes grid-drift {
+  from { background-position: 0 0; }
+  to { background-position: 0 60px; }
+}
+
+/* Rangli dog'lar. `filter: blur` qimmat amal, lekin bu yerda u
+   HAR KADRDA emas, bir marta hisoblanadi — element faqat
+   siljiydi va kattalashadi (`transform`), ya'ni qayta chizilmaydi. */
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.42;
+  will-change: transform;
+}
+
+.aurora-1 {
+  width: 46vw; height: 46vw;
+  top: -12vw; left: -10vw;
+  background: radial-gradient(circle, #0ea5e9 0%, transparent 70%);
+  animation: float-1 22s ease-in-out infinite;
+}
+
+.aurora-2 {
+  width: 40vw; height: 40vw;
+  top: 30vh; right: -12vw;
+  background: radial-gradient(circle, #2dd4bf 0%, transparent 70%);
+  animation: float-2 27s ease-in-out infinite;
+}
+
+.aurora-3 {
+  width: 34vw; height: 34vw;
+  bottom: -12vw; left: 28vw;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  animation: float-3 31s ease-in-out infinite;
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(6vw, 8vh, 0) scale(1.16); }
+}
+@keyframes float-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); }
+  50%      { transform: translate3d(-7vw, -6vh, 0) scale(0.92); }
+}
+@keyframes float-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.95); }
+  50%      { transform: translate3d(5vw, -9vh, 0) scale(1.2); }
+}
+
+/* Mazmun fondan YUQORIDA turishi kerak */
+.page-content { position: relative; z-index: 1; }
+
 .glass {
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(30px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform .25s cubic-bezier(.2, .8, .3, 1),
+              border-color .25s, box-shadow .25s;
+}
+
+/* ══════════════════════ Harakat va jonlanish ══════════════════════ */
+
+/* Kartochka ustiga sichqoncha kelganda ozgina ko'tariladi.
+   `translateY` ishlatiladi, `top` emas: `transform` sahifani qayta
+   joylashtirmaydi va videokartada bajariladi. */
+.lift:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.28);
+  box-shadow: 0 18px 40px -22px rgba(14, 165, 233, 0.55);
+}
+
+/* Sahifa ochilganda mazmun pastdan suzib chiqadi. */
+.reveal {
+  animation: reveal .55s cubic-bezier(.2, .8, .3, 1) both;
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Ro'yxatdagi elementlar birin-ketin chiqsin — bir vaqtda
+   chiqsa harakat sezilmaydi. */
+.stagger > * { animation: reveal .5s cubic-bezier(.2, .8, .3, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: .04s; }
+.stagger > *:nth-child(2) { animation-delay: .08s; }
+.stagger > *:nth-child(3) { animation-delay: .12s; }
+.stagger > *:nth-child(4) { animation-delay: .16s; }
+.stagger > *:nth-child(5) { animation-delay: .20s; }
+.stagger > *:nth-child(6) { animation-delay: .24s; }
+.stagger > *:nth-child(7) { animation-delay: .28s; }
+.stagger > *:nth-child(8) { animation-delay: .32s; }
+
+/* Yorqin sarlavha uchun oqib turuvchi gradient. */
+.gradient-text {
+  background: linear-gradient(100deg, #38bdf8, #2dd4bf, #818cf8, #38bdf8);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-flow 9s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* HARAKATNI KAMAYTIRISH TANLOVI HURMAT QILINADI.
+
+   Buni harakatdan boshi aylanadigan yoki diqqati chalg'iydigan
+   odamlar qo'yadi. Ular uchun sayt tinch turadi — mazmun esa
+   to'liq ko'rinadi, ya'ni hech narsa yo'qolmaydi. */
+@media (prefers-reduced-motion: reduce) {
+  .aurora, .backdrop-grid, .gradient-text {
+    animation: none;
+  }
+  .reveal, .stagger > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .lift:hover { transform: none; }
 }
 
 /* ─── Dars matni ───

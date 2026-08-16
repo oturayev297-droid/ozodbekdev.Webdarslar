@@ -42,8 +42,8 @@ function Dashboard() {
 
       {data && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="glass rounded-2xl p-5">
+          <div className="grid stagger grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="glass lift rounded-2xl p-5">
               <p className="text-xs uppercase tracking-wider text-slate-500 mb-2">
                 Darslar
               </p>
@@ -53,7 +53,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <div className="glass rounded-2xl p-5">
+            <div className="glass lift rounded-2xl p-5">
               <p className="text-xs uppercase tracking-wider text-slate-500 mb-2">
                 Testlar
               </p>
@@ -63,7 +63,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <div className="glass rounded-2xl p-5">
+            <div className="glass lift rounded-2xl p-5">
               <p className="text-xs uppercase tracking-wider text-slate-500 mb-2">
                 Sertifikat
               </p>
@@ -72,7 +72,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <div className="glass rounded-2xl p-5">
+            <div className="glass lift rounded-2xl p-5">
               <p className="text-xs uppercase tracking-wider text-slate-500 mb-2">
                 Daraja
               </p>
@@ -80,7 +80,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid stagger sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { href: '/kurslar', title: 'Kurslar', text: 'Darslarni davom ettiring' },
               { href: '/testlar', title: 'Testlar', text: 'Bilimingizni sinang' },
@@ -90,7 +90,7 @@ function Dashboard() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="glass rounded-2xl p-5 hover:bg-white/5 transition"
+                className="glass lift rounded-2xl p-5 hover:bg-white/5 transition"
               >
                 <p className="font-bold mb-1">{item.title}</p>
                 <p className="text-sm text-slate-500">{item.text}</p>

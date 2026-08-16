@@ -328,11 +328,9 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
-    # O'z domenlarimiz qo'shiladi. Frontend manzillari yuqorida
-    # allaqachon kiritilgan — ular ustiga YOZILMAYDI.
-    CSRF_TRUSTED_ORIGINS += [
-        f"https://{h}" for h in ALLOWED_HOSTS if h not in ("localhost", "127.0.0.1")
-    ]
+    # DIQQAT: `CSRF_TRUSTED_ORIGINS` bu yerda TO'LDIRILMAYDI.
+    # U quyiroqda, `FRONTEND_ORIGINS` bilan birga yaratiladi va
+    # productiondagi domenlar o'sha yerda qo'shiladi.
 
 
 # --------------------------------------------------------------------------
@@ -418,6 +416,33 @@ if DEBUG:
 if "test" in sys.argv:
     REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": None}
 
+# --------------------------------------------------------------------------
+# Kesh
+# --------------------------------------------------------------------------
+#
+# PRODUCTIONDA BAZADA. Sabab: gunicorn bir nechta ishchi jarayon bilan
+# ishlaydi va standart `LocMemCache` HAR JARAYONDA ALOHIDA bo'ladi.
+# DRF ning anonim so'rov cheklovi shu keshda hisoblanadi — ya'ni
+# "60/min" amalda ishchilar soniga ko'payib ketardi (3 ta ishchida
+# 180/min) va har deployda nolga tushardi. Login va parol tiklashni
+# bombardimon qilishdan himoya shunchalik zaiflashardi.
+#
+# Baza keshi qo'shimcha xizmat talab qilmaydi (Redis kerak emas) va
+# jadval `createcachetable` bilan yaratiladi — u `railway.json` dagi
+# ishga tushirish buyrug'iga qo'shilgan va qayta bajarilishi xavfsiz.
+if env("DATABASE_URL"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "cache_table",
+        }
+    }
+else:
+    CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    }
+
+
 # Frontend manzillari: "https://oson.vercel.app,https://oson.uz"
 FRONTEND_ORIGINS = [o.strip().rstrip('/') for o in env("FRONTEND_ORIGINS") if o.strip()]
 FRONTEND_URL = env("FRONTEND_URL").strip().rstrip('/')
@@ -454,6 +479,18 @@ if DEBUG:
         "http://localhost:3000", "http://127.0.0.1:3000",
         "http://localhost:5173", "http://127.0.0.1:5173",
         "http://localhost:8000", "http://127.0.0.1:8000",
+    ]
+else:
+    # Productionda o'z domenlarimiz. Frontend manzillari yuqorida
+    # allaqachon kiritilgan — ular ustiga yozilmaydi.
+    #
+    # BU QATORLAR ILGARI YUQORIDAGI `if not DEBUG` BLOKIDA EDI — ya'ni
+    # ro'yxat yaratilishidan 117 qator OLDIN. `DJANGO_DEBUG=False`
+    # bilan sozlamalar `NameError` bilan yiqilardi va server umuman
+    # ko'tarilmasdi. Lokalda DEBUG=True bo'lgani uchun bu tarmoq hech
+    # qachon bajarilmagan va nuqson faqat serverda ko'rinardi.
+    CSRF_TRUSTED_ORIGINS += [
+        f"https://{h}" for h in ALLOWED_HOSTS if h not in ("localhost", "127.0.0.1")
     ]
 
 

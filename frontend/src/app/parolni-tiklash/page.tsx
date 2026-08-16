@@ -86,7 +86,7 @@ export default function PasswordResetPage() {
 
       {step === 'request' ? (
         <>
-          <form onSubmit={requestCode} className="glass rounded-2xl p-6 space-y-4">
+          <form onSubmit={requestCode} className="glass lift rounded-2xl p-6 space-y-4">
             <div>
               <label className="block text-sm text-slate-400 mb-1.5">Email</label>
               <input
@@ -116,7 +116,7 @@ export default function PasswordResetPage() {
           </p>
         </>
       ) : (
-        <form onSubmit={confirmCode} className="glass rounded-2xl p-6 space-y-4">
+        <form onSubmit={confirmCode} className="glass lift rounded-2xl p-6 space-y-4">
           <div>
             <label className="block text-sm text-slate-400 mb-1.5">Tiklash kodi</label>
             <input

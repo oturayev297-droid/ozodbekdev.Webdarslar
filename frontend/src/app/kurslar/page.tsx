@@ -21,9 +21,9 @@ function CourseGrid() {
 
   return (
     <>
-      <h1 className="text-3xl font-extrabold mb-8">Kurslar</h1>
+      <h1 className="text-3xl font-extrabold mb-8 gradient-text">Kurslar</h1>
 
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid stagger sm:grid-cols-2 gap-5">
         {items.map((course) => {
           const percent = course.total_lessons
             ? Math.round((course.completed_lessons / course.total_lessons) * 100)
@@ -33,7 +33,7 @@ function CourseGrid() {
             <Link
               key={course.slug}
               href={`/kurslar/${course.slug}`}
-              className="glass rounded-2xl p-6 hover:bg-white/5 transition"
+              className="glass lift rounded-2xl p-6 hover:bg-white/5 transition"
             >
               <h2 className="text-xl font-extrabold mb-2">{course.name}</h2>
               <p className="text-sm text-slate-400 mb-5 leading-relaxed line-clamp-3">

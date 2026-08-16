@@ -40,6 +40,32 @@ def can_access_quiz(user, quiz) -> bool:
     return can_access_lesson(user, quiz.lesson)
 
 
+def access_checker(user):
+    """
+    KO'P dars yoki test uchun darvoza.
+
+    `can_access_lesson` ni ro'yxat ichida chaqirish HAR SAFAR obuna
+    holatini bazadan qayta o'qiydi. 45 ta testli sahifada bu 90 ta
+    ortiqcha so'rov edi va ro'yxat uzaygan sari yomonlashardi.
+
+    Bu yerda holat BIR MARTA o'qiladi. Qoida esa o'zgarmaydi va
+    yuqoridagi funksiya bilan bir xil — aynan shuning uchun u
+    chaqiruvchi joyda emas, shu modulda turibdi: darvoza qoidasi
+    ikki nusxada bo'lsa, biri o'zgarib ikkinchisi eskirardi.
+
+        can = access_checker(user)
+        for lesson in lessons:
+            if can(lesson):
+                ...
+    """
+    active = get_state(user).active
+
+    def can(lesson) -> bool:
+        return bool(lesson.is_free) or active
+
+    return can
+
+
 def _is_ajax(request) -> bool:
     return (
         request.headers.get('X-Requested-With') == 'XMLHttpRequest'

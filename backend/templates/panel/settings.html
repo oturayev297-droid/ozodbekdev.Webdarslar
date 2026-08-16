@@ -97,6 +97,47 @@
             so'rovlarga tegishli.
         </p>
     </div>
+
+    {% comment %}
+    OTA-ONA OBUNASI — ALOHIDA TARIF.
+
+    Ota-ona boshqa narsa oladi: darslar emas, farzandining hisoboti.
+    Shuning uchun narxi ham alohida.
+
+    NOL — BEPUL. Standart holat shu: yangilanish bilan birga mavjud
+    ota-onalarni yopib qo'ymaslik uchun. Narx qo'yilgan kundan
+    boshlab obunasi yo'q ota-ona hisobotni ko'rmay qoladi.
+    {% endcomment %}
+    <div class="glass rounded-2xl p-6">
+        <h2 class="font-bold mb-1">Ota-ona obunasi</h2>
+        <p class="text-sm text-slate-500 mb-5">
+            Hozir:
+            {% if parent_price_soum %}
+                <b class="text-slate-200">{{ parent_price_soum }} so'm / oy</b>
+            {% else %}
+                <b class="text-emerald-400">bepul</b>
+            {% endif %}
+        </p>
+
+        <form method="post" action="{% url 'panel:settings_parent_price' %}" class="space-y-3">
+            {% csrf_token %}
+            <label class="block text-sm text-slate-400">
+                Narx (so'mda). <b class="text-slate-300">0</b> — bepul qoldiradi.
+            </label>
+            <input name="price" type="number" value="{{ parent_price_soum }}" min="0" step="1000"
+                   class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary">
+            <button onclick="return confirm('Ota-ona obunasi narxi o'zgartirilsinmi?')"
+                    class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold transition">
+                Saqlash
+            </button>
+        </form>
+
+        <p class="text-[11px] text-slate-600 mt-4 leading-relaxed">
+            Narx qo'yilsa, obunasi yo'q ota-ona farzandi hisobotini
+            ko'rmay qoladi va unga to'lash taklif qilinadi.
+            Farzandning darslariga bu ta'sir qilmaydi.
+        </p>
+    </div>
 </div>
 
 {% endblock %}

@@ -65,7 +65,7 @@ function Subscription() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-extrabold mb-8">Obuna</h1>
+      <h1 className="text-3xl font-extrabold mb-8 gradient-text">Obuna</h1>
 
       {error && (
         <p className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm mb-6">
@@ -92,7 +92,7 @@ function Subscription() {
 
       {/* Ochiq so'rov bo'lsa — oqimni ko'rsatamiz */}
       {openRequest ? (
-        <div className="glass rounded-2xl p-6">
+        <div className="glass lift rounded-2xl p-6">
           <h2 className="font-bold mb-1">To&apos;lov so&apos;rovi #{openRequest.id}</h2>
           <p className="text-sm text-slate-400 mb-5">
             {openRequest.amount_display} · {openRequest.status_label}
@@ -143,7 +143,7 @@ function Subscription() {
           )}
         </div>
       ) : (
-        <div className="glass rounded-2xl p-6">
+        <div className="glass lift rounded-2xl p-6">
           <h2 className="font-bold mb-1">{plan.name}</h2>
           <p className="text-sm text-slate-400 mb-6">
             {plan.price_display} / oy · barcha darslar, testlar va sertifikatlar

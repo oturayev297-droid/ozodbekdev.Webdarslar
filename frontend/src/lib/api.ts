@@ -329,6 +329,21 @@ export interface Child {
   relation: string;
 }
 
+/**
+ * Farzandlar ro'yxati va ota-onaning O'Z obuna holati.
+ *
+ * Ikkalasi bitta javobda keladi: panel ochilishidayoq hisobot
+ * ko'rsatiladimi yoki obuna taklif qilinadimi — hal bo'lishi kerak.
+ * Alohida so'rov bo'lsa sahifa avval ochilib, keyin yopilardi.
+ */
+export interface ParentOverview {
+  children: Child[];
+  /** Egasi ota-ona paneliga narx qo'yganmi */
+  reports_are_paid: boolean;
+  can_view_reports: boolean;
+  subscription: SubscriptionState;
+}
+
 export interface ChildReport {
   student: {
     id: number;
@@ -485,6 +500,18 @@ export const study = {
 };
 
 export const parent = {
-  children: () => api.get<Child[]>('/parent/children/'),
+  children: () => api.get<ParentOverview>('/parent/children/'),
   report: (studentId: number) => api.get<ChildReport>(`/parent/children/${studentId}/`),
+
+  /**
+   * FARZAND uchun to'lov so'rovi.
+   *
+   * So'rov o'quvchi nomiga ochiladi — pul uning obunasiga tushadi.
+   * Ota-onaning o'z obunasi bundan alohida.
+   */
+  payForChild: (studentId: number, months = 1) =>
+    api.post<{ id: number; amount_display: string; status: string }>(
+      `/parent/children/${studentId}/pay/`,
+      { months },
+    ),
 };

@@ -473,7 +473,7 @@ tarif narxi, bo'limlar, test savollari) endi panelda o'z bo'limiga ega.
 | Kuzatish | Kirish urinishlari, AI Mentor, sertifikatlar |
 | Ota-onalar | O'quvchini ota-onasiga bog'lash — **faqat admin qo'lida** |
 | Loyihalar | Amaliy ishlar — qo'shish, tahrirlash, o'chirish |
-| Sozlamalar | Karta rekvizitlari va obuna narxi |
+| Sozlamalar | Karta rekvizitlari, o'quvchi va ota-ona narxi |
 
 Xodim yaratish:
 
@@ -505,6 +505,10 @@ python manage.py test core.tests_video_storage  # video ombori
 python manage.py test core.tests_study_time   # o'quv vaqti va ota-ona paneli
 python manage.py test panel.tests_sections    # kartalar, narx, savollar, loyihalar
 python manage.py test core.tests_parent_report  # ota-onaga haftalik hisobot
+python manage.py test billing.tests_parent     # ota-ona obunasi
+python manage.py test core.tests_temp_password # admin orqali parol tiklash
+python manage.py test core.tests_settings      # production sozlamalari
+python manage.py test core.tests_qcount        # N+1 qo'riqchisi
 ```
 
 ## Ota-ona paneli
@@ -530,6 +534,39 @@ Haftada bir marta Telegramga qisqa hisobot yuboriladi (cron):
 python manage.py parent_weekly_report            # yuboradi
 python manage.py parent_weekly_report --dry-run  # faqat matnni ko'rsatadi
 ```
+
+### Ota-ona obunasi
+
+Ota-ona tarifi **alohida** (`PARENT_MONTHLY`) — u boshqa narsa oladi:
+darslar emas, farzandining hisoboti.
+
+**Standart holatda narx NOL, ya'ni panel bepul.** Ataylab shunday:
+yangilanish bilan birga mavjud ota-onalar birdaniga yopilib
+qolmasligi kerak. Narxni `/panel/sozlamalar/` da qo'yasiz — o'sha
+kundan boshlab obunasi yo'q ota-ona hisobotni ko'rmaydi.
+
+Ota-ona **farzandi uchun ham to'lay oladi**. U holda so'rov
+o'quvchi nomiga ochiladi (pul uning obunasiga tushadi va tushum
+hisobotida o'quvchi tarifi bo'yicha ko'rinadi), ota-ona esa
+`requested_by` sifatida yoziladi.
+
+Odam ham o'quvchi, ham ota-ona bo'lsa — **o'quvchi** hisoblanadi:
+uning tarifi qimmatroq va u darslarni ham oladi, ya'ni kam to'lab
+ko'p olish yo'li yo'q.
+
+### Parolni tiklash (admin orqali)
+
+O'quvchi parolini unutsa va emaliga kira olmasa, admin
+`/panel/oquvchilar/<id>/` da bitta tugmani bosadi: tizim yangi
+vaqtinchalik parol yaratadi va uni **bir marta** ko'rsatadi.
+
+**Eski parolni hech kim ko'ra olmaydi** — Django uni qaytarib
+bo'lmaydigan shaklda saqlaydi. Ko'rsatish uchun parollarni ochiq
+matnda saqlash kerak bo'lardi va baza bir marta o'g'irlansa hamma
+o'quvchining paroli ketardi.
+
+Tiklash o'quvchining ochiq seanslarini yopadi va `PasswordResetLog`
+ga yoziladi (kim, kimga, qachon — parolning o'zi emas).
 
 Ota-onaga `is_approved` kerak emas — u o'quvchi emas, shuning uchun
 darsga ruxsat talab qilinsa hisobotni umuman ko'ra olmasdi.

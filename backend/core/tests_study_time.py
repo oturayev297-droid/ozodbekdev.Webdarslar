@@ -193,9 +193,11 @@ class ParentAccessTests(TestCase):
         response = self.client.get(reverse('api:parent_children'))
 
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['username'], 'farzand')
+        # Javobda ro'yxatdan tashqari ota-onaning O'Z obuna holati
+        # ham bor — panel uni birinchi so'rovdayoq ko'rsatadi.
+        children = response.json()['children']
+        self.assertEqual(len(children), 1)
+        self.assertEqual(children[0]['username'], 'farzand')
 
     def test_oz_farzandining_hisoboti_ochiladi(self):
         response = self.client.get(
@@ -219,7 +221,7 @@ class ParentAccessTests(TestCase):
         response = self.client.get(reverse('api:parent_children'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [])
+        self.assertEqual(response.json()['children'], [])
 
     def test_ota_onaga_DARS_RUXSATI_kerak_emas(self):
         """

@@ -17,7 +17,7 @@ function CertificateList() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
-        <h1 className="text-3xl font-extrabold">Sertifikatlarim</h1>
+        <h1 className="text-3xl font-extrabold gradient-text">Sertifikatlarim</h1>
         <Link
           href="/sertifikat-tekshirish"
           className="text-sm text-primary hover:underline"
@@ -27,7 +27,7 @@ function CertificateList() {
       </div>
 
       {items.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center">
+        <div className="glass lift rounded-2xl p-12 text-center">
           <p className="text-slate-400 mb-2">Hozircha sertifikat yo&apos;q.</p>
           <p className="text-sm text-slate-600 mb-6">
             Testda 80% va undan yuqori ball olsangiz sertifikat avtomatik beriladi.
@@ -37,7 +37,7 @@ function CertificateList() {
           </Link>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid stagger sm:grid-cols-2 gap-4">
           {items.map((certificate) => (
             <div
               key={certificate.code}

@@ -39,7 +39,7 @@ export default function PendingPage() {
         </p>
       </div>
 
-      <div className="glass rounded-2xl p-6">
+      <div className="glass lift rounded-2xl p-6">
         {rejected ? (
           <>
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/25 mb-5">

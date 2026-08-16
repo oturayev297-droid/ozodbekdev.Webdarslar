@@ -87,7 +87,7 @@ function ProfileForm() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <h1 className="text-3xl font-extrabold mb-8">Profil</h1>
+      <h1 className="text-3xl font-extrabold mb-8 gradient-text">Profil</h1>
 
       {message && (
         <p className="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm mb-5">
@@ -101,7 +101,7 @@ function ProfileForm() {
       )}
 
       {/* Rasm */}
-      <div className="glass rounded-2xl p-6 mb-5 flex items-center gap-5">
+      <div className="glass lift rounded-2xl p-6 mb-5 flex items-center gap-5">
         <span className="w-20 h-20 rounded-2xl bg-slate-800 overflow-hidden shrink-0 flex items-center justify-center text-2xl font-black text-slate-600">
           {me.avatar ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -130,7 +130,7 @@ function ProfileForm() {
       </div>
 
       {/* Ma'lumotlar */}
-      <form onSubmit={saveDetails} className="glass rounded-2xl p-6 space-y-4 mb-5">
+      <form onSubmit={saveDetails} className="glass lift rounded-2xl p-6 space-y-4 mb-5">
         <div>
           <label className="block text-sm text-slate-400 mb-1.5">F.I.SH.</label>
           <input name="full_name" className="field" defaultValue={me.full_name} />
@@ -158,7 +158,7 @@ function ProfileForm() {
       </form>
 
       {/* Telegram */}
-      <div className="glass rounded-2xl p-6">
+      <div className="glass lift rounded-2xl p-6">
         <h2 className="font-bold mb-1">Telegram</h2>
         <p className="text-sm text-slate-500 mb-5 leading-relaxed">
           Ulansa to&apos;lov tasdig&apos;i va obuna muddati haqidagi xabarlarni

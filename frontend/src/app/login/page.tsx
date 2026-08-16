@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="max-w-md mx-auto py-12">
       <h1 className="text-2xl font-extrabold mb-6 text-center">Tizimga kirish</h1>
 
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="glass lift rounded-2xl p-6 space-y-4">
         {error && (
           <p className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
             {error}

@@ -51,7 +51,7 @@ export default function VerifyPage() {
         Sertifikatdagi kodni kiriting — uning haqiqiyligini bilib olasiz
       </p>
 
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="glass lift rounded-2xl p-6 space-y-4">
         <input
           name="code"
           className="field font-mono text-center text-lg tracking-widest uppercase"
@@ -67,7 +67,7 @@ export default function VerifyPage() {
       {result && (
         <div className="mt-6">
           {!result.found ? (
-            <div className="glass rounded-2xl p-6 text-center">
+            <div className="glass lift rounded-2xl p-6 text-center">
               <p className="text-red-400 font-bold mb-1">Topilmadi</p>
               <p className="text-sm text-slate-500">
                 {result.detail || 'Bunday kodli sertifikat mavjud emas.'}

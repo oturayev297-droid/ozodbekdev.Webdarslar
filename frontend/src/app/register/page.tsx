@@ -45,7 +45,7 @@ export default function RegisterPage() {
         Hisobingiz administrator tasdiqlagach ochiladi
       </p>
 
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="glass lift rounded-2xl p-6 space-y-4">
         {error && (
           <p className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
             {error}

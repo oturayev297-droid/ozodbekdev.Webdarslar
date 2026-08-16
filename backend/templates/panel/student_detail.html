@@ -157,6 +157,52 @@
         </div>
 
         {% comment %}
+        PAROLNI TIKLASH.
+
+        Eski parolni KO'RSATIB BO'LMAYDI — Django uni qaytarib
+        bo'lmaydigan shaklda saqlaydi. Ko'rsatish uchun parollarni
+        ochiq matnda saqlash kerak bo'lardi va baza bir marta
+        o'g'irlansa hamma o'quvchining paroli ketardi.
+
+        Shuning uchun eskisi o'rniga yangi vaqtinchalik parol
+        beriladi va u yuqorida, xabar satrida BIR MARTA ko'rinadi.
+        {% endcomment %}
+        <div class="glass rounded-2xl p-6">
+            <h2 class="font-bold mb-2">Parolni tiklash</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+                O'quvchi parolini unutgan bo'lsa, tugmani bosing.
+                Tizim yangi parol yaratadi va uni shu yerda
+                <b class="text-slate-200">bir marta</b> ko'rsatadi —
+                o'quvchiga aytasiz, u kirib o'z parolini qo'yadi.
+            </p>
+
+            <form method="post" action="{% url 'panel:student_password_reset' student.id %}">
+                {% csrf_token %}
+                <button onclick="return confirm('{{ student.profile.full_name|default:student.username }} uchun yangi parol yaratilsinmi? Eski parol ishlamay qoladi va uning ochiq seanslari yopiladi.')"
+                        class="w-full py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-sm font-semibold transition">
+                    Yangi parol yaratish
+                </button>
+            </form>
+
+            <p class="text-[11px] text-slate-600 mt-3 leading-relaxed">
+                Eski parolni hech kim, hatto siz ham ko'ra olmaysiz —
+                u shifrlangan holda saqlanadi. Har tiklash jurnalga
+                yoziladi.
+            </p>
+
+            {% if password_resets %}
+                <div class="mt-4 pt-4 border-t border-white/5 space-y-1.5">
+                    {% for log in password_resets %}
+                        <p class="text-[11px] text-slate-500">
+                            {{ log.created_at|date:"d.m.Y H:i" }} —
+                            {{ log.admin.username|default:"?" }} tikladi
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% comment %}
         Shaxsiy xabar. Telegrami ulanmagan bo'lsa forma umuman
         ko'rsatilmaydi — tugmani bosib "yuborilmadi" degan xatoni olishdan
         ko'ra, sababi oldindan ko'rinib turgani yaxshi.

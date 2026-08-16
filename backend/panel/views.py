@@ -46,6 +46,7 @@ from billing.models import (
     SubscriptionPeriod,
 )
 from core import approval
+from core import temp_password
 from core.models import (
     Category,
     Certificate,
@@ -56,6 +57,7 @@ from core.models import (
     MentorMessage,
     Module,
     ParentLink,
+    PasswordResetLog,
     Project,
     Question,
     Quiz,
@@ -408,7 +410,42 @@ def student_detail(request, user_id):
         'certificates': Certificate.objects.filter(user=student).order_by('-issued_at')[:10],
         'mentor': MentorMessage.objects.filter(user=student).order_by('-created_at')[:10],
         'audiences': Audience.choices,
+        # Parol tiklash tarixi — kim, qachon. Parolning o'zi emas.
+        'password_resets': PasswordResetLog.objects.filter(student=student)
+        .select_related('admin')[:5],
     })
+
+
+@require_POST
+@staff_required
+def student_password_reset(request, user_id):
+    """
+    O'quvchiga vaqtinchalik parol qo'yadi va uni BIR MARTA ko'rsatadi.
+
+    ESKI PAROLNI KO'RSATIB BO'LMAYDI: Django uni qaytarib bo'lmaydigan
+    shaklda saqlaydi. Ko'rsatish uchun parollarni ochiq matnda saqlash
+    kerak bo'lardi va baza o'g'irlansa hamma o'quvchining paroli
+    ketardi. Shuning uchun eskisi o'rniga YANGISI beriladi — natija
+    o'quvchi uchun bir xil, u hisobiga qaytadi.
+
+    Parol bu yerdan boshqa hech qayerga yozilmaydi: na bazaga, na
+    logga. Sahifa yangilansa yo'qoladi.
+    """
+    student = get_object_or_404(User, pk=user_id, is_staff=False)
+
+    try:
+        password = temp_password.reset(student, admin=request.user)
+    except temp_password.TempPasswordError as exc:
+        messages.error(request, str(exc))
+        return redirect('panel:student_detail', user_id=student.pk)
+
+    name = student.profile.full_name or student.username
+    messages.success(
+        request,
+        f"{name} uchun yangi parol: {password} — uni o'quvchiga ayting. "
+        f"Bu parol boshqa ko'rsatilmaydi. O'quvchining ochiq seanslari yopildi."
+    )
+    return redirect('panel:student_detail', user_id=student.pk)
 
 
 @require_POST
@@ -728,6 +765,8 @@ def settings_page(request):
         'cards': services.get_cards(),
         'plan': plan,
         'price_soum': plan.price_per_month_tiyin // 100,
+        # Ota-ona tarifi ALOHIDA. Nol bo'lsa panel bepul.
+        'parent_price_soum': services.get_parent_plan().price_per_month_tiyin // 100,
     })
 
 
@@ -801,6 +840,48 @@ def settings_price(request):
         f"Narx {format_money(plan.price_per_month_tiyin)} qilib o'zgartirildi. "
         "O'tgan to'lovlar hisoboti o'zgarmaydi.",
     )
+    return redirect('panel:settings')
+
+
+@require_POST
+@staff_required
+def settings_parent_price(request):
+    """
+    Ota-ona obunasi narxi.
+
+    NOL — BEPUL. Narx nolga qo'yilsa ota-ona paneli hamma bog'langan
+    ota-onaga ochiq qoladi. Bu standart holat: yangilanish bilan
+    birga mavjud ota-onalarni yopib qo'ymaslik uchun.
+
+    O'quvchi narxidan ALOHIDA saqlanadi — ota-ona boshqa narsa
+    oladi (darslar emas, hisobot) va narxi ham boshqacha bo'lishi
+    tabiiy.
+    """
+    try:
+        soum = int(request.POST.get('price') or 0)
+    except (TypeError, ValueError):
+        soum = -1
+
+    if soum < 0 or soum > 10_000_000:
+        messages.error(request, "Narx 0 dan 10 000 000 so'mgacha bo'lishi kerak.")
+        return redirect('panel:settings')
+
+    plan = services.get_parent_plan()
+    plan.price_per_month_tiyin = soum * 100
+    plan.save(update_fields=['price_per_month_tiyin'])
+
+    if soum == 0:
+        messages.success(
+            request,
+            "Ota-ona paneli BEPUL qilindi — bog'langan har bir ota-ona "
+            "farzandi hisobotini ko'ra oladi."
+        )
+    else:
+        messages.success(
+            request,
+            f"Ota-ona obunasi {format_money(plan.price_per_month_tiyin)} qilindi. "
+            "Obunasi yo'q ota-onalar hisobotni ko'rmay qoladi."
+        )
     return redirect('panel:settings')
 
 

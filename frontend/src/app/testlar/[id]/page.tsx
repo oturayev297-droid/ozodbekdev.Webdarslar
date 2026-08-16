@@ -115,7 +115,7 @@ function Quiz({ id }: { id: number }) {
 
       <div className="space-y-5">
         {quiz.questions.map((question, index) => (
-          <div key={question.id} className="glass rounded-2xl p-5">
+          <div key={question.id} className="glass lift rounded-2xl p-5">
             <p className="font-semibold mb-4">
               <span className="text-slate-600 mr-2">{index + 1}.</span>
               {question.text}

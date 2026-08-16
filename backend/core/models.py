@@ -603,3 +603,33 @@ class PasswordReset(models.Model):
 
     def __str__(self):
         return f"{self.user.username} — {self.created_at:%d.%m.%Y %H:%M}"
+
+
+class PasswordResetLog(models.Model):
+    """
+    Admin o'quvchi parolini tiklagani haqidagi yozuv.
+
+    NEGA JURNAL KERAK: bu amal bilan admin istalgan o'quvchi hisobiga
+    kira oladi. Iz qolmasa, keyinchalik "kim kirgan" degan savolga
+    javob bo'lmasdi — sertifikat va test natijalari esa aynan shu
+    hisobga bog'langan.
+
+    Yozuv O'CHIRILMAYDI va parolning O'ZI bu yerda saqlanmaydi.
+    """
+
+    student = models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='admin_password_resets',
+        verbose_name="O'quvchi",
+    )
+    admin = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True,
+        related_name='password_resets_done', verbose_name='Kim tikladi',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Parol tiklash yozuvi'
+
+    def __str__(self):
+        return f"{self.student} <- {self.admin} ({self.created_at:%d.%m.%Y})"

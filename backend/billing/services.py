@@ -38,6 +38,20 @@ PLAN_CODE = "STUDENT_MONTHLY"
 #: Standart oylik narx (tiyinda) — tarif birinchi marta yaratilganda
 DEFAULT_PRICE_TIYIN = 10_000_000  # 100 000 so'm
 
+#: Ota-ona tarifi. ALOHIDA TARIF, chunki ota-ona boshqa narsa oladi:
+#: darslar emas, farzandining hisoboti. Narxi ham boshqacha bo'lishi
+#: tabiiy va uni panelda alohida belgilash mumkin.
+PARENT_PLAN_CODE = "PARENT_MONTHLY"
+
+#: STANDART HOLATDA NOL, ya'ni ota-ona paneli BEPUL.
+#:
+#: Ataylab shunday: yangilanish bilan birga mavjud ota-onalar
+#: birdaniga yopilib qolmasligi kerak — ular kecha bepul ko'rgan
+#: narsani bugun to'lovsiz ko'rmay qolsa, bu xato deb qabul qilinadi.
+#: Egasi panelda (`Sozlamalar` -> `Ota-ona obunasi`) narx qo'ygan
+#: kunidan boshlab darvoza yopiladi.
+DEFAULT_PARENT_PRICE_TIYIN = 0
+
 #: Karta rekvizitlari uchun AdminSetting kaliti.
 #:
 #: BIR NECHTA karta saqlanadi (Humo, Uzcard, Visa) — o'quvchiga hammasi
@@ -75,6 +89,52 @@ def get_plan() -> SubscriptionPlan:
     if created:
         logger.info("[OBUNA] Standart tarif yaratildi: %s", plan.code)
     return plan
+
+
+def get_parent_plan() -> SubscriptionPlan:
+    """Ota-ona tarifi."""
+    plan, created = SubscriptionPlan.objects.get_or_create(
+        code=PARENT_PLAN_CODE,
+        defaults={
+            'name': "Ota-ona obunasi",
+            'price_per_month_tiyin': DEFAULT_PARENT_PRICE_TIYIN,
+        },
+    )
+    if created:
+        logger.info("[OBUNA] Ota-ona tarifi yaratildi: %s", plan.code)
+    return plan
+
+
+def parent_reports_are_paid() -> bool:
+    """
+    Ota-ona hisoboti pullikmi.
+
+    NARX NOLGA QO'YILSA DARVOZA OCHIQ QOLADI. Bu ataylab: yangi
+    o'rnatilgan tizimda ota-onalarni birdaniga to'lovga tiqib
+    qo'ymaslik kerak — avval ular panelni ko'rsin, keyin egasi
+    narx qo'yadi. Narx panelda `Sozlamalar` bo'limida.
+    """
+    return get_parent_plan().price_per_month_tiyin > 0
+
+
+def plan_for(user) -> SubscriptionPlan:
+    """
+    Shu odam qaysi tarifga to'laydi.
+
+    QOIDA: darsga ruxsati bor odam — o'quvchi, qolgani esa faqat
+    ota-ona bo'lishi mumkin. Ikkalasi ham bo'lgan odam (o'zi ham
+    o'qiydi, farzandi ham bor) O'QUVCHI hisoblanadi: uning tarifi
+    qimmatroq va u darslarni ham oladi, ya'ni kam to'lab ko'p
+    olish yo'li ochilmaydi.
+    """
+    from core.models import ParentLink
+
+    profile = getattr(user, 'profile', None)
+    if profile is not None and profile.is_approved:
+        return get_plan()
+    if ParentLink.objects.filter(parent=user).exists():
+        return get_parent_plan()
+    return get_plan()
 
 
 # ==========================================================================
@@ -172,7 +232,9 @@ def ensure_subscription(user) -> Subscription:
     subscription = Subscription.objects.filter(user=user).first()
     if subscription:
         return subscription
-    return Subscription.objects.create(user=user, plan=get_plan())
+    # Tarif odamning kimligiga qarab tanlanadi: o'quvchiga o'quvchi
+    # tarifi, ota-onaga ota-ona tarifi.
+    return Subscription.objects.create(user=user, plan=plan_for(user))
 
 
 # ==========================================================================
@@ -221,7 +283,10 @@ def extend_subscription(
         if days < 1 or days > 3650:
             raise BillingError("Kun soni 1 dan 3650 gacha bo'lishi kerak")
 
-    plan = get_plan()
+    # TARIF ODAMGA QARAB. Ilgari bu yerda doim o'quvchi tarifi
+    # olinardi — ota-ona to'lasa ham hisobotga o'quvchi narxi
+    # yozilib, tushum haqiqatdan katta ko'rinardi.
+    plan = plan_for(user)
 
     # ── To'lov usuli va summa ──
     # `source` bilan `payment_method` bog'liqligi bazada ham majburiy,
@@ -329,7 +394,7 @@ def preview_extension(user, months=None, days=None) -> dict:
     ertami-kechmi bir-biriga to'g'ri kelmay qolardi.
     """
     subscription = Subscription.objects.filter(user=user).first()
-    plan = get_plan()
+    plan = plan_for(user)
 
     current_end = subscription.current_period_end if subscription else None
     start = dates.extension_base(current_end)

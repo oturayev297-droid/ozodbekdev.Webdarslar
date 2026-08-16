@@ -214,6 +214,15 @@ class PaymentRequest(models.Model):
     )
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='payment_requests')
 
+    #: So'rovni KIM boshlagan. Odatda bo'sh — o'quvchining o'zi.
+    #: To'ldirilgan bo'lsa, uni ota-ona farzandi uchun ochgan.
+    #: `user` DOIM oladigan odam bo'lib qoladi: pul o'sha hisobga
+    #: tushadi va tushum hisoboti shu bo'yicha yig'iladi.
+    requested_by = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='requests_made_for_others', verbose_name='Kim boshladi',
+    )
+
     #: Ruxsat etilgan qiymatlar `dates.ALLOWED_MONTHS` da.
     #: Baza darajasida ham cheklangan (CheckConstraint).
     months = models.PositiveIntegerField()

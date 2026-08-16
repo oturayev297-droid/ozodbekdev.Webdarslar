@@ -35,6 +35,11 @@ urlpatterns = [
     path('oquvchilar/', views.students, name='students'),
     path('oquvchilar/<int:user_id>/', views.student_detail, name='student_detail'),
     path('oquvchilar/<int:user_id>/bepul/', views.student_grant, name='student_grant'),
+    path(
+        'oquvchilar/<int:user_id>/parol/',
+        views.student_password_reset,
+        name='student_password_reset',
+    ),
     path('oquvchilar/<int:user_id>/ruxsat/', views.student_approval, name='student_approval'),
 
     # ── Darsliklar ──
@@ -71,6 +76,11 @@ urlpatterns = [
     path('sozlamalar/', views.settings_page, name='settings'),
     path('sozlamalar/kartalar/', views.settings_cards, name='settings_cards'),
     path('sozlamalar/narx/', views.settings_price, name='settings_price'),
+    path(
+        'sozlamalar/ota-ona-narx/',
+        views.settings_parent_price,
+        name='settings_parent_price',
+    ),
 
     # ── Kuzatish ──
     path('kuzatish/', views.monitor, name='monitor'),

@@ -450,6 +450,7 @@ orqali kiritiladigan ma'lumotlar panelga ko'chirildi:
 | Test savollari (`Question`, `Choice`) | Testlar -> Savollar |
 | Ota-ona bog'lanishi | Ota-onalar |
 | Loyihalar (`Project`) | Loyihalar |
+| Ota-ona tarifi | Sozlamalar |
 
 ### Kirish huquqi
 
@@ -606,6 +607,14 @@ EMAIL_HOST_PASSWORD=...
 
 `FRONTEND_URL` ni ham unutmang: sertifikatdagi QR kod va to'lovdan
 keyin qaytish manzili shundan quriladi.
+
+Ishga tushirish buyrug'ida `createcachetable` ham bor. NEGA KERAK:
+gunicorn bir nechta ishchi jarayon bilan ishlaydi va Django'ning
+standart keshi HAR JARAYONDA ALOHIDA bo'ladi. DRF ning anonim so'rov
+cheklovi shu keshda hisoblanadi — ya'ni «60/min» amalda ishchilar
+soniga ko'payib ketardi (3 ta ishchida 180/min) va har deployda
+nolga tushardi. Baza keshi hamma ishchi uchun bitta va Redis kabi
+qo'shimcha xizmat talab qilmaydi.
 
 Migratsiya `railway.json` dagi `startCommand` da avtomatik bajariladi —
 har deployda `migrate` ishlaydi va faqat undan keyin gunicorn

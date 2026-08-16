@@ -60,7 +60,7 @@ function Editor() {
   }
 
   return (
-    <div className="grid lg:grid-cols-[260px_1fr] gap-6">
+    <div className="grid stagger lg:grid-cols-[260px_1fr] gap-6">
       {/* Topshiriqlar ro'yxati */}
       <aside className="lg:h-[calc(100vh-8rem)] lg:overflow-y-auto">
         <h2 className="font-bold mb-3">Topshiriqlar</h2>

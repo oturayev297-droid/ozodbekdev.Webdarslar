@@ -36,7 +36,8 @@ from rest_framework.views import APIView
 from billing import payment_requests as pr
 from billing import services, telegram
 from billing.dates import ALLOWED_MONTHS, format_money
-from billing.gating import can_access_lesson, can_access_quiz
+from billing import parent_billing
+from billing.gating import access_checker, can_access_lesson, can_access_quiz
 from core import ai_mentor, lockout, quiz_scoring, study_time
 from core import password_reset as pwreset
 from core.approval import is_approved
@@ -315,14 +316,17 @@ class CourseDetailView(APIView):
             UserProgress.objects.filter(user=request.user, is_completed=True)
             .values_list('lesson_id', flat=True)
         )
-        subscribed = services.get_state(request.user).active
+        # Darvoza qoidasi bu yerda YOZILMAYDI, `billing.gating` dan
+        # olinadi. Ilgari bu yerda `lesson.is_free or subscribed` deb
+        # takrorlangan edi — qoida o'zgarsa bir nusxasi eskirardi.
+        can = access_checker(request.user)
 
         modules = []
         unlocked_ids = set()
         for module in category.modules.all().order_by('order'):
             lessons = list(module.lessons.all())
             for lesson in lessons:
-                if lesson.is_free or subscribed:
+                if can(lesson):
                     unlocked_ids.add(lesson.id)
             modules.append({'id': module.id, 'title': module.title,
                             'order': module.order, 'lessons': lessons})
@@ -455,10 +459,15 @@ class QuizListView(APIView):
             for r in QuizResult.objects.filter(user=request.user)
         }
 
+        # Darvoza BIR MARTA ochiladi. `can_access_quiz` ni sikl ichida
+        # chaqirish har bir test uchun obuna holatini bazadan qayta
+        # o'qirdi — 45 ta testda 90 ta ortiqcha so'rov.
+        can = access_checker(request.user)
+
         data = []
         for quiz in quizzes:
             row = QuizListSerializer(quiz).data
-            row['unlocked'] = can_access_quiz(request.user, quiz)
+            row['unlocked'] = can(quiz.lesson)
             result = results.get(quiz.id)
             row['best_score'] = result.score_percentage if result else None
             row['attempts'] = result.attempts if result else 0
@@ -954,20 +963,27 @@ class ParentChildrenView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        links = (
-            ParentLink.objects.filter(parent=request.user)
-            .select_related('student__profile')
-            .order_by('student__username')
-        )
-        return Response([
-            {
-                'student_id': link.student_id,
-                'username': link.student.username,
-                'full_name': link.student.profile.full_name or link.student.username,
-                'relation': link.relation,
-            }
-            for link in links
-        ])
+        links = parent_billing.children_of(request.user)
+
+        return Response({
+            'children': [
+                {
+                    'student_id': link.student_id,
+                    'username': link.student.username,
+                    'full_name': link.student.profile.full_name or link.student.username,
+                    'relation': link.relation,
+                }
+                for link in links
+            ],
+            # Ota-onaning O'Z obunasi. Hisobot pullik qilingan bo'lsa,
+            # ochiq-oydin ko'rsatiladi — nima uchun yopiqligi
+            # tushunarli bo'lsin.
+            'reports_are_paid': services.parent_reports_are_paid(),
+            'can_view_reports': parent_billing.can_view_reports(request.user),
+            'subscription': SubscriptionStateSerializer(
+                services.get_state(request.user)
+            ).data,
+        })
 
 
 class ParentChildReportView(APIView):
@@ -991,6 +1007,18 @@ class ParentChildReportView(APIView):
             return Response(
                 {'detail': "Bu o'quvchining hisobotini ko'rish huquqingiz yo'q."},
                 status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # OBUNA DARVOZASI. Bog'lanish tekshiruvidan KEYIN: begona
+        # odamga "obuna kerak" deb aytish, bolaning mavjudligini
+        # tasdiqlagan bo'lardi.
+        if not parent_billing.can_view_reports(request.user):
+            return Response(
+                {
+                    'detail': parent_billing.report_paywall_message(),
+                    'code': 'PARENT_SUBSCRIPTION_REQUIRED',
+                },
+                status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
         student = link.student
@@ -1051,3 +1079,34 @@ class ParentChildReportView(APIView):
             ).data,
             'subscription': SubscriptionStateSerializer(services.get_state(student)).data,
         })
+
+
+class ParentChildPaymentView(APIView):
+    """
+    Ota-ona FARZANDI uchun to'lov so'rovini ochadi.
+
+    So'rov o'quvchi nomiga ochiladi — pul uning obunasiga tushadi va
+    tushum hisobotida o'quvchi tarifi bo'yicha ko'rinadi. Ota-ona
+    faqat boshlovchi sifatida yoziladi.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, student_id):
+        try:
+            created = parent_billing.create_child_request(
+                request.user, student_id, request.data.get('months') or 1
+            )
+        except services.BillingError as exc:
+            return Response({'detail': exc.message}, status=exc.status)
+
+        return Response(
+            {
+                'id': created.id,
+                'student_id': created.user_id,
+                'months': created.months,
+                'amount_display': format_money(created.amount_tiyin),
+                'status': created.status,
+            },
+            status=status.HTTP_201_CREATED,
+        )

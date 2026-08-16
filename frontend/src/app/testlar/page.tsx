@@ -22,7 +22,7 @@ function QuizList() {
   if (items.length === 0) {
     return (
       <>
-        <h1 className="text-3xl font-extrabold mb-8">Testlar</h1>
+        <h1 className="text-3xl font-extrabold mb-8 gradient-text">Testlar</h1>
         <p className="text-slate-500 text-center py-12">Hozircha test yo&apos;q.</p>
       </>
     );
