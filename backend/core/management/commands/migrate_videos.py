@@ -18,6 +18,15 @@ ham aynan shu yo'l. Ya'ni ko'chirishdan keyin hech qanday migratsiya
 kerak emas va orqaga qaytarish ham oson — sozlamani bo'shatish yetadi.
 """
 
+import time
+
+from botocore.exceptions import (
+    ConnectionError,
+    ConnectTimeoutError,
+    EndpointConnectionError,
+    IncompleteReadError,
+    ReadTimeoutError,
+)
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
@@ -25,8 +34,45 @@ from core import video_storage
 from core.models import Lesson
 
 
+#: Tarmoq uzilganda shuncha marta qayta urinadi.
+#:
+#: NEGA KERAK: 3.5 GB video uy internetidan soatlab yuklanadi va
+#: bitta qisqa uzilish butun ishni to'xtatib qo'yardi. Ayniqsa
+#: yomoni — xato YUKLASHDA emas, undan oldingi "bu fayl bulutda
+#: bormi" tekshiruvida chiqardi va u himoyalanmagan edi.
+NETWORK_RETRIES = 4
+
+#: Qayta urinishlar orasidagi kutish (soniya). Har safar ikkilanadi:
+#: 5, 10, 20, 40 — uzilish uzoq bo'lsa ham yetadi.
+RETRY_BASE_SECONDS = 5
+
+
 class Command(BaseCommand):
     help = "Dars videolarini S3/R2 omboriga ko'chiradi"
+
+    def _retry(self, action, label):
+        """
+        Tarmoq amalini qayta urinib bajaradi.
+
+        Faqat TARMOQ xatolari qayta urinadi. Huquq xatosi yoki
+        noto'g'ri kalit qayta urinishdan tuzalmaydi — u darhol
+        yuqoriga uzatiladi, aks holda buyruq bekorga 4 marta
+        kutib turardi.
+        """
+        delay = RETRY_BASE_SECONDS
+        for attempt in range(1, NETWORK_RETRIES + 1):
+            try:
+                return action()
+            except (EndpointConnectionError, ConnectionError, ReadTimeoutError,
+                    ConnectTimeoutError, IncompleteReadError) as exc:
+                if attempt == NETWORK_RETRIES:
+                    raise
+                self.stdout.write(self.style.WARNING(
+                    f"  tarmoq uzildi ({label}) — {delay}s dan keyin "
+                    f"qayta urinaman [{attempt}/{NETWORK_RETRIES - 1}]"
+                ))
+                time.sleep(delay)
+                delay *= 2
 
     def add_arguments(self, parser):
         parser.add_argument('--dry-run', action='store_true',
@@ -76,7 +122,18 @@ class Command(BaseCommand):
                 continue
 
             local_size = local.stat().st_size
-            remote_size = video_storage.size(key)
+
+            # QAYTA URINISH BILAN. Bu chaqiruv ilgari himoyalanmagan
+            # edi va bitta tarmoq uzilishi butun ko'chirishni
+            # to'xtatib qo'yardi — 3.5 GB ning o'rtasida.
+            try:
+                remote_size = self._retry(
+                    lambda: video_storage.size(key), f"tekshiruv {key}"
+                )
+            except Exception as exc:
+                self.stderr.write(self.style.ERROR(f"  XATO     {key}: {exc}"))
+                stats['failed'] += 1
+                continue
 
             if remote_size == local_size:
                 self.stdout.write(f"  bor      {key}  ({local_size / 1024 / 1024:.0f} MB)")
@@ -91,7 +148,9 @@ class Command(BaseCommand):
                 continue
 
             try:
-                video_storage.upload(local, key)
+                self._retry(
+                    lambda: video_storage.upload(local, key), f"yuklash {key}"
+                )
             except Exception as exc:
                 self.stderr.write(self.style.ERROR(f"  XATO     {key}: {exc}"))
                 stats['failed'] += 1
