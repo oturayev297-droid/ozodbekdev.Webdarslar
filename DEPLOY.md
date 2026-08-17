@@ -71,6 +71,24 @@ python manage.py migrate
 python manage.py loaddata data_backup.json
 ```
 
+### TLS xostga qarab qo'yiladi
+
+`DATABASE_URL` berilganda sozlamalar `sslmode` ni O'ZI hal qiladi:
+
+| Xost | TLS | Sabab |
+|---|---|---|
+| `localhost`, `127.0.0.1` | yo'q | Ulanish kompyuterdan chiqmaydi |
+| `*.railway.internal`, `*.internal` | yo'q | Ichki tarmoq, shifrlash shart emas |
+| Boshqa hamma xost | `require` | Parol va o'quvchilar ma'lumoti internetdan **shifrlanmagan holda o'tmaydi** |
+
+Majburan qo'yib bo'lmaydi: lokal Postgres odatda TLS'siz ishlaydi va
+`sslmode=require` bo'lsa "server does not support SSL" bilan umuman
+ulanmasdi.
+
+Bundan tashqari `CONN_MAX_AGE=60` (ulanish qayta ishlatiladi) va
+`CONN_HEALTH_CHECKS=True` (o'lik ulanish tekshiriladi) qo'yiladi —
+bulutli bazalarda ulanish jimgina uzilib qolishi odatiy hol.
+
 ## 4. Production sozlamalari
 
 `.env`:

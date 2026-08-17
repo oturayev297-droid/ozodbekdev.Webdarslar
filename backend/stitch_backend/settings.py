@@ -140,10 +140,23 @@ if env("DATABASE_URL"):
     # bulutli bazalarda bu odatiy hol.
     DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
-    # Railway ichki tarmog'ida (`*.railway.internal`) TLS shart emas,
-    # tashqi manzilda esa majburiy. Manzilning o'ziga qarab hal
-    # qilamiz — majburan qo'ysak ichki ulanish ishlamay qolardi.
-    if "railway.internal" not in env("DATABASE_URL"):
+    # TLS — INTERNETDAN O'TADIGAN ULANISH UCHUN. Baza paroli va
+    # o'quvchilar ma'lumoti ochiq tarmoqdan shifrlanmagan holda
+    # o'tmasligi kerak.
+    #
+    # LEKIN MAJBURAN QO'YIB BO'LMAYDI. Ichki tarmoqdagi baza
+    # (`*.railway.internal`) va lokal Postgres odatda TLS'siz
+    # ishlaydi — `sslmode=require` bo'lsa ular "server does not
+    # support SSL" bilan umuman ulanmasdi.
+    #
+    # Shuning uchun xostga qarab hal qilinadi.
+    _db_host = (DATABASES["default"].get("HOST") or "").lower()
+    _local_host = (
+        _db_host in ("localhost", "127.0.0.1", "::1", "")
+        or _db_host.endswith(".internal")          # railway.internal, *.internal
+        or _db_host.endswith(".local")
+    )
+    if not _local_host:
         DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
 else:
     # Lokal ishlash uchun. Railway'da bu tarmoqqa hech qachon
