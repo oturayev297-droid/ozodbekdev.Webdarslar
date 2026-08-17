@@ -64,7 +64,9 @@ class TelegramCheckTests(SimpleTestCase):
         TELEGRAM_BOT_TOKEN='token',
         TELEGRAM_BOT_USERNAME='bot',
         TELEGRAM_WEBHOOK_SECRET='kalit',
-        TELEGRAM_ADMIN_CHAT_IDS=['1921274790'],
+        # Soxta qiymat. HAQIQIY chat ID yozilmaydi: u shaxsiy
+        # identifikator va repozitoriy ochiq.
+        TELEGRAM_ADMIN_CHAT_IDS=['100200300'],
     )
     def test_togri_sozlanganda_jim(self):
         self.assertEqual(checks.telegram_settings(None), [])
