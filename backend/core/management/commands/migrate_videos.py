@@ -109,6 +109,20 @@ class Command(BaseCommand):
         self.stdout.write(f"Bucket : {settings.VIDEO_STORAGE_BUCKET}")
         self.stdout.write(f"Videolar: {len(lessons)}\n")
 
+        # BULUTDAGI RO'YXAT BIR MARTA OLINADI.
+        #
+        # Ilgari har fayl uchun alohida so'rov ketardi. Ko'chirish
+        # uzilib qayta boshlanganda allaqachon yuklanganlarni
+        # "o'tkazib yuborish" ning o'zi 73 ta so'rovni talab qilardi
+        # va har biri yangi uzilish nuqtasi edi.
+        try:
+            remote_sizes = self._retry(video_storage.list_sizes, "ro'yxat")
+        except Exception as exc:
+            raise CommandError(f"Bulut ro'yxatini olib bo'lmadi: {exc}")
+
+        if remote_sizes:
+            self.stdout.write(f"Bulutda allaqachon: {len(remote_sizes)} ta fayl\n")
+
         stats = {'uploaded': 0, 'skipped': 0, 'missing': 0, 'failed': 0, 'deleted': 0}
         total_bytes = 0
 
@@ -122,18 +136,9 @@ class Command(BaseCommand):
                 continue
 
             local_size = local.stat().st_size
-
-            # QAYTA URINISH BILAN. Bu chaqiruv ilgari himoyalanmagan
-            # edi va bitta tarmoq uzilishi butun ko'chirishni
-            # to'xtatib qo'yardi — 3.5 GB ning o'rtasida.
-            try:
-                remote_size = self._retry(
-                    lambda: video_storage.size(key), f"tekshiruv {key}"
-                )
-            except Exception as exc:
-                self.stderr.write(self.style.ERROR(f"  XATO     {key}: {exc}"))
-                stats['failed'] += 1
-                continue
+            # Yuqorida bir marta olingan ro'yxatdan — tarmoqqa
+            # chiqmaydi.
+            remote_size = remote_sizes.get(key)
 
             if remote_size == local_size:
                 self.stdout.write(f"  bor      {key}  ({local_size / 1024 / 1024:.0f} MB)")

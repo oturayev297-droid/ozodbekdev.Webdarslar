@@ -138,3 +138,31 @@ def size(key: str):
         return head['ContentLength']
     except ClientError:
         return None
+
+
+def list_sizes(prefix: str = "") -> dict:
+    """
+    Bucketdagi BARCHA fayl va ularning hajmi — bitta so'rovda.
+
+    NEGA KERAK: `size()` har fayl uchun alohida `head_object`
+    yuboradi. 73 ta video uchun bu 73 ta tarmoq so'rovi, ya'ni
+    ko'chirish uzilib qayta boshlanganda allaqachon yuklanganlarni
+    "o'tkazib yuborish" ning o'zi bir necha daqiqa oladi va har bir
+    so'rov yana uzilish nuqtasi bo'ladi.
+
+    Bu yerda ro'yxat bir marta olinadi va tekshiruv xotirada
+    bajariladi.
+
+    Qaytaradi: `{kalit: hajm}`. Bulut yoqilmagan bo'lsa bo'sh lug'at.
+    """
+    if not is_cloud_enabled():
+        return {}
+
+    sizes = {}
+    paginator = _client().get_paginator('list_objects_v2')
+    for page in paginator.paginate(
+        Bucket=settings.VIDEO_STORAGE_BUCKET, Prefix=prefix
+    ):
+        for obj in page.get('Contents', []):
+            sizes[obj['Key']] = obj['Size']
+    return sizes
