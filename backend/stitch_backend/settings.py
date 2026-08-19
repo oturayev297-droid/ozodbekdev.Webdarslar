@@ -334,6 +334,9 @@ X_FRAME_OPTIONS = "DENY"
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Railway healthcheck konteynerga to'g'ridan-to'g'ri HTTP bilan keladi
+    # va X-Forwarded-Proto yubormaydi - /health/ redirect qilinmasin.
+    SECURE_REDIRECT_EXEMPT = [r"^health/?$"]
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # 30 kun
