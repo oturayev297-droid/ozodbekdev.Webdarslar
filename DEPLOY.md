@@ -646,6 +646,26 @@ bulutda fayl borligi va hajmi mos kelgani tasdiqlangach o'chiradi).
 
 Sozlama bo'sh qolsa eski yo'l ishlashda davom etadi.
 
+### Dars rasmlari va avatarlar ham bulutga
+
+Video bilan bir xil sabab: Railway'da yuklangan rasm keyingi deployda
+yo'q bo'ladi. Ustiga productionda `/media/` umuman uzatilmaydi — u
+`stitch_backend/urls.py` da faqat `DEBUG` da ochiladi.
+
+```bash
+python manage.py migrate_media --dry-run
+python manage.py migrate_media
+```
+
+So'ng Railway'da `MEDIA_STORAGE_CLOUD=True` qo'ying. Shundan keyin
+panel orqali yuklangan har bir rasm to'g'ridan-to'g'ri bucketga
+tushadi va deploy uni o'chirmaydi.
+
+**Lokalda bu bayroq bo'sh qolsin** — fayllar diskda qolgani qulay.
+Bayroq ataylab alohida (kalitlar bor bo'lishi bilan avtomatik
+yoqilmaydi): kalitlar lokal `.env` da ham turadi va avtomatik bo'lsa,
+har test ishga tushganda bucketga sinov fayllari yozilardi.
+
 ### Backend — Railway
 
 **Root Directory = `backend`** — buni albatta qo'ying. Aks holda
@@ -671,6 +691,7 @@ VIDEO_STORAGE_BUCKET=...
 VIDEO_STORAGE_ENDPOINT=...
 VIDEO_STORAGE_ACCESS_KEY=...
 VIDEO_STORAGE_SECRET_KEY=...
+MEDIA_STORAGE_CLOUD=True
 TELEGRAM_BOT_TOKEN=...
 ANTHROPIC_API_KEY=...
 EMAIL_HOST_USER=...
@@ -694,6 +715,44 @@ Migratsiya `railway.json` dagi `startCommand` da avtomatik bajariladi —
 har deployda `migrate` ishlaydi va faqat undan keyin gunicorn
 ko'tariladi. Migratsiya yiqilsa xizmat ishga tushmaydi: yarim
 ko'chirilgan baza bilan ishlagandan ko'ra shu yaxshi.
+
+### Mazmun bazaga qanday tushadi
+
+`migrate` faqat JADVALLARNI yaratadi. Birinchi deployda baza bo'sh
+qoladi va sayt ochiladi-yu, kurslar, loyihalar hamda muharrir
+bo'limlari bo'm-bo'sh ko'rinadi.
+
+Shuning uchun mazmun `backend/core/fixtures/content.json` da
+repozitoriyda yotadi (bo'limlar, modullar, darslar, dars rasmlari,
+testlar, savollar, variantlar, loyihalar, muharrir topshiriqlari va
+tariflar) va `startCommand` da `seed_content` uni bazaga quyadi.
+
+```bash
+python manage.py seed_content --dry-run   # nima bo'lishini ko'rsatadi
+python manage.py seed_content             # bo'sh bo'lsa yuklaydi
+python manage.py seed_content --force     # borini ustiga yozadi
+```
+
+**Har deployda ishlasa ham xavfsiz:** bazada bo'lim bor bo'lsa buyruq
+hech narsaga tegmasdan chiqadi. Tekshiruvsiz bo'lsa, fixture panel
+orqali kiritilgan o'zgarishlarni har safar bosib ketardi.
+
+Fixture **foydalanuvchi, obuna, to'lov, sertifikat va karta
+rekvizitlarini o'z ichiga olmaydi** — ular shaxsiy yoki maxfiy.
+Kartani `/panel/` orqali, joyida kiriting.
+
+Mazmun yangilanganda fixture ni qaytadan chiqaring:
+
+```bash
+python manage.py dumpdata --indent 1     core.Category core.Module core.Lesson core.LessonImage     core.Quiz core.Question core.Choice     core.Project core.Challenge billing.SubscriptionPlan     -o core/fixtures/content.json
+```
+
+Windows'da bundan oldin `set PYTHONIOENCODING=utf-8` qiling: konsolning
+standart kodlashi emoji va ba'zi belgilarni yoza olmaydi va `dumpdata`
+faylni YARIM yozib to'xtaydi.
+
+Buyruq yiqilsa **deploy to'xtamaydi**: xato faqat logga yoziladi.
+Mazmunsiz sayt ishlaydi, ko'tarilmagan server esa umuman yo'q.
 
 ### Frontend — Vercel
 
