@@ -42,6 +42,7 @@ env = environ.Env(
     VIDEO_STORAGE_ACCESS_KEY=(str, ""),
     VIDEO_STORAGE_SECRET_KEY=(str, ""),
     VIDEO_STORAGE_REGION=(str, "auto"),
+    MEDIA_STORAGE_CLOUD=(bool, False),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -369,6 +370,31 @@ VIDEO_STORAGE_ENDPOINT = env("VIDEO_STORAGE_ENDPOINT").strip().rstrip('/')
 VIDEO_STORAGE_ACCESS_KEY = env("VIDEO_STORAGE_ACCESS_KEY").strip()
 VIDEO_STORAGE_SECRET_KEY = env("VIDEO_STORAGE_SECRET_KEY").strip()
 VIDEO_STORAGE_REGION = env("VIDEO_STORAGE_REGION").strip()
+
+
+# --------------------------------------------------------------------------
+# Rasm va avatarlar ham bulutda saqlansinmi
+# --------------------------------------------------------------------------
+#
+# `True` bo'lganda dars rasmlari va avatarlar ham o'sha bucketga
+# yoziladi (`core.media_storage`). Railway'da bu MAJBURIY: u yerda
+# fayl tizimi har deployda tozalanadi va panel orqali yuklangan rasm
+# ertasiga yo'q bo'lardi.
+#
+# NEGA ALOHIDA BAYROQ, "kalitlar bor bo'lsa yoqilsin" emas: kalitlar
+# lokal `.env` da ham turadi (videolarni ko'chirish uchun kerak). Avtomatik
+# yoqilsa, har test ishga tushganda fayllar tarmoq orqali bucketga ketar
+# va sinov axlati u yerda to'planib qolardi.
+#
+# VIDEO BUNGA BOG'LIQ EMAS: u kalitlar bor bo'lishi bilanoq bulutdan
+# uzatiladi va bu bayroqni kutmaydi.
+
+MEDIA_STORAGE_CLOUD = env("MEDIA_STORAGE_CLOUD") and bool(
+    VIDEO_STORAGE_BUCKET and VIDEO_STORAGE_ACCESS_KEY and VIDEO_STORAGE_SECRET_KEY
+)
+
+if MEDIA_STORAGE_CLOUD:
+    STORAGES["default"] = {"BACKEND": "core.media_storage.CloudMediaStorage"}
 
 
 # --------------------------------------------------------------------------

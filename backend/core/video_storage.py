@@ -166,3 +166,72 @@ def list_sizes(prefix: str = "") -> dict:
         for obj in page.get('Contents', []):
             sizes[obj['Key']] = obj['Size']
     return sizes
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Rasm va avatarlar uchun umumiy amallar
+# ══════════════════════════════════════════════════════════════════════
+#
+# Bu modul boshida FAQAT video uchun yozilgan edi. Keyin ma'lum
+# bo'ldiki, Railway'da dars RASMLARI va avatarlar ham yashay olmaydi —
+# fayl tizimi har deployda tozalanadi va panel orqali yuklangan rasm
+# ertasiga yo'q bo'lardi.
+#
+# Ikkinchi bucket va ikkinchi klient ochish o'rniga o'shalar shu
+# yerdagi bitta darvozadan o'tadi: sozlama bitta, kalitlar bitta,
+# xato qidiriladigan joy ham bitta. Quyidagi uchta funksiyani
+# `core.media_storage` ishlatadi.
+
+
+def save_fileobj(fileobj, key: str, content_type: str = None) -> None:
+    """
+    Ochiq faylni (stream) bucketga yozadi.
+
+    `upload()` dan farqi — diskdagi YO'L emas, fayl OBYEKTI qabul
+    qiladi. Django storage'i aynan shu ko'rinishda beradi: yuklangan
+    fayl ba'zan umuman diskda bo'lmaydi, xotirada turadi.
+    """
+    if not is_cloud_enabled():
+        raise VideoStorageError("Bulut ombori sozlanmagan.")
+
+    # Fayl boshidan yozilsin. Django validatsiyasi (rasm o'lchamini
+    # tekshirish) faylni allaqachon o'qib qo'ygan bo'lishi mumkin va
+    # kursor oxirida turgan bo'lsa, bucketga BO'SH fayl ketardi.
+    if hasattr(fileobj, 'seek'):
+        fileobj.seek(0)
+
+    _client().upload_fileobj(
+        fileobj,
+        settings.VIDEO_STORAGE_BUCKET,
+        key,
+        ExtraArgs={
+            'ContentType': (
+                content_type
+                or mimetypes.guess_type(key)[0]
+                or 'application/octet-stream'
+            )
+        },
+    )
+
+
+def read(key: str) -> bytes:
+    """Bucketdagi faylni to'liq o'qiydi."""
+    if not is_cloud_enabled():
+        raise VideoStorageError("Bulut ombori sozlanmagan.")
+
+    obj = _client().get_object(Bucket=settings.VIDEO_STORAGE_BUCKET, Key=key)
+    return obj['Body'].read()
+
+
+def delete(key: str) -> None:
+    """
+    Bucketdagi faylni o'chiradi.
+
+    Yo'q faylni o'chirish XATO EMAS — S3 buni muvaffaqiyat deb
+    hisoblaydi. Django ham storage'dan aynan shuni kutadi: yozuv
+    bazadan o'chirilayotganda fayl allaqachon yo'q bo'lishi mumkin.
+    """
+    if not is_cloud_enabled():
+        raise VideoStorageError("Bulut ombori sozlanmagan.")
+
+    _client().delete_object(Bucket=settings.VIDEO_STORAGE_BUCKET, Key=key)
