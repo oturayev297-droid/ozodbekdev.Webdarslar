@@ -620,8 +620,36 @@ def payment_card(request):
     FAQAT so'rovi «Karta berildi» holatidagi o'quvchiga ko'rinadi —
     `billing.payment_requests.get_card_for_user` shu shartni
     tekshiradi va boshqa yo'l qoldirilmagan.
+
+    JAVOB QO'LDA YIG'ILADI. `get_card_for_user` MODEL OBYEKTINI
+    qaytaradi (u shablonli sahifa uchun yozilgan) va uni to'g'ridan-
+    to'g'ri `Response` ga berish JSON xatosi bilan 500 qaytarardi:
+    admin kartani beradi, o'quvchining sahifasi esa so'rovni jimgina
+    yutib yuborib, kartani umuman ko'rsatmasdi.
+
+    So'rov ma'lumoti `subscription_state` dagi `open_request` bilan
+    BIR XIL shaklda beriladi — frontend ikkalasini ham bir xil
+    o'qiydi.
     """
-    return Response(pr.get_card_for_user(request.user))
+    try:
+        data = pr.get_card_for_user(request.user)
+    except services.BillingError as exc:
+        # Karta hali berilmagan bo'lsa bu XATO EMAS, HOLAT: o'quvchi
+        # navbatda turibdi. Ushlanmasa 500 ketardi va sahifa
+        # "server buzilgan" degan taassurot qoldirardi.
+        return Response({'detail': str(exc)}, status=exc.status)
+
+    open_request = data['request']
+    return Response({
+        'cards': data['cards'],
+        'request': {
+            'id': open_request.id,
+            'months': open_request.months,
+            'amount_display': format_money(open_request.amount_tiyin),
+            'status': open_request.status,
+            'status_label': open_request.get_status_display(),
+        },
+    })
 
 
 # ══════════════════════════ Sertifikatlar ══════════════════════════

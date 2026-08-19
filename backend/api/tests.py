@@ -593,3 +593,76 @@ class MentorHistoryTests(ApiBase):
         raw = json.dumps(response.json(), ensure_ascii=False)
         self.assertIn('Mening savolim', raw)
         self.assertNotIn('BEGONA SAVOL', raw)
+
+
+class PaymentCardTests(ApiBase):
+    """
+    Karta rekvizitlari o'quvchiga YETIB BORISHI.
+
+    NEGA ALOHIDA TEST: bu manzil hech qachon sinalmagan edi va u
+    model obyektini to'g'ridan-to'g'ri javobga qo'yardi. Natijada
+    admin kartani beradi, sahifa esa 500 oladi va uni jimgina yutib
+    yuboradi (`.catch(() => setCard(null))`) — o'quvchi uchun karta
+    shunchaki KELMAYDI, xato ham ko'rinmaydi.
+
+    Shuning uchun bu yerda `status_code` emas, JAVOB MAZMUNI
+    tekshiriladi: karta raqami javobda bormi.
+    """
+
+    CARD = {'number': '8600 1234 5678 9012', 'holder': 'OZODBEK T.', 'bank': 'Uzcard'}
+
+    def setUp(self):
+        super().setUp()
+        from billing import payment_requests, services
+
+        self.user = make_user('tolovchi')
+        self.admin = make_user('kartachi', staff=True)
+        services.update_cards([self.CARD])
+
+        self.request = payment_requests.create_request(self.user, 1)
+        self.client.force_login(self.user)
+
+    def _issue(self):
+        from billing import payment_requests
+
+        payment_requests.issue_card(self.request.pk, self.admin)
+
+    def test_karta_berilgach_oquvchiga_korinadi(self):
+        self._issue()
+
+        response = self.client.get(reverse('api:payment_card'))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual([c['number'] for c in data['cards']], [self.CARD['number']])
+
+    def test_javob_sorov_malumotini_ham_beradi(self):
+        self._issue()
+
+        data = self.client.get(reverse('api:payment_card')).json()
+
+        self.assertEqual(data['request']['id'], self.request.pk)
+        self.assertEqual(data['request']['status'], 'CARD_ISSUED')
+        self.assertEqual(data['request']['months'], 1)
+
+    def test_karta_berilmagan_bolsa_403(self):
+        """
+        Bu XATO EMAS, HOLAT: o'quvchi navbatda turibdi. 500 qaytsa
+        sahifa "server buzilgan" degan taassurot qoldirardi.
+        """
+        response = self.client.get(reverse('api:payment_card'))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('detail', response.json())
+
+    def test_begona_odam_kartani_ololmaydi(self):
+        self._issue()
+        self.client.force_login(make_user('chetdagi'))
+
+        self.assertEqual(self.client.get(reverse('api:payment_card')).status_code, 403)
+
+    def test_anonim_kartani_ololmaydi(self):
+        self._issue()
+        self.client.logout()
+
+        self.assertEqual(self.client.get(reverse('api:payment_card')).status_code, 403)

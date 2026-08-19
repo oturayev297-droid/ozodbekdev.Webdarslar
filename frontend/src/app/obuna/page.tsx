@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Guard } from '@/components/Guard';
 import { subscription, ApiError, type SubscriptionInfo } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -9,6 +9,7 @@ function Subscription() {
   const { refresh } = useAuth();
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [card, setCard] = useState<any>(null);
+  const [cardError, setCardError] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -25,11 +26,29 @@ function Subscription() {
   // Karta rekvizitlari FAQAT so'rov «Karta berildi» holatiga
   // o'tgandan keyin so'raladi. Oldin so'ralsa server baribir
   // bermaydi — bu shart `billing.payment_requests` da.
+  //
+  // XATO YUTILMAYDI. Ilgari `.catch(() => setCard(null))` yozilgan
+  // edi va server xatosi bilan bo'sh javob AYNAN BIR XIL ko'rinardi:
+  // ikkalasida ham «yuklanmoqda» yozuvi abadiy turib qolardi. Karta
+  // kelmayotganini o'quvchi ham, admin ham ko'rmasdi.
+  const loadCard = useCallback(() => {
+    setCardError('');
+    subscription
+      .card()
+      .then((data) => setCard(data))
+      .catch((err) => {
+        setCard(null);
+        setCardError(
+          err instanceof ApiError && err.message
+            ? err.message
+            : 'Karta rekvizitlarini yuklab bo‘lmadi',
+        );
+      });
+  }, []);
+
   useEffect(() => {
-    if (info?.open_request?.status === 'CARD_ISSUED') {
-      subscription.card().then(setCard).catch(() => setCard(null));
-    }
-  }, [info?.open_request?.status]);
+    if (info?.open_request?.status === 'CARD_ISSUED') loadCard();
+  }, [info?.open_request?.status, loadCard]);
 
   async function createRequest(months: number) {
     setBusy(true);
@@ -119,6 +138,27 @@ function Subscription() {
                     </div>
                   ))}
                 </div>
+              ) : cardError ? (
+                <div className="mb-5">
+                  <p className="text-sm text-red-400 mb-3">{cardError}</p>
+                  <button
+                    onClick={loadCard}
+                    className="px-4 py-2 rounded-xl bg-white/5 text-sm font-semibold hover:bg-white/10"
+                  >
+                    Qayta urinish
+                  </button>
+                </div>
+              ) : card ? (
+                /*
+                  Javob keldi, lekin ro'yxat BO'SH — ya'ni panelda
+                  karta hali kiritilmagan. Bu «yuklanmoqda» emas:
+                  kutish bu yerda hech narsani o'zgartirmaydi va
+                  o'quvchi pulni qayerga yuborishni bilmay qoladi.
+                */
+                <p className="text-sm text-amber-400 mb-5 leading-relaxed">
+                  Administrator karta rekvizitlarini hali kiritmagan.
+                  Iltimos, u bilan bog&apos;laning.
+                </p>
               ) : (
                 <p className="text-sm text-slate-500 mb-5">
                   Karta rekvizitlari yuklanmoqda...
