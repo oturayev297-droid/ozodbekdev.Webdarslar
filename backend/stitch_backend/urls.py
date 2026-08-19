@@ -5,8 +5,11 @@ URL configuration for stitch_backend project.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from django.http import HttpResponse
 
 urlpatterns = [
+    # Railway healthcheck. SSL redirectdan ozod: settings.SECURE_REDIRECT_EXEMPT.
+    path('health/', lambda r: HttpResponse('ok'), name='health'),
     # DJANGO ADMIN OLIB TASHLANDI.
     #
     # Uning barcha vazifalari `/panel/` ga ko'chirildi: bo'limlar,
