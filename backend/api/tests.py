@@ -666,3 +666,106 @@ class PaymentCardTests(ApiBase):
         self.client.logout()
 
         self.assertEqual(self.client.get(reverse('api:payment_card')).status_code, 403)
+
+
+class ChallengeCheckTests(ApiBase):
+    """
+    Muharrir topshirig'ini tekshirish.
+
+    ENG MUHIM SHART — KUTILGAN NATIJA JAVOBGA TUSHMASLIGI. Tushsa,
+    topshiriqni yechmasdan ko'chirib qo'yish mumkin bo'lardi: xuddi
+    test javoblari kabi (`ChoiceSerializer` ga qarang).
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.challenge = Challenge.objects.create(
+            title='Salom', language='python', difficulty='Oson',
+            description='Salom deb chiqaring',
+            initial_code='', solution_code='print("Salom")',
+            expected_output='Salom\n', order=1,
+        )
+        self.user = make_user('kodchi')
+        self.client.force_login(self.user)
+
+    def _check(self, output):
+        return self.client.post(
+            reverse('api:challenge_check', args=[self.challenge.id]),
+            data=json.dumps({'output': output}),
+            content_type='application/json',
+        )
+
+    def test_togri_natija_qabul_qilinadi(self):
+        response = self._check('Salom\n')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['correct'])
+
+    def test_notogri_natija_rad_etiladi(self):
+        data = self._check('Xayr').json()
+
+        self.assertFalse(data['correct'])
+        self.assertEqual(data['diff']['line'], 1)
+
+    def test_kutilgan_natija_javobga_TUSHMAYDI(self):
+        """
+        Faqat FARQ QILGAN qator ko'rsatiladi. Bu xatoni topishga
+        yetadi, lekin ko'p qatorli javobni ochib bermaydi.
+        """
+        self.challenge.expected_output = 'birinchi\nikkinchi\nuchinchi\n'
+        self.challenge.save(update_fields=['expected_output'])
+
+        raw = json.dumps(self._check('birinchi\nXATO\nuchinchi').json(), ensure_ascii=False)
+
+        self.assertIn('ikkinchi', raw)      # farq qilgan qator — ko'rinadi
+        self.assertNotIn('uchinchi', raw)   # qolgan javob — ko'rinmaydi
+
+    def test_topshiriq_royxatida_kutilgan_natija_yoq(self):
+        raw = json.dumps(self.client.get(reverse('api:challenges')).json(), ensure_ascii=False)
+        self.assertNotIn('Salom\n', raw)
+
+        detail = self.client.get(
+            reverse('api:challenge_detail', args=[self.challenge.id])
+        ).json()
+        self.assertNotIn('expected_output', detail)
+        self.assertTrue(detail['has_check'])
+
+    def test_yechilgan_topshiriq_royxatda_belgilanadi(self):
+        self.assertFalse(self.client.get(reverse('api:challenges')).json()[0]['solved'])
+
+        self._check('Salom')
+
+        self.assertTrue(self.client.get(reverse('api:challenges')).json()[0]['solved'])
+
+    def test_urinishlar_sanaladi(self):
+        self._check('xato')
+        self.assertEqual(self._check('yana xato').json()['attempts'], 2)
+
+    def test_birinchi_yechim_sanasi_saqlanadi(self):
+        first = self._check('Salom').json()['solved_at']
+        again = self._check('Salom').json()['solved_at']
+
+        # Ikkinchi tekshiruv sanani YANGILAMAYDI: "qachon yechgan edim"
+        # degan ma'lumot har tugma bosilganda o'chib ketmasligi kerak.
+        self.assertEqual(first, again)
+
+    def test_tekshiruvsiz_topshiriq_400(self):
+        self.challenge.expected_output = ''
+        self.challenge.save(update_fields=['expected_output'])
+
+        self.assertEqual(self._check('nima bolsa ham').status_code, 400)
+
+    def test_matn_bolmagan_natija_rad_etiladi(self):
+        response = self.client.post(
+            reverse('api:challenge_check', args=[self.challenge.id]),
+            data=json.dumps({'output': {'hiyla': True}}),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_anonim_tekshira_olmaydi(self):
+        self.client.logout()
+        self.assertEqual(self._check('Salom').status_code, 403)
+
+    def test_bosh_natija_uchun_alohida_maslahat(self):
+        self.assertIn('chiqar', self._check('').json()['detail'].lower())

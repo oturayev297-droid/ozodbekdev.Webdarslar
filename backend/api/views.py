@@ -23,6 +23,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.db.models import Avg, Count, Prefetch
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
@@ -38,13 +39,14 @@ from billing import services, telegram
 from billing.dates import ALLOWED_MONTHS, format_money
 from billing import parent_billing
 from billing.gating import access_checker, can_access_lesson, can_access_quiz
-from core import ai_mentor, lockout, quiz_scoring, study_time
+from core import ai_mentor, challenge_check, lockout, quiz_scoring, study_time
 from core import password_reset as pwreset
 from core.approval import is_approved
 from core.models import (
     Category,
     Certificate,
     Challenge,
+    ChallengeProgress,
     Lesson,
     MentorMessage,
     ParentLink,
@@ -785,6 +787,18 @@ def projects(request):
 # ══════════════════════════ Kod muharriri ══════════════════════════
 
 
+def _challenge_context(request) -> dict:
+    """Yechilgan topshiriq ID lari — BIR SO'ROVDA."""
+    return {
+        'request': request,
+        'solved_ids': set(
+            ChallengeProgress.objects
+            .filter(user=request.user, solved_at__isnull=False)
+            .values_list('challenge_id', flat=True)
+        ),
+    }
+
+
 class ChallengeListView(APIView):
     """
     Topshiriqlar ro'yxati.
@@ -802,7 +816,11 @@ class ChallengeListView(APIView):
         if language:
             qs = qs.filter(language=language)
 
-        return Response(ChallengeListSerializer(qs, many=True).data)
+        return Response(
+            ChallengeListSerializer(
+                qs, many=True, context=_challenge_context(request)
+            ).data
+        )
 
 
 class ChallengeDetailView(APIView):
@@ -810,7 +828,9 @@ class ChallengeDetailView(APIView):
 
     def get(self, request, pk):
         challenge = get_object_or_404(Challenge, pk=pk)
-        data = ChallengeDetailSerializer(challenge).data
+        data = ChallengeDetailSerializer(
+            challenge, context=_challenge_context(request)
+        ).data
 
         # Keyingi topshiriq — frontend "keyingisi" tugmasini
         # ko'rsatishi uchun
@@ -833,6 +853,98 @@ class ChallengeSolutionView(APIView):
     def get(self, request, pk):
         challenge = get_object_or_404(Challenge, pk=pk)
         return Response({'solution': challenge.solution_code or ''})
+
+
+class ChallengeCheckView(APIView):
+    """
+    Topshiriq natijasini tekshiradi.
+
+    KOD BU YERGA KELMAYDI, faqat uning CHIQARGAN MATNI. Kod
+    brauzerda, o'quvchining o'z mashinasida ishlaydi — begona kodni
+    serverda ijro etish serverni begona odamga topshirish demak.
+
+    KUTILGAN NATIJA JAVOBGA QO'SHILMAYDI. Solishtirish shu yerda
+    bajariladi, aks holda javob sahifa yuklanishidayoq mijozga
+    tushib qolardi. Xato bo'lgan taqdirda faqat BIRINCHI farq
+    qilgan qator ko'rsatiladi: bu xatoni topishga yetadi, lekin
+    butun javobni bermaydi.
+    """
+
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        challenge = get_object_or_404(Challenge, pk=pk)
+
+        expected = (challenge.expected_output or '').strip()
+        if not expected:
+            return Response(
+                {'detail': "Bu topshiriq uchun tekshirish sozlanmagan."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        output = request.data.get('output')
+        if not isinstance(output, str):
+            return Response(
+                {'detail': "Natija matn ko'rinishida yuborilishi kerak."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # UZUN MATN KESILADI: cheksiz sikl megabaytlab matn
+        # chiqarishi mumkin va uni butunlay o'qish serverni
+        # bekorga yuklardi. Tekshiruv uchun boshi yetarli.
+        output = output[:20_000]
+
+        correct = challenge_check.compare(expected, output)
+
+        progress, _ = ChallengeProgress.objects.get_or_create(
+            user=request.user, challenge=challenge
+        )
+        progress.attempts += 1
+        # BIRINCHI YECHIM SAQLANADI: keyingi urinishlarda sana
+        # yangilanmaydi, aks holda "qachon yechgan edim" degan
+        # ma'lumot har tekshirishda o'chib ketardi.
+        if correct and progress.solved_at is None:
+            progress.solved_at = timezone.now()
+        progress.save(update_fields=['attempts', 'solved_at', 'updated_at'])
+
+        if correct:
+            return Response({
+                'correct': True,
+                'solved_at': progress.solved_at,
+                'attempts': progress.attempts,
+                'detail': "To'g'ri! Topshiriq yechildi.",
+            })
+
+        return Response({
+            'correct': False,
+            'attempts': progress.attempts,
+            'detail': self._hint(output),
+            'diff': self._diff(expected, output),
+        })
+
+    def _hint(self, output) -> str:
+        if not output.strip():
+            return (
+                "Kod hech narsa chiqarmadi. Natijani ekranga chiqarganingizga "
+                "ishonch hosil qiling."
+            )
+        if challenge_check.looks_like_error(output):
+            return "Kod xato bilan to'xtadi — natijadagi xabarni o'qing."
+        return "Natija kutilganidan farq qiladi."
+
+    def _diff(self, expected, output):
+        """
+        FAQAT BIRINCHI farq qilgan qator.
+
+        Butun kutilgan natijani berish javobni ochib qo'yardi.
+        Bitta qator esa yo'nalish ko'rsatadi, xolos.
+        """
+        found = challenge_check.first_difference(expected, output)
+        if not found:
+            return None
+
+        line, exp, act = found
+        return {'line': line, 'expected': exp, 'actual': act}
 
 
 # ══════════════════════════ Profil ══════════════════════════

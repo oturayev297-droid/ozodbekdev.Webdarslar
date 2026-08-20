@@ -63,6 +63,14 @@ urlpatterns = [
         views.ChallengeSolutionView.as_view(),
         name='challenge_solution',
     ),
+    # Natija SERVERDA solishtiriladi. Kutilgan javob mijozga
+    # yuborilmaydi — yuborilsa, uni yechmasdan ko'chirib qo'yish
+    # mumkin bo'lardi.
+    path(
+        'challenges/<int:pk>/check/',
+        views.ChallengeCheckView.as_view(),
+        name='challenge_check',
+    ),
 
     # ── Profil ──
     path('profile/', views.ProfileView.as_view(), name='profile'),

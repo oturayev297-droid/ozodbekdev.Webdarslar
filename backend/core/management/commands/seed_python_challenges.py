@@ -163,6 +163,39 @@ CHALLENGES = [
     },
 ]
 
+#: Yechim TO'G'RI ishlaganda ekranga chiqadigan matn.
+#:
+#: NEGA ALOHIDA LUG'AT, har topshiriqning ichida emas: kutilgan
+#: natijalar shu yerda yonma-yon turadi va ularni yechim kodi bilan
+#: solishtirish oson. Topshiriq matnlari esa uzun — natija ular orasida
+#: yo'qolib ketardi.
+#:
+#: BU QIYMATLAR YECHIMDAN OLINGAN: har biri yechim kodi ishga
+#: tushirilib, chiqqan matn ko'chirilgan. Qo'lda yozilsa, bitta bo'sh
+#: joy ham to'g'ri yechimni "noto'g'ri" qilib qo'yardi.
+EXPECTED = {
+    "Salom, dunyo!": "Salom, dunyo!\n",
+    "O'zgaruvchilar va f-string": "Ozodbek 25 yoshda\n",
+    "Ro'yxat bilan ishlash": "Yig'indi: 266\nO'rtacha: 38.00\n",
+    "Shart operatori": (
+        "95 -> A'lo\n"
+        "78 -> Yaxshi\n"
+        "55 -> Qoniqarli\n"
+        "30 -> Qoniqarsiz\n"
+    ),
+    "Sikl va shart birga": "15\n30\n45\n",
+    "Lug'at (dictionary)": "d: 1\na: 2\ns: 2\nt: 1\nu: 1\nr: 1\nl: 1\nh: 1\n",
+    "Sinf (class) yaratish": "Ozodbek: 4.50\n",
+
+    # Quyidagi uchtasi JavaScript va ular YUQORIDAGI RO'YXATDA YO'Q:
+    # bazaga qo'lda kiritilgan, bu buyruq ularni yaratmaydi. Lekin
+    # tekshirish maydoni ularga ham kerak, shuning uchun natijalari
+    # shu yerda turadi va mavjud yozuvga to'ldiriladi.
+    "Salom Node.js!": "Salom Node.js\n",
+    "O'zgaruvchilar bilan ishlash": "Ozodbek\n",
+    "Arifmetik amallar": "20\n",
+}
+
 
 class Command(BaseCommand):
     help = "Python topshiriqlarini qo'shadi (mavjudlariga tegmaydi)"
@@ -175,18 +208,46 @@ class Command(BaseCommand):
         ).first() or 0
 
         added = 0
+        filled = 0
         for i, data in enumerate(CHALLENGES, start=1):
+            expected = EXPECTED.get(data['title'], '')
             challenge, created = Challenge.objects.get_or_create(
                 title=data['title'],
                 defaults={
                     **data,
+                    'expected_output': expected,
                     'language': Challenge.Language.PYTHON,
                     'order': last_order + i,
                 },
             )
+
+            # MAVJUD TOPSHIRIQQA FAQAT SHU MAYDON QO'SHILADI.
+            #
+            # Tekshirish keyinroq qo'shilgan imkoniyat: bazadagi eski
+            # topshiriqlarda `expected_output` bo'sh va usiz "Tekshirish"
+            # tugmasi umuman chiqmaydi. Qolgan maydonlarga TEGILMAYDI —
+            # ular panelda tahrirlangan bo'lishi mumkin.
+            if not created and expected and not (challenge.expected_output or '').strip():
+                challenge.expected_output = expected
+                challenge.save(update_fields=['expected_output'])
+                filled += 1
+
             mark = self.style.SUCCESS("qo'shildi") if created else "mavjud"
             self.stdout.write(f"  [{mark}] {challenge.title}")
             added += int(created)
+
+        # RO'YXATDA YO'Q topshiriqlar (JavaScript) — ular bu buyruq
+        # bilan yaratilmaydi, faqat tekshirish maydoni to'ldiriladi.
+        seeded_titles = {item['title'] for item in CHALLENGES}
+        for title, expected in EXPECTED.items():
+            if title in seeded_titles:
+                continue
+            filled += Challenge.objects.filter(
+                title=title, expected_output=''
+            ).update(expected_output=expected)
+
+        if filled:
+            self.stdout.write(f"\n{filled} ta topshiriqqa kutilgan natija qo'shildi.")
 
         self.stdout.write(self.style.SUCCESS(
             f"\n{added} ta yangi Python topshirig'i. "

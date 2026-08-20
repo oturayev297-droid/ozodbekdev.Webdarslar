@@ -12789,6 +12789,7 @@
   "description": "## Vazifa:\n\nConsole-da \"Salom Node.js\" matnini chiqaring.",
   "initial_code": "// Console-da \"Salom Node.js\" matnini chiqaring\n",
   "solution_code": "console.log(\"Salom Node.js\");",
+  "expected_output": "Salom Node.js\n",
   "order": 1,
   "difficulty": "Oson"
  }
@@ -12802,6 +12803,7 @@
   "description": "## Vazifa:\n\n`name` o'zgaruvchisini yarating va unga \"Ozodbek\" qiymatini bering, so'ng uni console-ga chiqaring.",
   "initial_code": "// name o'zgaruvchisini yarating\n",
   "solution_code": "let name = \"Ozodbek\";\nconsole.log(name);",
+  "expected_output": "Ozodbek\n",
   "order": 2,
   "difficulty": "Oson"
  }
@@ -12812,9 +12814,10 @@
  "fields": {
   "language": "javascript",
   "title": "Arifmetik amallar",
-  "description": "## Vazifa:\n\nIkkita sonning yig'indisini hisoblaydigan funksiya yozing.",
-  "initial_code": "function sum(a, b) {\n  // return a + b\n}\n",
-  "solution_code": "function sum(a, b) {\n  return a + b;\n}",
+  "description": "## Vazifa:\n\nIkkita sonning yig'indisini hisoblaydigan `sum(a, b)` funksiyasini yozing va `sum(12, 8)` natijasini console-ga chiqaring.",
+  "initial_code": "function sum(a, b) {\n  // return a + b\n}\n\n// Natijani console-ga chiqaring\n",
+  "solution_code": "function sum(a, b) {\n  return a + b;\n}\n\nconsole.log(sum(12, 8));\n",
+  "expected_output": "20\n",
   "order": 3,
   "difficulty": "O'rtacha"
  }
@@ -12828,6 +12831,7 @@
   "description": "## Vazifa:\n\n`print()` funksiyasidan foydalanib ekranga **Salom, dunyo!** matnini chiqaring.\n\nPython da matn qo'shtirnoq ichida yoziladi.",
   "initial_code": "# Matnni shu yerda chiqaring\n",
   "solution_code": "print(\"Salom, dunyo!\")\n",
+  "expected_output": "Salom, dunyo!\n",
   "order": 4,
   "difficulty": "Oson"
  }
@@ -12841,6 +12845,7 @@
   "description": "## Vazifa:\n\n`ism` va `yosh` o'zgaruvchilarini yarating, so'ng f-string yordamida **\"Ozodbek 25 yoshda\"** ko'rinishida chiqaring.\n\nf-string: `f\"{o'zgaruvchi}\"`",
   "initial_code": "ism = \nyosh = \n\n# f-string bilan chiqaring\n",
   "solution_code": "ism = \"Ozodbek\"\nyosh = 25\nprint(f\"{ism} {yosh} yoshda\")\n",
+  "expected_output": "Ozodbek 25 yoshda\n",
   "order": 5,
   "difficulty": "Oson"
  }
@@ -12854,6 +12859,7 @@
   "description": "## Vazifa:\n\nBerilgan ro'yxatdagi sonlarning **yig'indisi** va **o'rtachasini** hisoblab chiqaring.\n\nFoydali funksiyalar: `sum()`, `len()`",
   "initial_code": "sonlar = [12, 45, 7, 23, 56, 89, 34]\n\n# Yig'indi va o'rtachani hisoblang\n",
   "solution_code": "sonlar = [12, 45, 7, 23, 56, 89, 34]\nyigindi = sum(sonlar)\nortacha = yigindi / len(sonlar)\nprint(f\"Yig'indi: {yigindi}\")\nprint(f\"O'rtacha: {ortacha:.2f}\")\n",
+  "expected_output": "Yig'indi: 266\nO'rtacha: 38.00\n",
   "order": 6,
   "difficulty": "Oson"
  }
@@ -12867,6 +12873,7 @@
   "description": "## Vazifa:\n\n`baho(ball)` funksiyasini yozing:\n\n- 90 va undan yuqori — `\"A'lo\"`\n- 70–89 — `\"Yaxshi\"`\n- 50–69 — `\"Qoniqarli\"`\n- 50 dan past — `\"Qoniqarsiz\"`",
   "initial_code": "def baho(ball):\n    # Shartlarni shu yerda yozing\n    pass\n\nfor b in [95, 78, 55, 30]:\n    print(b, \"->\", baho(b))\n",
   "solution_code": "def baho(ball):\n    if ball >= 90:\n        return \"A'lo\"\n    if ball >= 70:\n        return \"Yaxshi\"\n    if ball >= 50:\n        return \"Qoniqarli\"\n    return \"Qoniqarsiz\"\n\nfor b in [95, 78, 55, 30]:\n    print(b, \"->\", baho(b))\n",
+  "expected_output": "95 -> A'lo\n78 -> Yaxshi\n55 -> Qoniqarli\n30 -> Qoniqarsiz\n",
   "order": 7,
   "difficulty": "O'rtacha"
  }
@@ -12880,6 +12887,7 @@
   "description": "## Vazifa:\n\n1 dan 50 gacha bo'lgan sonlar ichidan **3 ga ham, 5 ga ham bo'linadiganlarini** topib chiqaring.\n\nQoldiqni olish: `son % 3 == 0`",
   "initial_code": "# 1 dan 50 gacha aylanib chiqing\n",
   "solution_code": "for son in range(1, 51):\n    if son % 3 == 0 and son % 5 == 0:\n        print(son)\n",
+  "expected_output": "15\n30\n45\n",
   "order": 8,
   "difficulty": "O'rtacha"
  }
@@ -12893,6 +12901,7 @@
   "description": "## Vazifa:\n\nMatndagi har bir **harf nechta marta** uchraganini sanaydigan kod yozing.\n\nMaslahat: lug'at (`dict`) va `.get()` metodidan foydalaning.",
   "initial_code": "matn = \"dasturlash\"\n\n# Har bir harfni sanang\n",
   "solution_code": "matn = \"dasturlash\"\nhisob = {}\nfor harf in matn:\n    hisob[harf] = hisob.get(harf, 0) + 1\n\nfor harf, son in hisob.items():\n    print(f\"{harf}: {son}\")\n",
+  "expected_output": "d: 1\na: 2\ns: 2\nt: 1\nu: 1\nr: 1\nl: 1\nh: 1\n",
   "order": 9,
   "difficulty": "O'rtacha"
  }
@@ -12906,6 +12915,7 @@
   "description": "## Vazifa:\n\n`Talaba` sinfini yarating:\n\n- `__init__` — ism va baholar ro'yxatini qabul qiladi\n- `ortacha()` — o'rtacha bahoni qaytaradi\n- `__str__` — \"Ozodbek: 4.50\" ko'rinishida qaytaradi",
   "initial_code": "class Talaba:\n    def __init__(self, ism, baholar):\n        pass\n\nt = Talaba(\"Ozodbek\", [5, 4, 5, 4])\nprint(t)\n",
   "solution_code": "class Talaba:\n    def __init__(self, ism, baholar):\n        self.ism = ism\n        self.baholar = baholar\n\n    def ortacha(self):\n        return sum(self.baholar) / len(self.baholar)\n\n    def __str__(self):\n        return f\"{self.ism}: {self.ortacha():.2f}\"\n\nt = Talaba(\"Ozodbek\", [5, 4, 5, 4])\nprint(t)\n",
+  "expected_output": "Ozodbek: 4.50\n",
   "order": 10,
   "difficulty": "Qiyin"
  }

@@ -341,18 +341,27 @@ class ChallengeListSerializer(serializers.ModelSerializer):
     va topshiriqning ma'nosi qolmasdi.
     """
 
+    solved = serializers.SerializerMethodField()
+
     class Meta:
         model = Challenge
-        fields = ['id', 'title', 'language', 'difficulty', 'order']
+        fields = ['id', 'title', 'language', 'difficulty', 'order', 'solved']
+
+    def get_solved(self, obj):
+        # ID lar to'plami KO'RINISHDA bir marta olinadi — har
+        # topshiriq uchun alohida so'rov yuborilsa, 10 ta topshiriq
+        # 10 ta so'rovga aylanardi.
+        return obj.id in self.context.get('solved_ids', set())
 
 
 class ChallengeDetailSerializer(ChallengeListSerializer):
     description_html = serializers.SerializerMethodField()
     has_solution = serializers.SerializerMethodField()
+    has_check = serializers.SerializerMethodField()
 
     class Meta(ChallengeListSerializer.Meta):
         fields = ChallengeListSerializer.Meta.fields + [
-            'description_html', 'initial_code', 'has_solution',
+            'description_html', 'initial_code', 'has_solution', 'has_check',
         ]
 
     def get_description_html(self, obj):
@@ -361,6 +370,16 @@ class ChallengeDetailSerializer(ChallengeListSerializer):
     def get_has_solution(self, obj):
         """Yechim BOR-YO'QLIGI aytiladi, yechimning O'ZI emas."""
         return bool((obj.solution_code or '').strip())
+
+    def get_has_check(self, obj):
+        """
+        Tekshirish MUMKINLIGI aytiladi, kutilgan natija EMAS.
+
+        Natijaning o'zi yuborilsa, u sahifa yuklanishidayoq javobga
+        tushib qolar va topshiriqni yechmasdan ko'chirib qo'yish
+        mumkin bo'lardi.
+        """
+        return bool((obj.expected_output or '').strip())
 
 
 # ══════════════════════════ Profil ══════════════════════════

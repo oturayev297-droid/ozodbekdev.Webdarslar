@@ -737,6 +737,16 @@ python manage.py seed_content --force     # borini ustiga yozadi
 hech narsaga tegmasdan chiqadi. Tekshiruvsiz bo'lsa, fixture panel
 orqali kiritilgan o'zgarishlarni har safar bosib ketardi.
 
+Undan keyin `seed_python_challenges` ishlaydi. U yetishmayotgan Python
+topshiriqlarini qo'shadi va MAVJUD topshiriqlarga faqat bitta maydonni —
+kutilgan natijani (`expected_output`) — to'ldiradi, agar u bo'sh bo'lsa.
+
+NEGA ALOHIDA: `seed_content` bazada mazmun bor bo'lsa umuman
+ishlamaydi, ya'ni keyinroq qo'shilgan maydon productionga hech qachon
+yetib bormasdi. Kutilgan natijasiz esa muharrirdagi "Tekshirish"
+tugmasi umuman chiqmaydi. Qolgan maydonlarga tegilmaydi — ular panelda
+tahrirlangan bo'lishi mumkin.
+
 Fixture **foydalanuvchi, obuna, to'lov, sertifikat va karta
 rekvizitlarini o'z ichiga olmaydi** — ular shaxsiy yoki maxfiy.
 Kartani `/panel/` orqali, joyida kiriting.

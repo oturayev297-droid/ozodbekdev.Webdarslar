@@ -234,6 +234,24 @@ class Challenge(models.Model):
     description = models.TextField(help_text="Topshiriq matni (HTML/Markdown qo'llab-quvvatlaydi)")
     initial_code = models.TextField(default="// Kodni shu yerga yozing...", help_text="Muharrirdagi dastlabki kod")
     solution_code = models.TextField(blank=True, help_text="To'g'ri javob kodi (tekshirish uchun)")
+
+    #: Kod TO'G'RI ishlaganda ekranga chiqishi kerak bo'lgan matn.
+    #:
+    #: NEGA KERAK: ilgari o'quvchi kodini ishga tushirar, natijani
+    #: ko'rar va TO'G'RIMI-YO'QMI o'zi taxmin qilardi. Topshiriqning
+    #: javobi yo'q edi — faqat "yechimni ko'rish" tugmasi bor edi va u
+    #: o'rganishning o'rniga ko'chirib olishga undardi.
+    #:
+    #: BO'SH QOLDIRILSA tekshirish o'chadi (`has_check=False`) va
+    #: topshiriq eskisidek ishlaydi. Har bir topshiriqqa kutilgan
+    #: natija yozish shart emas — masalan faqat funksiya e'lon
+    #: qiladigan topshiriq hech narsa chiqarmaydi.
+    expected_output = models.TextField(
+        blank=True,
+        verbose_name="Kutilgan natija",
+        help_text="Kod to'g'ri bo'lsa chiqadigan matn. Bo'sh bo'lsa tekshirish o'chadi.",
+    )
+
     order = models.PositiveIntegerField(default=0)
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='Oson')
 
@@ -242,6 +260,51 @@ class Challenge(models.Model):
 
     class Meta:
         ordering = ['order']
+
+
+class ChallengeProgress(models.Model):
+    """
+    O'quvchi qaysi topshiriqni yechgani.
+
+    NEGA BAZADA, brauzerda emas: o'quvchi telefonda boshlab
+    kompyuterda davom etadi va `localStorage` u yerga ko'chmaydi.
+    Ustiga yechilgan topshiriqlar soni — o'sishning ko'rinadigan
+    o'lchovi, uni yo'qotib qo'yish ma'nosizdi.
+
+    BU IMTIHON EMAS. Natija BRAUZERDAN keladi (kod o'sha yerda
+    ishlaydi), ya'ni uni qo'lda ham yuborish mumkin. Bu ataylab
+    shunday: kodni serverda ijro etish — serverni begona odamga
+    topshirish demak. Sertifikat esa bu yerdan emas, testlardan
+    beriladi va u yerda javoblar mijozga umuman yuborilmaydi.
+    """
+
+    # `'auth.User'` satr ko'rinishida: `User` bu faylda quyiroqda
+    # import qilinadi va bu yerda hali mavjud emas.
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='challenge_progress')
+    challenge = models.ForeignKey(
+        Challenge, on_delete=models.CASCADE, related_name='progress'
+    )
+
+    #: Birinchi marta to'g'ri yechilgan payt. Bo'sh bo'lsa — hali yechilmagan.
+    solved_at = models.DateTimeField(null=True, blank=True)
+
+    #: Nechta marta tekshirishga yuborilgan. Qaysi topshiriq
+    #: qiyinlik qilayotganini shu ko'rsatadi.
+    attempts = models.PositiveIntegerField(default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'challenge')
+        indexes = [
+            models.Index(fields=['user', 'solved_at']),
+        ]
+        verbose_name = "Topshiriq natijasi"
+        verbose_name_plural = "Topshiriq natijalari"
+
+    def __str__(self):
+        holat = 'yechilgan' if self.solved_at else 'yechilmagan'
+        return f"{self.user.username} - {self.challenge.title} ({holat})"
 
 class Profile(models.Model):
     user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='profile')
