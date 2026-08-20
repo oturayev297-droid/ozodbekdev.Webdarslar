@@ -274,6 +274,8 @@ export interface Challenge {
   language: 'python' | 'javascript';
   difficulty: string;
   order: number;
+  /** O'quvchi bu topshiriqni yechganmi (serverda saqlanadi). */
+  solved: boolean;
   // `solution_code` ATAYLAB YO'Q — yechim alohida so'raladi
 }
 
@@ -281,7 +283,23 @@ export interface ChallengeDetail extends Challenge {
   description_html: string;
   initial_code: string;
   has_solution: boolean;
+  /**
+   * Tekshirish sozlanganmi.
+   *
+   * Kutilgan natijaning O'ZI berilmaydi — berilsa, topshiriqni
+   * yechmasdan ko'chirib qo'yish mumkin bo'lardi.
+   */
+  has_check: boolean;
   next_id: number | null;
+}
+
+export interface CheckResult {
+  correct: boolean;
+  detail: string;
+  attempts: number;
+  solved_at?: string | null;
+  /** Faqat BIRINCHI farq qilgan qator — butun javob emas. */
+  diff?: { line: number; expected: string | null; actual: string | null } | null;
 }
 
 export interface MentorMessage {
@@ -458,6 +476,13 @@ export const challenges = {
   detail: (id: number) => api.get<ChallengeDetail>(`/challenges/${id}/`),
   // Yechim FAQAT so'ralganda olinadi
   solution: (id: number) => api.get<{ solution: string }>(`/challenges/${id}/solution/`),
+  /*
+   * Tekshirish SERVERDA. Bu yerdan faqat kodning CHIQARGAN MATNI
+   * ketadi — kodning o'zi emas: u brauzerda ishlaydi va shunday
+   * bo'lib qoladi.
+   */
+  check: (id: number, output: string) =>
+    api.post<CheckResult>(`/challenges/${id}/check/`, { output }),
 };
 
 export const profile = {
