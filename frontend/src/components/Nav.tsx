@@ -41,6 +41,18 @@ export function Nav() {
   const hideAuthLinks =
     pathname === '/' || AUTH_PAGES.some((path) => pathname.startsWith(path));
 
+  /*
+   * Panelda logotipdan boshqa hech narsa qolmagan bo'lsa, u
+   * O'RTAGA turadi. Chapda yolg'iz turgan nom keng ekranda o'ng
+   * tomonni bo'm-bo'sh qoldirardi.
+   *
+   * `user` YUKLANAYOTGANDA ham bo'sh bo'ladi va bu ATAYLAB shunday
+   * hisoblanadi: bu sahifalarga asosan tizimga kirmagan odam
+   * keladi, ya'ni logotip darhol o'z joyida chiziladi va keyin
+   * sakrab ko'chmaydi.
+   */
+  const logoAlone = hideAuthLinks && !user;
+
   async function handleLogout() {
     await logout();
     router.push('/login');
@@ -48,7 +60,11 @@ export function Nav() {
 
   return (
     <nav className="glass border-b border-white/5 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <div
+        className={`max-w-6xl mx-auto px-4 h-16 flex items-center gap-4 ${
+          logoAlone ? 'justify-center' : 'justify-between'
+        }`}
+      >
         <Link href="/" className="font-extrabold text-lg tracking-tight shrink-0">
           ozodbekdev<span className="text-primary">.uz</span>
         </Link>
