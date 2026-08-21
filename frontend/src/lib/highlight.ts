@@ -4,18 +4,13 @@
  * NEGA O'ZIMIZNIKI, tayyor kutubxona emas: CodeMirror yoki Monaco —
  * yuzlab kilobayt va butun boshqa dunyo (o'z holati, o'z DOM i, o'z
  * yangilanish sikli). Bu yerda kerak bo'lgani esa juda oz: o'quvchi
- * satrni koddan, izohni satrdan ajrata olsin. Shu maqsad uchun
- * bir necha o'nlab qator yetadi va u hech qanday bog'liqlik
- * qo'shmaydi.
+ * satrni koddan, izohni satrdan ajrata olsin. Shu maqsad uchun bir
+ * necha o'nlab qator yetadi va u hech qanday bog'liqlik qo'shmaydi.
  *
  * BU TO'LIQ PARSER EMAS va bo'lishi ham shart emas. Eng yomon holat —
- * biror so'z noto'g'ri rangda ko'rinadi. Kodning ISHLASHIGA esa
- * bo'yash umuman ta'sir qilmaydi: u faqat ko'rinish.
- *
- * MATN O'ZGARTIRILMAYDI. Tokenlar matnni BO'LAKLARGA ajratadi,
- * qo'shmaydi va tashlamaydi — birlashtirilganda aynan asl kod
- * qaytadi. Buni test tekshiradi: aks holda muharrirda ko'ringan kod
- * ishga tushadigan kod bilan bir xil bo'lmasdi.
+ * biror so'z noto'g'ri rangda ko'rinadi. Kod esa bundan umuman
+ * o'zgarmaydi: haqiqiy matn har doim `textarea` da turadi, bu yerdagi
+ * bo'laklar faqat KO'RSATISH uchun.
  */
 
 export type TokenType = 'plain' | 'comment' | 'string' | 'number' | 'keyword' | 'builtin';
@@ -52,27 +47,26 @@ const JS_BUILTINS = new Set([
 ]);
 
 /*
- * Bitta katta ifoda, chunki tartib MUHIM: izoh satrdan, satr esa
- * sondan oldin tekshirilishi kerak. Alohida ifodalar bilan bu tartib
- * ko'zdan qochardi.
+ * Bitta ifoda, chunki TARTIB MUHIM: izoh satrdan, satr esa sondan
+ * oldin tekshirilishi kerak. Alohida ifodalar bilan bu tartib ko'zdan
+ * qochardi.
  *
- * `#` — Python izohi, `//` va `/* *\/` — JavaScript izohi. Ikkalasi
- * uchun bitta ifoda ishlatiladi: noto'g'ri tilda uchrasa ham eng
- * yomoni rang xato bo'ladi, xolos.
+ * Guruhlar ketma-ketligi (`tokenize` da shu tartibda o'qiladi):
+ *
+ *   1. Python izohi           #  ...
+ *   2. JavaScript izohi       // ...
+ *   3. JavaScript blok izohi  /* ... *\/
+ *   4. Python ko'p qatorli satri
+ *   5. JavaScript shablon satri
+ *   6. Oddiy satr (bir qatorli)
+ *   7. Son
+ *   8. So'z (kalit so'z / o'rnatilgan nom / oddiy nom)
+ *
+ * Python va JavaScript uchun BITTA ifoda ishlatiladi: naqsh noto'g'ri
+ * tilda uchrasa ham eng yomoni rang xato bo'ladi, xolos.
  */
-const TOKEN_RE = new RegExp(
-  [
-    '(#[^\n]*)',                                   // Python izohi
-    '(//[^\n]*)',                                  // JS izohi
-    '(/\*[\s\S]*?\*/)',                         // JS blok izohi
-    '("""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\')',    // Python ko'p qatorli satri
-    '(`(?:\\.|[^`\\])*`)',                      // JS shablon satri
-    '("(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\')', // oddiy satr
-    '(\b\d+(?:\.\d+)?\b)',                     // son
-    '([A-Za-z_$][A-Za-z0-9_$]*)',                   // so'z
-  ].join('|'),
-  'g',
-);
+const TOKEN_RE =
+  /(#[^\n]*)|(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|("""[\s\S]*?"""|'''[\s\S]*?''')|(`(?:\\.|[^`\\])*`)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][A-Za-z0-9_$]*)/g;
 
 export function tokenize(code: string, language: string): Token[] {
   const keywords = language === 'python' ? PYTHON_KEYWORDS : JS_KEYWORDS;
@@ -88,13 +82,13 @@ export function tokenize(code: string, language: string): Token[] {
   for (const match of code.matchAll(TOKEN_RE)) {
     const index = match.index ?? 0;
     // Naqshga tushmagan bo'lak — qavslar, bo'sh joy, amallar.
-    // U ham QO'SHILADI: tashlab ketilsa kod buzilib ko'rinardi.
+    // U ham QO'SHILADI: tashlab ketilsa kod uzuq-yuluq ko'rinardi.
     push(code.slice(lastIndex, index), 'plain');
 
-    const [text, pyComment, jsComment, jsBlock, pyString, tpl, str, num, word] = match;
+    const [text, pyComment, jsComment, jsBlock, pyString, template, str, num, word] = match;
 
     if (pyComment || jsComment || jsBlock) push(text, 'comment');
-    else if (pyString || tpl || str) push(text, 'string');
+    else if (pyString || template || str) push(text, 'string');
     else if (num) push(text, 'number');
     else if (word) {
       if (keywords.has(word)) push(text, 'keyword');

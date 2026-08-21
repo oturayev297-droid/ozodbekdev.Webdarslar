@@ -96,8 +96,8 @@ async function runPython(code, indexURL) {
 
   // print() chiqishini ushlaymiz. Busiz kod ishlaydi-yu, o'quvchi
   // hech narsa ko'rmaydi.
-  py.setStdout({ batched: (line) => post('output', { chunk: line + '\n' }) });
-  py.setStderr({ batched: (line) => post('output', { chunk: line + '\n' }) });
+  py.setStdout({ batched: (line) => post('output', { chunk: line + '\\n' }) });
+  py.setStderr({ batched: (line) => post('output', { chunk: line + '\\n' }) });
 
   post('started', {});
   await py.runPythonAsync(code);
@@ -106,7 +106,7 @@ async function runPython(code, indexURL) {
 function runJavaScript(code) {
   const original = console.log;
   console.log = (...args) => {
-    post('output', { chunk: args.map(stringify).join(' ') + '\n' });
+    post('output', { chunk: args.map(stringify).join(' ') + '\\n' });
   };
 
   try {
