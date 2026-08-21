@@ -5,6 +5,21 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
+/**
+ * Kirish sahifalari — bu yerda navdagi "Kirish" va "Ro'yxatdan
+ * o'tish" KO'RSATILMAYDI.
+ *
+ * Sahifaning o'zida allaqachon shu ikkalasi bor: forma va uning
+ * tagidagi havola. Navda ham turgani ikki xil noqulaylik tug'dirardi
+ * — logotip yonidagi "Ro'yxatdan o'tish" tugmasi aynan ro'yxatdan
+ * o'tish sahifasida turib "shu yerga o'ting" deb chaqirardi, va
+ * ekranda bir vaqtning o'zida ikkita bir xil tugma ko'rinardi.
+ *
+ * Boshqa sahifalarda ular QOLADI: begona odam saytga kirganda
+ * kirish yo'lini topa olishi kerak.
+ */
+const AUTH_PAGES = ['/login', '/register', '/parolni-tiklash'];
+
 const LINKS = [
   { href: '/dashboard', label: 'Bosh sahifa' },
   { href: '/kurslar', label: 'Kurslar' },
@@ -19,6 +34,8 @@ export function Nav() {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const onAuthPage = AUTH_PAGES.some((path) => pathname.startsWith(path));
 
   async function handleLogout() {
     await logout();
@@ -95,7 +112,7 @@ export function Nav() {
               Menyu
             </button>
           </>
-        ) : (
+        ) : onAuthPage ? null : (
           <div className="flex items-center gap-3 text-sm">
             <Link href="/login" className="text-slate-300 hover:text-white">
               Kirish
