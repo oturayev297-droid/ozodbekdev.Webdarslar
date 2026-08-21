@@ -6,17 +6,20 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
 /**
- * Kirish sahifalari — bu yerda navdagi "Kirish" va "Ro'yxatdan
- * o'tish" KO'RSATILMAYDI.
+ * Bu sahifalarda navdagi "Kirish" va "Ro'yxatdan o'tish"
+ * KO'RSATILMAYDI.
  *
- * Sahifaning o'zida allaqachon shu ikkalasi bor: forma va uning
- * tagidagi havola. Navda ham turgani ikki xil noqulaylik tug'dirardi
- * — logotip yonidagi "Ro'yxatdan o'tish" tugmasi aynan ro'yxatdan
- * o'tish sahifasida turib "shu yerga o'ting" deb chaqirardi, va
- * ekranda bir vaqtning o'zida ikkita bir xil tugma ko'rinardi.
+ * Sabab bitta: o'sha ikkalasi sahifaning O'ZIDA allaqachon bor.
+ * Bosh sahifada ular katta tugmalar bo'lib o'rtada turadi, kirish
+ * va ro'yxatdan o'tish sahifalarida esa forma va uning tagidagi
+ * havola. Navda ham turgani ekranda bir xil tugmani ikki marta
+ * ko'rsatardi — ustiga ro'yxatdan o'tish sahifasining tepasida
+ * "Ro'yxatdan o'tish" tugmasi foydalanuvchini allaqachon turgan
+ * joyiga chaqirardi.
  *
- * Boshqa sahifalarda ular QOLADI: begona odam saytga kirganda
- * kirish yo'lini topa olishi kerak.
+ * BOSH SAHIFA `startsWith` BILAN TEKSHIRILMAYDI: '/' hamma manzilning
+ * boshida turadi va u ro'yxatga qo'shilsa, tugmalar SAYTNING HAMMA
+ * yeridan yo'qolardi.
  */
 const AUTH_PAGES = ['/login', '/register', '/parolni-tiklash'];
 
@@ -35,7 +38,8 @@ export function Nav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const onAuthPage = AUTH_PAGES.some((path) => pathname.startsWith(path));
+  const hideAuthLinks =
+    pathname === '/' || AUTH_PAGES.some((path) => pathname.startsWith(path));
 
   async function handleLogout() {
     await logout();
@@ -112,7 +116,7 @@ export function Nav() {
               Menyu
             </button>
           </>
-        ) : onAuthPage ? null : (
+        ) : hideAuthLinks ? null : (
           <div className="flex items-center gap-3 text-sm">
             <Link href="/login" className="text-slate-300 hover:text-white">
               Kirish
