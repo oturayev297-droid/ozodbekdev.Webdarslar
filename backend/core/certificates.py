@@ -121,7 +121,7 @@ def build_pdf(certificate: Certificate, verify_url: str = "") -> bytes:
     buffer = io.BytesIO()
     c = pdf_canvas.Canvas(buffer, pagesize=landscape(A4))
     c.setTitle(f"Sertifikat {certificate.code}")
-    c.setAuthor("Ozodbek.web")
+    c.setAuthor("ozodbekdev.uz")
 
     ink = HexColor("#0f172a")
     accent = HexColor("#0ea5e9")
@@ -146,7 +146,7 @@ def build_pdf(certificate: Certificate, verify_url: str = "") -> bytes:
     # ── Sarlavha ──
     c.setFillColor(accent)
     c.setFont("Helvetica-Bold", 11)
-    c.drawCentredString(width / 2, height - 30 * mm, "O Z O D B E K . W E B")
+    c.drawCentredString(width / 2, height - 30 * mm, "O Z O D B E K D E V . U Z")
 
     c.setFillColor(muted)
     c.setFont("Helvetica", 9)

@@ -5,7 +5,7 @@ import { Nav } from '@/components/Nav';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Ozodbek.web — Onlayn ta\'lim',
+  title: 'ozodbekdev.uz — Onlayn ta\'lim',
   description: 'Python, Django, React, JavaScript va sun\'iy intellekt kurslari',
 };
 

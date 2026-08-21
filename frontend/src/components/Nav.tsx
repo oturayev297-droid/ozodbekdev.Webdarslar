@@ -29,7 +29,7 @@ export function Nav() {
     <nav className="glass border-b border-white/5 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="font-extrabold text-lg tracking-tight shrink-0">
-          OZODBEK<span className="text-primary">.WEB</span>
+          ozodbekdev<span className="text-primary">.uz</span>
         </Link>
 
         {/*

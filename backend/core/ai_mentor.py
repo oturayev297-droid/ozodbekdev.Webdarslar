@@ -49,7 +49,7 @@ MAX_TOKENS = 4096
 MAX_QUESTION_LENGTH = 2000
 
 
-SYSTEM_PROMPT = """Sen — Ozodbek.web onlayn ta'lim platformasidagi dasturlash o'qituvchisisan.
+SYSTEM_PROMPT = """Sen — ozodbekdev.uz onlayn ta'lim platformasidagi dasturlash o'qituvchisisan.
 
 Platformada to'rt yo'nalish o'qitiladi: Python, Django, JavaScript va React.
 
