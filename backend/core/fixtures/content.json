@@ -1774,366 +1774,6 @@
 },
 {
  "model": "core.question",
- "pk": 287,
- "fields": {
-  "quiz": 5,
-  "text": "16. Django qaysi tilda yozilgan?"
- }
-},
-{
- "model": "core.question",
- "pk": 288,
- "fields": {
-  "quiz": 5,
-  "text": "17. Django arxitekturasi qanday?"
- }
-},
-{
- "model": "core.question",
- "pk": 289,
- "fields": {
-  "quiz": 5,
-  "text": "18. Django loyiha yaratish komandasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 290,
- "fields": {
-  "quiz": 5,
-  "text": "19. manage.py nima uchun kerak?"
- }
-},
-{
- "model": "core.question",
- "pk": 291,
- "fields": {
-  "quiz": 5,
-  "text": "20. Model nima vazifa bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 292,
- "fields": {
-  "quiz": 5,
-  "text": "21. View nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 293,
- "fields": {
-  "quiz": 5,
-  "text": "22. Template ni qaysi tilda yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 294,
- "fields": {
-  "quiz": 5,
-  "text": "23. Migration komandasi:"
- }
-},
-{
- "model": "core.question",
- "pk": 295,
- "fields": {
-  "quiz": 5,
-  "text": "24. Superuser qanday yaratiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 296,
- "fields": {
-  "quiz": 5,
-  "text": "25. urls.py vazifasi nimadan iborat?"
- }
-},
-{
- "model": "core.question",
- "pk": 297,
- "fields": {
-  "quiz": 5,
-  "text": "26. Django ORM nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 298,
- "fields": {
-  "quiz": 5,
-  "text": "27. settings.py qanday fayl?"
- }
-},
-{
- "model": "core.question",
- "pk": 299,
- "fields": {
-  "quiz": 5,
-  "text": "28. CSRF tokenni qayerga qoyiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 300,
- "fields": {
-  "quiz": 5,
-  "text": "29. ForeignKey nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 301,
- "fields": {
-  "quiz": 5,
-  "text": "30. render() funksiyasi qaysi moduldan olingan?"
- }
-},
-{
- "model": "core.question",
- "pk": 302,
- "fields": {
-  "quiz": 6,
-  "text": "1. JavaScript qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 303,
- "fields": {
-  "quiz": 6,
-  "text": "2. O'zgaruvchini e'lon qilish?"
- }
-},
-{
- "model": "core.question",
- "pk": 304,
- "fields": {
-  "quiz": 6,
-  "text": "3. DOM nima degani?"
- }
-},
-{
- "model": "core.question",
- "pk": 305,
- "fields": {
-  "quiz": 6,
-  "text": "4. Id arcqali elementni topish?"
- }
-},
-{
- "model": "core.question",
- "pk": 306,
- "fields": {
-  "quiz": 6,
-  "text": "5. Qaysi biri funksiya?"
- }
-},
-{
- "model": "core.question",
- "pk": 307,
- "fields": {
-  "quiz": 6,
-  "text": "6. console.log nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 308,
- "fields": {
-  "quiz": 6,
-  "text": "7. Array uzunligi qanday topiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 309,
- "fields": {
-  "quiz": 6,
-  "text": "8. Qat'iy tenglikni tekshirish (type bilan)?"
- }
-},
-{
- "model": "core.question",
- "pk": 310,
- "fields": {
-  "quiz": 6,
-  "text": "9. Asinxron so'rov qaysi?"
- }
-},
-{
- "model": "core.question",
- "pk": 311,
- "fields": {
-  "quiz": 6,
-  "text": "10. Arrow funksiyasi ko'rinishi:"
- }
-},
-{
- "model": "core.question",
- "pk": 312,
- "fields": {
-  "quiz": 6,
-  "text": "11. LocalStorage ga malumot yozish?"
- }
-},
-{
- "model": "core.question",
- "pk": 313,
- "fields": {
-  "quiz": 6,
-  "text": "12. Event qo'shish:"
- }
-},
-{
- "model": "core.question",
- "pk": 314,
- "fields": {
-  "quiz": 6,
-  "text": "13. typeof nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 315,
- "fields": {
-  "quiz": 6,
-  "text": "14. setTimeout nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 316,
- "fields": {
-  "quiz": 6,
-  "text": "15. JavaScript asosan qayerda ishlaydi?"
- }
-},
-{
- "model": "core.question",
- "pk": 317,
- "fields": {
-  "quiz": 6,
-  "text": "16. JavaScript qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 318,
- "fields": {
-  "quiz": 6,
-  "text": "17. O'zgaruvchini e'lon qilish?"
- }
-},
-{
- "model": "core.question",
- "pk": 319,
- "fields": {
-  "quiz": 6,
-  "text": "18. DOM nima degani?"
- }
-},
-{
- "model": "core.question",
- "pk": 320,
- "fields": {
-  "quiz": 6,
-  "text": "19. Id arcqali elementni topish?"
- }
-},
-{
- "model": "core.question",
- "pk": 321,
- "fields": {
-  "quiz": 6,
-  "text": "20. Qaysi biri funksiya?"
- }
-},
-{
- "model": "core.question",
- "pk": 322,
- "fields": {
-  "quiz": 6,
-  "text": "21. console.log nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 323,
- "fields": {
-  "quiz": 6,
-  "text": "22. Array uzunligi qanday topiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 324,
- "fields": {
-  "quiz": 6,
-  "text": "23. Qat'iy tenglikni tekshirish (type bilan)?"
- }
-},
-{
- "model": "core.question",
- "pk": 325,
- "fields": {
-  "quiz": 6,
-  "text": "24. Asinxron so'rov qaysi?"
- }
-},
-{
- "model": "core.question",
- "pk": 326,
- "fields": {
-  "quiz": 6,
-  "text": "25. Arrow funksiyasi ko'rinishi:"
- }
-},
-{
- "model": "core.question",
- "pk": 327,
- "fields": {
-  "quiz": 6,
-  "text": "26. LocalStorage ga malumot yozish?"
- }
-},
-{
- "model": "core.question",
- "pk": 328,
- "fields": {
-  "quiz": 6,
-  "text": "27. Event qo'shish:"
- }
-},
-{
- "model": "core.question",
- "pk": 329,
- "fields": {
-  "quiz": 6,
-  "text": "28. typeof nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 330,
- "fields": {
-  "quiz": 6,
-  "text": "29. setTimeout nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 331,
- "fields": {
-  "quiz": 6,
-  "text": "30. JavaScript asosan qayerda ishlaydi?"
- }
-},
-{
- "model": "core.question",
  "pk": 332,
  "fields": {
   "quiz": 7,
@@ -2254,366 +1894,6 @@
 },
 {
  "model": "core.question",
- "pk": 347,
- "fields": {
-  "quiz": 7,
-  "text": "16. JavaScript qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 348,
- "fields": {
-  "quiz": 7,
-  "text": "17. O'zgaruvchini e'lon qilish?"
- }
-},
-{
- "model": "core.question",
- "pk": 349,
- "fields": {
-  "quiz": 7,
-  "text": "18. DOM nima degani?"
- }
-},
-{
- "model": "core.question",
- "pk": 350,
- "fields": {
-  "quiz": 7,
-  "text": "19. Id arcqali elementni topish?"
- }
-},
-{
- "model": "core.question",
- "pk": 351,
- "fields": {
-  "quiz": 7,
-  "text": "20. Qaysi biri funksiya?"
- }
-},
-{
- "model": "core.question",
- "pk": 352,
- "fields": {
-  "quiz": 7,
-  "text": "21. console.log nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 353,
- "fields": {
-  "quiz": 7,
-  "text": "22. Array uzunligi qanday topiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 354,
- "fields": {
-  "quiz": 7,
-  "text": "23. Qat'iy tenglikni tekshirish (type bilan)?"
- }
-},
-{
- "model": "core.question",
- "pk": 355,
- "fields": {
-  "quiz": 7,
-  "text": "24. Asinxron so'rov qaysi?"
- }
-},
-{
- "model": "core.question",
- "pk": 356,
- "fields": {
-  "quiz": 7,
-  "text": "25. Arrow funksiyasi ko'rinishi:"
- }
-},
-{
- "model": "core.question",
- "pk": 357,
- "fields": {
-  "quiz": 7,
-  "text": "26. LocalStorage ga malumot yozish?"
- }
-},
-{
- "model": "core.question",
- "pk": 358,
- "fields": {
-  "quiz": 7,
-  "text": "27. Event qo'shish:"
- }
-},
-{
- "model": "core.question",
- "pk": 359,
- "fields": {
-  "quiz": 7,
-  "text": "28. typeof nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 360,
- "fields": {
-  "quiz": 7,
-  "text": "29. setTimeout nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 361,
- "fields": {
-  "quiz": 7,
-  "text": "30. JavaScript asosan qayerda ishlaydi?"
- }
-},
-{
- "model": "core.question",
- "pk": 362,
- "fields": {
-  "quiz": 8,
-  "text": "1. Python qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 363,
- "fields": {
-  "quiz": 8,
-  "text": "2. Python'da ro'yxatlar qaysi qavslar bilan yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 364,
- "fields": {
-  "quiz": 8,
-  "text": "3. def nima uchun ishlatiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 365,
- "fields": {
-  "quiz": 8,
-  "text": "4. Bo'sh qiymat Python'da qanday belgilanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 366,
- "fields": {
-  "quiz": 8,
-  "text": "5. Python'da tsiklni qanday to'xtatish mumkin?"
- }
-},
-{
- "model": "core.question",
- "pk": 367,
- "fields": {
-  "quiz": 8,
-  "text": "6. Print() funksiyasining vazifasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 368,
- "fields": {
-  "quiz": 8,
-  "text": "7. Qaysi biri ma'lumot turi emas?"
- }
-},
-{
- "model": "core.question",
- "pk": 369,
- "fields": {
-  "quiz": 8,
-  "text": "8. Dictionary qanday qavs bilan boshlanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 370,
- "fields": {
-  "quiz": 8,
-  "text": "9. len() nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 371,
- "fields": {
-  "quiz": 8,
-  "text": "10. try va except nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 372,
- "fields": {
-  "quiz": 8,
-  "text": "11. Class yaratish sozini toping:"
- }
-},
-{
- "model": "core.question",
- "pk": 373,
- "fields": {
-  "quiz": 8,
-  "text": "12. import math nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 374,
- "fields": {
-  "quiz": 8,
-  "text": "13. while nima vazifani bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 375,
- "fields": {
-  "quiz": 8,
-  "text": "14. tuple va listning farqi?"
- }
-},
-{
- "model": "core.question",
- "pk": 376,
- "fields": {
-  "quiz": 8,
-  "text": "15. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 377,
- "fields": {
-  "quiz": 8,
-  "text": "16. Python qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 378,
- "fields": {
-  "quiz": 8,
-  "text": "17. Python'da ro'yxatlar qaysi qavslar bilan yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 379,
- "fields": {
-  "quiz": 8,
-  "text": "18. def nima uchun ishlatiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 380,
- "fields": {
-  "quiz": 8,
-  "text": "19. Bo'sh qiymat Python'da qanday belgilanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 381,
- "fields": {
-  "quiz": 8,
-  "text": "20. Python'da tsiklni qanday to'xtatish mumkin?"
- }
-},
-{
- "model": "core.question",
- "pk": 382,
- "fields": {
-  "quiz": 8,
-  "text": "21. Print() funksiyasining vazifasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 383,
- "fields": {
-  "quiz": 8,
-  "text": "22. Qaysi biri ma'lumot turi emas?"
- }
-},
-{
- "model": "core.question",
- "pk": 384,
- "fields": {
-  "quiz": 8,
-  "text": "23. Dictionary qanday qavs bilan boshlanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 385,
- "fields": {
-  "quiz": 8,
-  "text": "24. len() nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 386,
- "fields": {
-  "quiz": 8,
-  "text": "25. try va except nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 387,
- "fields": {
-  "quiz": 8,
-  "text": "26. Class yaratish sozini toping:"
- }
-},
-{
- "model": "core.question",
- "pk": 388,
- "fields": {
-  "quiz": 8,
-  "text": "27. import math nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 389,
- "fields": {
-  "quiz": 8,
-  "text": "28. while nima vazifani bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 390,
- "fields": {
-  "quiz": 8,
-  "text": "29. tuple va listning farqi?"
- }
-},
-{
- "model": "core.question",
- "pk": 391,
- "fields": {
-  "quiz": 8,
-  "text": "30. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
  "pk": 392,
  "fields": {
   "quiz": 9,
@@ -2730,606 +2010,6 @@
  "fields": {
   "quiz": 9,
   "text": "15. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 407,
- "fields": {
-  "quiz": 9,
-  "text": "16. Python qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 408,
- "fields": {
-  "quiz": 9,
-  "text": "17. Python'da ro'yxatlar qaysi qavslar bilan yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 409,
- "fields": {
-  "quiz": 9,
-  "text": "18. def nima uchun ishlatiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 410,
- "fields": {
-  "quiz": 9,
-  "text": "19. Bo'sh qiymat Python'da qanday belgilanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 411,
- "fields": {
-  "quiz": 9,
-  "text": "20. Python'da tsiklni qanday to'xtatish mumkin?"
- }
-},
-{
- "model": "core.question",
- "pk": 412,
- "fields": {
-  "quiz": 9,
-  "text": "21. Print() funksiyasining vazifasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 413,
- "fields": {
-  "quiz": 9,
-  "text": "22. Qaysi biri ma'lumot turi emas?"
- }
-},
-{
- "model": "core.question",
- "pk": 414,
- "fields": {
-  "quiz": 9,
-  "text": "23. Dictionary qanday qavs bilan boshlanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 415,
- "fields": {
-  "quiz": 9,
-  "text": "24. len() nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 416,
- "fields": {
-  "quiz": 9,
-  "text": "25. try va except nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 417,
- "fields": {
-  "quiz": 9,
-  "text": "26. Class yaratish sozini toping:"
- }
-},
-{
- "model": "core.question",
- "pk": 418,
- "fields": {
-  "quiz": 9,
-  "text": "27. import math nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 419,
- "fields": {
-  "quiz": 9,
-  "text": "28. while nima vazifani bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 420,
- "fields": {
-  "quiz": 9,
-  "text": "29. tuple va listning farqi?"
- }
-},
-{
- "model": "core.question",
- "pk": 421,
- "fields": {
-  "quiz": 9,
-  "text": "30. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 422,
- "fields": {
-  "quiz": 10,
-  "text": "1. Python qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 423,
- "fields": {
-  "quiz": 10,
-  "text": "2. Python'da ro'yxatlar qaysi qavslar bilan yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 424,
- "fields": {
-  "quiz": 10,
-  "text": "3. def nima uchun ishlatiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 425,
- "fields": {
-  "quiz": 10,
-  "text": "4. Bo'sh qiymat Python'da qanday belgilanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 426,
- "fields": {
-  "quiz": 10,
-  "text": "5. Python'da tsiklni qanday to'xtatish mumkin?"
- }
-},
-{
- "model": "core.question",
- "pk": 427,
- "fields": {
-  "quiz": 10,
-  "text": "6. Print() funksiyasining vazifasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 428,
- "fields": {
-  "quiz": 10,
-  "text": "7. Qaysi biri ma'lumot turi emas?"
- }
-},
-{
- "model": "core.question",
- "pk": 429,
- "fields": {
-  "quiz": 10,
-  "text": "8. Dictionary qanday qavs bilan boshlanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 430,
- "fields": {
-  "quiz": 10,
-  "text": "9. len() nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 431,
- "fields": {
-  "quiz": 10,
-  "text": "10. try va except nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 432,
- "fields": {
-  "quiz": 10,
-  "text": "11. Class yaratish sozini toping:"
- }
-},
-{
- "model": "core.question",
- "pk": 433,
- "fields": {
-  "quiz": 10,
-  "text": "12. import math nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 434,
- "fields": {
-  "quiz": 10,
-  "text": "13. while nima vazifani bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 435,
- "fields": {
-  "quiz": 10,
-  "text": "14. tuple va listning farqi?"
- }
-},
-{
- "model": "core.question",
- "pk": 436,
- "fields": {
-  "quiz": 10,
-  "text": "15. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 437,
- "fields": {
-  "quiz": 10,
-  "text": "16. Python qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 438,
- "fields": {
-  "quiz": 10,
-  "text": "17. Python'da ro'yxatlar qaysi qavslar bilan yoziladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 439,
- "fields": {
-  "quiz": 10,
-  "text": "18. def nima uchun ishlatiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 440,
- "fields": {
-  "quiz": 10,
-  "text": "19. Bo'sh qiymat Python'da qanday belgilanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 441,
- "fields": {
-  "quiz": 10,
-  "text": "20. Python'da tsiklni qanday to'xtatish mumkin?"
- }
-},
-{
- "model": "core.question",
- "pk": 442,
- "fields": {
-  "quiz": 10,
-  "text": "21. Print() funksiyasining vazifasi?"
- }
-},
-{
- "model": "core.question",
- "pk": 443,
- "fields": {
-  "quiz": 10,
-  "text": "22. Qaysi biri ma'lumot turi emas?"
- }
-},
-{
- "model": "core.question",
- "pk": 444,
- "fields": {
-  "quiz": 10,
-  "text": "23. Dictionary qanday qavs bilan boshlanadi?"
- }
-},
-{
- "model": "core.question",
- "pk": 445,
- "fields": {
-  "quiz": 10,
-  "text": "24. len() nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 446,
- "fields": {
-  "quiz": 10,
-  "text": "25. try va except nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 447,
- "fields": {
-  "quiz": 10,
-  "text": "26. Class yaratish sozini toping:"
- }
-},
-{
- "model": "core.question",
- "pk": 448,
- "fields": {
-  "quiz": 10,
-  "text": "27. import math nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 449,
- "fields": {
-  "quiz": 10,
-  "text": "28. while nima vazifani bajaradi?"
- }
-},
-{
- "model": "core.question",
- "pk": 450,
- "fields": {
-  "quiz": 10,
-  "text": "29. tuple va listning farqi?"
- }
-},
-{
- "model": "core.question",
- "pk": 451,
- "fields": {
-  "quiz": 10,
-  "text": "30. and, or, not bular nima?"
- }
-},
-{
- "model": "core.question",
- "pk": 452,
- "fields": {
-  "quiz": 11,
-  "text": "1. JavaScript qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 453,
- "fields": {
-  "quiz": 11,
-  "text": "2. O'zgaruvchini e'lon qilish?"
- }
-},
-{
- "model": "core.question",
- "pk": 454,
- "fields": {
-  "quiz": 11,
-  "text": "3. DOM nima degani?"
- }
-},
-{
- "model": "core.question",
- "pk": 455,
- "fields": {
-  "quiz": 11,
-  "text": "4. Id arcqali elementni topish?"
- }
-},
-{
- "model": "core.question",
- "pk": 456,
- "fields": {
-  "quiz": 11,
-  "text": "5. Qaysi biri funksiya?"
- }
-},
-{
- "model": "core.question",
- "pk": 457,
- "fields": {
-  "quiz": 11,
-  "text": "6. console.log nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 458,
- "fields": {
-  "quiz": 11,
-  "text": "7. Array uzunligi qanday topiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 459,
- "fields": {
-  "quiz": 11,
-  "text": "8. Qat'iy tenglikni tekshirish (type bilan)?"
- }
-},
-{
- "model": "core.question",
- "pk": 460,
- "fields": {
-  "quiz": 11,
-  "text": "9. Asinxron so'rov qaysi?"
- }
-},
-{
- "model": "core.question",
- "pk": 461,
- "fields": {
-  "quiz": 11,
-  "text": "10. Arrow funksiyasi ko'rinishi:"
- }
-},
-{
- "model": "core.question",
- "pk": 462,
- "fields": {
-  "quiz": 11,
-  "text": "11. LocalStorage ga malumot yozish?"
- }
-},
-{
- "model": "core.question",
- "pk": 463,
- "fields": {
-  "quiz": 11,
-  "text": "12. Event qo'shish:"
- }
-},
-{
- "model": "core.question",
- "pk": 464,
- "fields": {
-  "quiz": 11,
-  "text": "13. typeof nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 465,
- "fields": {
-  "quiz": 11,
-  "text": "14. setTimeout nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 466,
- "fields": {
-  "quiz": 11,
-  "text": "15. JavaScript asosan qayerda ishlaydi?"
- }
-},
-{
- "model": "core.question",
- "pk": 467,
- "fields": {
-  "quiz": 11,
-  "text": "16. JavaScript qanday til?"
- }
-},
-{
- "model": "core.question",
- "pk": 468,
- "fields": {
-  "quiz": 11,
-  "text": "17. O'zgaruvchini e'lon qilish?"
- }
-},
-{
- "model": "core.question",
- "pk": 469,
- "fields": {
-  "quiz": 11,
-  "text": "18. DOM nima degani?"
- }
-},
-{
- "model": "core.question",
- "pk": 470,
- "fields": {
-  "quiz": 11,
-  "text": "19. Id arcqali elementni topish?"
- }
-},
-{
- "model": "core.question",
- "pk": 471,
- "fields": {
-  "quiz": 11,
-  "text": "20. Qaysi biri funksiya?"
- }
-},
-{
- "model": "core.question",
- "pk": 472,
- "fields": {
-  "quiz": 11,
-  "text": "21. console.log nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 473,
- "fields": {
-  "quiz": 11,
-  "text": "22. Array uzunligi qanday topiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 474,
- "fields": {
-  "quiz": 11,
-  "text": "23. Qat'iy tenglikni tekshirish (type bilan)?"
- }
-},
-{
- "model": "core.question",
- "pk": 475,
- "fields": {
-  "quiz": 11,
-  "text": "24. Asinxron so'rov qaysi?"
- }
-},
-{
- "model": "core.question",
- "pk": 476,
- "fields": {
-  "quiz": 11,
-  "text": "25. Arrow funksiyasi ko'rinishi:"
- }
-},
-{
- "model": "core.question",
- "pk": 477,
- "fields": {
-  "quiz": 11,
-  "text": "26. LocalStorage ga malumot yozish?"
- }
-},
-{
- "model": "core.question",
- "pk": 478,
- "fields": {
-  "quiz": 11,
-  "text": "27. Event qo'shish:"
- }
-},
-{
- "model": "core.question",
- "pk": 479,
- "fields": {
-  "quiz": 11,
-  "text": "28. typeof nima qiladi?"
- }
-},
-{
- "model": "core.question",
- "pk": 480,
- "fields": {
-  "quiz": 11,
-  "text": "29. setTimeout nima uchun?"
- }
-},
-{
- "model": "core.question",
- "pk": 481,
- "fields": {
-  "quiz": 11,
-  "text": "30. JavaScript asosan qayerda ishlaydi?"
  }
 },
 {
@@ -3658,6 +2338,390 @@
  "fields": {
   "quiz": 21,
   "text": "Modelning xato javobi tufayli muammo chiqsa, javobgar kim?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 564,
+ "fields": {
+  "quiz": 8,
+  "text": "1. Dasturlash nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 565,
+ "fields": {
+  "quiz": 8,
+  "text": "2. Python qanday turdagi til?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 566,
+ "fields": {
+  "quiz": 8,
+  "text": "3. Nega Python boshlovchilar uchun qulay?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 567,
+ "fields": {
+  "quiz": 8,
+  "text": "4. Python kodi saqlanadigan fayl kengaytmasi qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 568,
+ "fields": {
+  "quiz": 8,
+  "text": "5. Ekranga matn chiqaradigan funksiya qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 569,
+ "fields": {
+  "quiz": 8,
+  "text": "6. Python qayerlarda ishlatiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 570,
+ "fields": {
+  "quiz": 8,
+  "text": "7. Python'da izoh (kommentariya) qanday yoziladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 571,
+ "fields": {
+  "quiz": 8,
+  "text": "8. print(\"Salom\") qanday natija chiqaradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 572,
+ "fields": {
+  "quiz": 8,
+  "text": "9. Python'da kod bloklari nima bilan ajratiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 573,
+ "fields": {
+  "quiz": 8,
+  "text": "10. Interpretator nima qiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 574,
+ "fields": {
+  "quiz": 8,
+  "text": "11. Python tilini kim yaratgan?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 575,
+ "fields": {
+  "quiz": 8,
+  "text": "12. Dastur xato bersa, birinchi navbatda nima qilinadi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 576,
+ "fields": {
+  "quiz": 10,
+  "text": "1. users = {1: 'Ali', 2: 'Vali'} — bu qanday ma'lumot turi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 577,
+ "fields": {
+  "quiz": 10,
+  "text": "2. Lug'atning faqat kalitlarini qaysi metod qaytaradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 578,
+ "fields": {
+  "quiz": 10,
+  "text": "3. Lug'atning faqat qiymatlarini qaysi metod qaytaradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 579,
+ "fields": {
+  "quiz": 10,
+  "text": "4. for key, value in users.items(): — sikl har qadamda nimani beradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 580,
+ "fields": {
+  "quiz": 10,
+  "text": "5. for x in users: — lug'at bo'ylab oddiy for sikli nimani aylanadi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 581,
+ "fields": {
+  "quiz": 10,
+  "text": "6. sonlar = [3, 1, 2]\nfor s in sonlar:\n    print(s)\nNima chiqadi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 582,
+ "fields": {
+  "quiz": 10,
+  "text": "7. Ro'yxatning oxirgi elementi qanday olinadi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 583,
+ "fields": {
+  "quiz": 10,
+  "text": "8. sonlar = [10, 20, 30, 40] bo'lsa, sonlar[1:3] nima qaytaradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 584,
+ "fields": {
+  "quiz": 10,
+  "text": "9. Ro'yxatda element borligi qanday tekshiriladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 585,
+ "fields": {
+  "quiz": 10,
+  "text": "10. users[3] = 'Hasan' nima qiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 586,
+ "fields": {
+  "quiz": 10,
+  "text": "11. Mavjud bo'lmagan kalitda xato bermasdan qiymat olish usuli qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 587,
+ "fields": {
+  "quiz": 10,
+  "text": "12. for i, harf in enumerate(['a', 'b']): — sikl har qadamda nimani beradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 588,
+ "fields": {
+  "quiz": 11,
+  "text": "1. Ro'yxat oxiriga element qo'shadigan metod qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 589,
+ "fields": {
+  "quiz": 11,
+  "text": "2. mevalar = ['olma']\nmevalar.insert(0, 'nok')\nNatija qanday?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 590,
+ "fields": {
+  "quiz": 11,
+  "text": "3. Elementni QIYMATI bo'yicha o'chiradigan metod qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 591,
+ "fields": {
+  "quiz": 11,
+  "text": "4. pop() argumentsiz chaqirilsa nima qiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 592,
+ "fields": {
+  "quiz": 11,
+  "text": "5. Ro'yxatni o'sish tartibida joyida tartiblaydigan metod qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 593,
+ "fields": {
+  "quiz": 11,
+  "text": "6. sort() va sorted() ning farqi nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 594,
+ "fields": {
+  "quiz": 11,
+  "text": "7. Ro'yxat uzunligi qanday topiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 595,
+ "fields": {
+  "quiz": 11,
+  "text": "8. [1, 2, 2, 3].count(2) natijasi nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 596,
+ "fields": {
+  "quiz": 11,
+  "text": "9. ['a', 'b', 'c'].index('c') natijasi nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 597,
+ "fields": {
+  "quiz": 11,
+  "text": "10. Ro'yxatni teskari tartibga aylantiradigan metod qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 598,
+ "fields": {
+  "quiz": 11,
+  "text": "11. Ro'yxatning barcha elementlarini o'chiradigan metod qaysi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 599,
+ "fields": {
+  "quiz": 11,
+  "text": "12. a = [1, 2]\na.extend([3, 4])\nNatija qanday?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 600,
+ "fields": {
+  "quiz": 6,
+  "text": "1. React nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 601,
+ "fields": {
+  "quiz": 6,
+  "text": "2. React'ni qaysi kompaniya ishlab chiqqan?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 602,
+ "fields": {
+  "quiz": 6,
+  "text": "3. JSX nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 603,
+ "fields": {
+  "quiz": 6,
+  "text": "4. React komponenti nima?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 604,
+ "fields": {
+  "quiz": 6,
+  "text": "5. Komponent nomi qanday yoziladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 605,
+ "fields": {
+  "quiz": 6,
+  "text": "6. Funksional komponent nimani qaytaradi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 606,
+ "fields": {
+  "quiz": 6,
+  "text": "7. Komponentga tashqaridan ma'lumot qanday uzatiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 607,
+ "fields": {
+  "quiz": 6,
+  "text": "8. Komponent ichidagi o'zgaruvchan holat uchun qaysi hook ishlatiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 608,
+ "fields": {
+  "quiz": 6,
+  "text": "9. JSX'da HTML'dagi class atributi qanday yoziladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 609,
+ "fields": {
+  "quiz": 6,
+  "text": "10. JSX ichida JavaScript ifodasi qanday qo'yiladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 610,
+ "fields": {
+  "quiz": 6,
+  "text": "11. Ro'yxatni map() bilan chizganda har bir elementga nima beriladi?"
+ }
+},
+{
+ "model": "core.question",
+ "pk": 611,
+ "fields": {
+  "quiz": 6,
+  "text": "12. Yangi React loyihasini yaratishning zamonaviy usuli qaysi?"
  }
 },
 {
@@ -4197,1626 +3261,6 @@
  "fields": {
   "question": 286,
   "text": "django.urls",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1141,
- "fields": {
-  "question": 287,
-  "text": "Java",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1142,
- "fields": {
-  "question": 287,
-  "text": "Ruby",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1143,
- "fields": {
-  "question": 287,
-  "text": "Python",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1144,
- "fields": {
-  "question": 287,
-  "text": "C++",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1145,
- "fields": {
-  "question": 288,
-  "text": "MVVM",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1146,
- "fields": {
-  "question": 288,
-  "text": "Flux",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1147,
- "fields": {
-  "question": 288,
-  "text": "MVT",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1148,
- "fields": {
-  "question": 288,
-  "text": "MVC",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1149,
- "fields": {
-  "question": 289,
-  "text": "django start",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1150,
- "fields": {
-  "question": 289,
-  "text": "django-admin startproject",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1151,
- "fields": {
-  "question": 289,
-  "text": "python createproject",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1152,
- "fields": {
-  "question": 289,
-  "text": "django create",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1153,
- "fields": {
-  "question": 290,
-  "text": "Fayllarni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1154,
- "fields": {
-  "question": 290,
-  "text": "Loyihani boshqarish komandalari",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1155,
- "fields": {
-  "question": 290,
-  "text": "Foydalanuvchi qoshish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1156,
- "fields": {
-  "question": 290,
-  "text": "CSS ulash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1157,
- "fields": {
-  "question": 291,
-  "text": "Ma'lumotlar bazasi bilan ishlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1158,
- "fields": {
-  "question": 291,
-  "text": "URL ni boglaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1159,
- "fields": {
-  "question": 291,
-  "text": "Xavfsizlik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1160,
- "fields": {
-  "question": 291,
-  "text": "Dizayn chizadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1161,
- "fields": {
-  "question": 292,
-  "text": "Foydalanuvchi sorovini qayta ishlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1162,
- "fields": {
-  "question": 292,
-  "text": "DBga ulanadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1163,
- "fields": {
-  "question": 292,
-  "text": "Dizayn chizadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1164,
- "fields": {
-  "question": 292,
-  "text": "Xavfsizlik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1165,
- "fields": {
-  "question": 293,
-  "text": "HTML/Django Tags",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1166,
- "fields": {
-  "question": 293,
-  "text": "Python",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1167,
- "fields": {
-  "question": 293,
-  "text": "Java",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1168,
- "fields": {
-  "question": 293,
-  "text": "C#",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1169,
- "fields": {
-  "question": 294,
-  "text": "python html.py",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1170,
- "fields": {
-  "question": 294,
-  "text": "python manage.py makemigrations",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1171,
- "fields": {
-  "question": 294,
-  "text": "manage migrate",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1172,
- "fields": {
-  "question": 294,
-  "text": "django migrate",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1173,
- "fields": {
-  "question": 295,
-  "text": "createsuperuser",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1174,
- "fields": {
-  "question": 295,
-  "text": "makemigrations",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1175,
- "fields": {
-  "question": 295,
-  "text": "newadmin",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1176,
- "fields": {
-  "question": 295,
-  "text": "adduser",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1177,
- "fields": {
-  "question": 296,
-  "text": "Baza ulanishi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1178,
- "fields": {
-  "question": 296,
-  "text": "Xatolarni ockarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1179,
- "fields": {
-  "question": 296,
-  "text": "Sahifa manzillarini biriktirish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1180,
- "fields": {
-  "question": 296,
-  "text": "HTML yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1181,
- "fields": {
-  "question": 297,
-  "text": "URL tahlilchisi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1182,
- "fields": {
-  "question": 297,
-  "text": "CSS freymvork",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1183,
- "fields": {
-  "question": 297,
-  "text": "Obyekt va SQL bog'lamasi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1184,
- "fields": {
-  "question": 297,
-  "text": "Dizayn shabloni",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1185,
- "fields": {
-  "question": 298,
-  "text": "Loyiha sozlamalari",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1186,
- "fields": {
-  "question": 298,
-  "text": "Html fayl",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1187,
- "fields": {
-  "question": 298,
-  "text": "Baza logi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1188,
- "fields": {
-  "question": 298,
-  "text": "Url saqlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1189,
- "fields": {
-  "question": 299,
-  "text": "Fayl boshiga",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1190,
- "fields": {
-  "question": 299,
-  "text": "Form ichiga",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1191,
- "fields": {
-  "question": 299,
-  "text": "Url orqasiga",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1192,
- "fields": {
-  "question": 299,
-  "text": "Shart emas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1193,
- "fields": {
-  "question": 300,
-  "text": "CSS class",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1194,
- "fields": {
-  "question": 300,
-  "text": "Yangi ustun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1195,
- "fields": {
-  "question": 300,
-  "text": "Ikki jadvallarni ulovchi kalit",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1196,
- "fields": {
-  "question": 300,
-  "text": "Fayl ulovchisi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1197,
- "fields": {
-  "question": 301,
-  "text": "django.shortcuts",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1198,
- "fields": {
-  "question": 301,
-  "text": "django.urls",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1199,
- "fields": {
-  "question": 301,
-  "text": "django.models",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1200,
- "fields": {
-  "question": 301,
-  "text": "django.views",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1201,
- "fields": {
-  "question": 302,
-  "text": "Kompilyatsion",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1202,
- "fields": {
-  "question": 302,
-  "text": "Front-end dinamik tili",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1203,
- "fields": {
-  "question": 302,
-  "text": "Backend tili",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1204,
- "fields": {
-  "question": 302,
-  "text": "Faqat DB",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1205,
- "fields": {
-  "question": 303,
-  "text": "let",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1206,
- "fields": {
-  "question": 303,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1207,
- "fields": {
-  "question": 303,
-  "text": "None",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1208,
- "fields": {
-  "question": 303,
-  "text": "int",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1209,
- "fields": {
-  "question": 304,
-  "text": "Data Option Modul",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1210,
- "fields": {
-  "question": 304,
-  "text": "Dom URL",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1211,
- "fields": {
-  "question": 304,
-  "text": "Document Object Model",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1212,
- "fields": {
-  "question": 304,
-  "text": "Document Order",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1213,
- "fields": {
-  "question": 305,
-  "text": "getId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1214,
- "fields": {
-  "question": 305,
-  "text": "findId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1215,
- "fields": {
-  "question": 305,
-  "text": "getElementById",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1216,
- "fields": {
-  "question": 305,
-  "text": "selectId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1217,
- "fields": {
-  "question": 306,
-  "text": "f() => ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1218,
- "fields": {
-  "question": 306,
-  "text": "func = ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1219,
- "fields": {
-  "question": 306,
-  "text": "function()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1220,
- "fields": {
-  "question": 306,
-  "text": "def func",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1221,
- "fields": {
-  "question": 307,
-  "text": "HTML yozadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1222,
- "fields": {
-  "question": 307,
-  "text": "Fayl o'qitadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1223,
- "fields": {
-  "question": 307,
-  "text": "Ekranga chiqaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1224,
- "fields": {
-  "question": 307,
-  "text": "Console paneliga ma'lumot chiqaradi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1225,
- "fields": {
-  "question": 308,
-  "text": "array.size()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1226,
- "fields": {
-  "question": 308,
-  "text": "array.len",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1227,
- "fields": {
-  "question": 308,
-  "text": "array.length",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1228,
- "fields": {
-  "question": 308,
-  "text": "length()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1229,
- "fields": {
-  "question": 309,
-  "text": "==",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1230,
- "fields": {
-  "question": 309,
-  "text": "eq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1231,
- "fields": {
-  "question": 309,
-  "text": "=",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1232,
- "fields": {
-  "question": 309,
-  "text": "===",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1233,
- "fields": {
-  "question": 310,
-  "text": "request()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1234,
- "fields": {
-  "question": 310,
-  "text": "pull()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1235,
- "fields": {
-  "question": 310,
-  "text": "fetch()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1236,
- "fields": {
-  "question": 310,
-  "text": "get()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1237,
- "fields": {
-  "question": 311,
-  "text": "function() {}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1238,
- "fields": {
-  "question": 311,
-  "text": "func()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1239,
- "fields": {
-  "question": 311,
-  "text": "() => {}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1240,
- "fields": {
-  "question": 311,
-  "text": "=> function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1241,
- "fields": {
-  "question": 312,
-  "text": "localStorage.add()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1242,
- "fields": {
-  "question": 312,
-  "text": "localStorage.set()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1243,
- "fields": {
-  "question": 312,
-  "text": "setItem()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1244,
- "fields": {
-  "question": 312,
-  "text": "localStorage.setItem()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1245,
- "fields": {
-  "question": 313,
-  "text": "addEvent",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1246,
- "fields": {
-  "question": 313,
-  "text": "addEventListener",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1247,
- "fields": {
-  "question": 313,
-  "text": "onListen",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1248,
- "fields": {
-  "question": 313,
-  "text": "onClick",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1249,
- "fields": {
-  "question": 314,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1250,
- "fields": {
-  "question": 314,
-  "text": "Ma'lumot turini aniqlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1251,
- "fields": {
-  "question": 314,
-  "text": "Class topadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1252,
- "fields": {
-  "question": 314,
-  "text": "Hajmni o'lchaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1253,
- "fields": {
-  "question": 315,
-  "text": "Ma'lum vaqtdan so'ng bajarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1254,
- "fields": {
-  "question": 315,
-  "text": "Vaqtni sanash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1255,
- "fields": {
-  "question": 315,
-  "text": "Tsikl uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1256,
- "fields": {
-  "question": 315,
-  "text": "Darhol bajarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1257,
- "fields": {
-  "question": 316,
-  "text": "Terminal",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1258,
- "fields": {
-  "question": 316,
-  "text": "Brauzer",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1259,
- "fields": {
-  "question": 316,
-  "text": "Database",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1260,
- "fields": {
-  "question": 316,
-  "text": "Server",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1261,
- "fields": {
-  "question": 317,
-  "text": "Backend tili",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1262,
- "fields": {
-  "question": 317,
-  "text": "Front-end dinamik tili",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1263,
- "fields": {
-  "question": 317,
-  "text": "Kompilyatsion",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1264,
- "fields": {
-  "question": 317,
-  "text": "Faqat DB",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1265,
- "fields": {
-  "question": 318,
-  "text": "None",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1266,
- "fields": {
-  "question": 318,
-  "text": "int",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1267,
- "fields": {
-  "question": 318,
-  "text": "let",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1268,
- "fields": {
-  "question": 318,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1269,
- "fields": {
-  "question": 319,
-  "text": "Dom URL",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1270,
- "fields": {
-  "question": 319,
-  "text": "Document Order",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1271,
- "fields": {
-  "question": 319,
-  "text": "Document Object Model",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1272,
- "fields": {
-  "question": 319,
-  "text": "Data Option Modul",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1273,
- "fields": {
-  "question": 320,
-  "text": "findId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1274,
- "fields": {
-  "question": 320,
-  "text": "getElementById",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1275,
- "fields": {
-  "question": 320,
-  "text": "getId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1276,
- "fields": {
-  "question": 320,
-  "text": "selectId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1277,
- "fields": {
-  "question": 321,
-  "text": "f() => ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1278,
- "fields": {
-  "question": 321,
-  "text": "def func",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1279,
- "fields": {
-  "question": 321,
-  "text": "func = ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1280,
- "fields": {
-  "question": 321,
-  "text": "function()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1281,
- "fields": {
-  "question": 322,
-  "text": "Console paneliga ma'lumot chiqaradi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1282,
- "fields": {
-  "question": 322,
-  "text": "HTML yozadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1283,
- "fields": {
-  "question": 322,
-  "text": "Ekranga chiqaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1284,
- "fields": {
-  "question": 322,
-  "text": "Fayl o'qitadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1285,
- "fields": {
-  "question": 323,
-  "text": "array.size()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1286,
- "fields": {
-  "question": 323,
-  "text": "length()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1287,
- "fields": {
-  "question": 323,
-  "text": "array.len",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1288,
- "fields": {
-  "question": 323,
-  "text": "array.length",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1289,
- "fields": {
-  "question": 324,
-  "text": "==",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1290,
- "fields": {
-  "question": 324,
-  "text": "=",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1291,
- "fields": {
-  "question": 324,
-  "text": "eq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1292,
- "fields": {
-  "question": 324,
-  "text": "===",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1293,
- "fields": {
-  "question": 325,
-  "text": "get()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1294,
- "fields": {
-  "question": 325,
-  "text": "fetch()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1295,
- "fields": {
-  "question": 325,
-  "text": "pull()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1296,
- "fields": {
-  "question": 325,
-  "text": "request()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1297,
- "fields": {
-  "question": 326,
-  "text": "function() {}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1298,
- "fields": {
-  "question": 326,
-  "text": "() => {}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1299,
- "fields": {
-  "question": 326,
-  "text": "func()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1300,
- "fields": {
-  "question": 326,
-  "text": "=> function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1301,
- "fields": {
-  "question": 327,
-  "text": "localStorage.setItem()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1302,
- "fields": {
-  "question": 327,
-  "text": "localStorage.add()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1303,
- "fields": {
-  "question": 327,
-  "text": "localStorage.set()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1304,
- "fields": {
-  "question": 327,
-  "text": "setItem()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1305,
- "fields": {
-  "question": 328,
-  "text": "onClick",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1306,
- "fields": {
-  "question": 328,
-  "text": "addEventListener",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1307,
- "fields": {
-  "question": 328,
-  "text": "onListen",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1308,
- "fields": {
-  "question": 328,
-  "text": "addEvent",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1309,
- "fields": {
-  "question": 329,
-  "text": "Ma'lumot turini aniqlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1310,
- "fields": {
-  "question": 329,
-  "text": "Class topadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1311,
- "fields": {
-  "question": 329,
-  "text": "Hajmni o'lchaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1312,
- "fields": {
-  "question": 329,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1313,
- "fields": {
-  "question": 330,
-  "text": "Vaqtni sanash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1314,
- "fields": {
-  "question": 330,
-  "text": "Darhol bajarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1315,
- "fields": {
-  "question": 330,
-  "text": "Ma'lum vaqtdan so'ng bajarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1316,
- "fields": {
-  "question": 330,
-  "text": "Tsikl uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1317,
- "fields": {
-  "question": 331,
-  "text": "Database",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1318,
- "fields": {
-  "question": 331,
-  "text": "Brauzer",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1319,
- "fields": {
-  "question": 331,
-  "text": "Terminal",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1320,
- "fields": {
-  "question": 331,
-  "text": "Server",
   "is_correct": false
  }
 },
@@ -6362,1626 +3806,6 @@
 },
 {
  "model": "core.choice",
- "pk": 1381,
- "fields": {
-  "question": 347,
-  "text": "Backend tili",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1382,
- "fields": {
-  "question": 347,
-  "text": "Front-end dinamik tili",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1383,
- "fields": {
-  "question": 347,
-  "text": "Faqat DB",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1384,
- "fields": {
-  "question": 347,
-  "text": "Kompilyatsion",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1385,
- "fields": {
-  "question": 348,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1386,
- "fields": {
-  "question": 348,
-  "text": "None",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1387,
- "fields": {
-  "question": 348,
-  "text": "let",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1388,
- "fields": {
-  "question": 348,
-  "text": "int",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1389,
- "fields": {
-  "question": 349,
-  "text": "Document Object Model",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1390,
- "fields": {
-  "question": 349,
-  "text": "Data Option Modul",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1391,
- "fields": {
-  "question": 349,
-  "text": "Dom URL",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1392,
- "fields": {
-  "question": 349,
-  "text": "Document Order",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1393,
- "fields": {
-  "question": 350,
-  "text": "getElementById",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1394,
- "fields": {
-  "question": 350,
-  "text": "selectId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1395,
- "fields": {
-  "question": 350,
-  "text": "findId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1396,
- "fields": {
-  "question": 350,
-  "text": "getId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1397,
- "fields": {
-  "question": 351,
-  "text": "func = ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1398,
- "fields": {
-  "question": 351,
-  "text": "f() => ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1399,
- "fields": {
-  "question": 351,
-  "text": "def func",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1400,
- "fields": {
-  "question": 351,
-  "text": "function()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1401,
- "fields": {
-  "question": 352,
-  "text": "Fayl o'qitadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1402,
- "fields": {
-  "question": 352,
-  "text": "HTML yozadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1403,
- "fields": {
-  "question": 352,
-  "text": "Console paneliga ma'lumot chiqaradi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1404,
- "fields": {
-  "question": 352,
-  "text": "Ekranga chiqaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1405,
- "fields": {
-  "question": 353,
-  "text": "array.length",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1406,
- "fields": {
-  "question": 353,
-  "text": "array.size()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1407,
- "fields": {
-  "question": 353,
-  "text": "length()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1408,
- "fields": {
-  "question": 353,
-  "text": "array.len",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1409,
- "fields": {
-  "question": 354,
-  "text": "=",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1410,
- "fields": {
-  "question": 354,
-  "text": "==",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1411,
- "fields": {
-  "question": 354,
-  "text": "eq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1412,
- "fields": {
-  "question": 354,
-  "text": "===",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1413,
- "fields": {
-  "question": 355,
-  "text": "get()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1414,
- "fields": {
-  "question": 355,
-  "text": "request()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1415,
- "fields": {
-  "question": 355,
-  "text": "pull()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1416,
- "fields": {
-  "question": 355,
-  "text": "fetch()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1417,
- "fields": {
-  "question": 356,
-  "text": "() => {}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1418,
- "fields": {
-  "question": 356,
-  "text": "function() {}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1419,
- "fields": {
-  "question": 356,
-  "text": "func()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1420,
- "fields": {
-  "question": 356,
-  "text": "=> function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1421,
- "fields": {
-  "question": 357,
-  "text": "setItem()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1422,
- "fields": {
-  "question": 357,
-  "text": "localStorage.set()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1423,
- "fields": {
-  "question": 357,
-  "text": "localStorage.setItem()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1424,
- "fields": {
-  "question": 357,
-  "text": "localStorage.add()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1425,
- "fields": {
-  "question": 358,
-  "text": "addEventListener",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1426,
- "fields": {
-  "question": 358,
-  "text": "onClick",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1427,
- "fields": {
-  "question": 358,
-  "text": "onListen",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1428,
- "fields": {
-  "question": 358,
-  "text": "addEvent",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1429,
- "fields": {
-  "question": 359,
-  "text": "Ma'lumot turini aniqlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1430,
- "fields": {
-  "question": 359,
-  "text": "Hajmni o'lchaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1431,
- "fields": {
-  "question": 359,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1432,
- "fields": {
-  "question": 359,
-  "text": "Class topadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1433,
- "fields": {
-  "question": 360,
-  "text": "Tsikl uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1434,
- "fields": {
-  "question": 360,
-  "text": "Vaqtni sanash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1435,
- "fields": {
-  "question": 360,
-  "text": "Darhol bajarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1436,
- "fields": {
-  "question": 360,
-  "text": "Ma'lum vaqtdan so'ng bajarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1437,
- "fields": {
-  "question": 361,
-  "text": "Brauzer",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1438,
- "fields": {
-  "question": 361,
-  "text": "Terminal",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1439,
- "fields": {
-  "question": 361,
-  "text": "Database",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1440,
- "fields": {
-  "question": 361,
-  "text": "Server",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1441,
- "fields": {
-  "question": 362,
-  "text": "Kompilyatsiya qilinadigan",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1442,
- "fields": {
-  "question": 362,
-  "text": "Faqat ma'lumotlar bazasi uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1443,
- "fields": {
-  "question": 362,
-  "text": "Faqat web uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1444,
- "fields": {
-  "question": 362,
-  "text": "Obyektga yo'naltirilgan va interpretatsiya qilinadigan",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1445,
- "fields": {
-  "question": 363,
-  "text": "{}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1446,
- "fields": {
-  "question": 363,
-  "text": "[]",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1447,
- "fields": {
-  "question": 363,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1448,
- "fields": {
-  "question": 363,
-  "text": "<>",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1449,
- "fields": {
-  "question": 364,
-  "text": "Sikl yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1450,
- "fields": {
-  "question": 364,
-  "text": "Funksiya yaratish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1451,
- "fields": {
-  "question": 364,
-  "text": "O'zgaruvchi yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1452,
- "fields": {
-  "question": 364,
-  "text": "Class yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1453,
- "fields": {
-  "question": 365,
-  "text": "NaN",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1454,
- "fields": {
-  "question": 365,
-  "text": "undefined",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1455,
- "fields": {
-  "question": 365,
-  "text": "None",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1456,
- "fields": {
-  "question": 365,
-  "text": "null",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1457,
- "fields": {
-  "question": 366,
-  "text": "return",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1458,
- "fields": {
-  "question": 366,
-  "text": "stop",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1459,
- "fields": {
-  "question": 366,
-  "text": "break",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1460,
- "fields": {
-  "question": 366,
-  "text": "exit",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1461,
- "fields": {
-  "question": 367,
-  "text": "Dasturni tugatish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1462,
- "fields": {
-  "question": 367,
-  "text": "Ekranga chiqarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1463,
- "fields": {
-  "question": 367,
-  "text": "O'zgaruvchini saqlash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1464,
- "fields": {
-  "question": 367,
-  "text": "Faylni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1465,
- "fields": {
-  "question": 368,
-  "text": "Variable",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1466,
- "fields": {
-  "question": 368,
-  "text": "Float",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1467,
- "fields": {
-  "question": 368,
-  "text": "Integer",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1468,
- "fields": {
-  "question": 368,
-  "text": "String",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1469,
- "fields": {
-  "question": 369,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1470,
- "fields": {
-  "question": 369,
-  "text": "[]",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1471,
- "fields": {
-  "question": 369,
-  "text": "//",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1472,
- "fields": {
-  "question": 369,
-  "text": "{}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1473,
- "fields": {
-  "question": 370,
-  "text": "Ko'paytiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1474,
- "fields": {
-  "question": 370,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1475,
- "fields": {
-  "question": 370,
-  "text": "Sikl ochadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1476,
- "fields": {
-  "question": 370,
-  "text": "Uzunlikni o'lchaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1477,
- "fields": {
-  "question": 371,
-  "text": "Ro'yxat yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1478,
- "fields": {
-  "question": 371,
-  "text": "Fayl yozish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1479,
- "fields": {
-  "question": 371,
-  "text": "Xatoliklarni ushlash",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1480,
- "fields": {
-  "question": 371,
-  "text": "Funksiya chaqirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1481,
- "fields": {
-  "question": 372,
-  "text": "function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1482,
- "fields": {
-  "question": 372,
-  "text": "class",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1483,
- "fields": {
-  "question": 372,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1484,
- "fields": {
-  "question": 372,
-  "text": "object",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1485,
- "fields": {
-  "question": 373,
-  "text": "String qaytaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1486,
- "fields": {
-  "question": 373,
-  "text": "Matematika modulini ulaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1487,
- "fields": {
-  "question": 373,
-  "text": "Harfni songa otkazadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1488,
- "fields": {
-  "question": 373,
-  "text": "Xato beradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1489,
- "fields": {
-  "question": 374,
-  "text": "sinf yaratadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1490,
- "fields": {
-  "question": 374,
-  "text": "xatoni ushlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1491,
- "fields": {
-  "question": 374,
-  "text": "tsikl",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1492,
- "fields": {
-  "question": 374,
-  "text": "shart tekshiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1493,
- "fields": {
-  "question": 375,
-  "text": "Farqi yoq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1494,
- "fields": {
-  "question": 375,
-  "text": "Tuple o'zgarmas",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1495,
- "fields": {
-  "question": 375,
-  "text": "List tezroq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1496,
- "fields": {
-  "question": 375,
-  "text": "List o'zgarmas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1497,
- "fields": {
-  "question": 376,
-  "text": "Modullar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1498,
- "fields": {
-  "question": 376,
-  "text": "Mantiqiy operatorlar",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1499,
- "fields": {
-  "question": 376,
-  "text": "Matematik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1500,
- "fields": {
-  "question": 376,
-  "text": "Belgilar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1501,
- "fields": {
-  "question": 377,
-  "text": "Kompilyatsiya qilinadigan",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1502,
- "fields": {
-  "question": 377,
-  "text": "Obyektga yo'naltirilgan va interpretatsiya qilinadigan",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1503,
- "fields": {
-  "question": 377,
-  "text": "Faqat web uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1504,
- "fields": {
-  "question": 377,
-  "text": "Faqat ma'lumotlar bazasi uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1505,
- "fields": {
-  "question": 378,
-  "text": "[]",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1506,
- "fields": {
-  "question": 378,
-  "text": "{}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1507,
- "fields": {
-  "question": 378,
-  "text": "<>",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1508,
- "fields": {
-  "question": 378,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1509,
- "fields": {
-  "question": 379,
-  "text": "O'zgaruvchi yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1510,
- "fields": {
-  "question": 379,
-  "text": "Class yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1511,
- "fields": {
-  "question": 379,
-  "text": "Sikl yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1512,
- "fields": {
-  "question": 379,
-  "text": "Funksiya yaratish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1513,
- "fields": {
-  "question": 380,
-  "text": "undefined",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1514,
- "fields": {
-  "question": 380,
-  "text": "null",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1515,
- "fields": {
-  "question": 380,
-  "text": "NaN",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1516,
- "fields": {
-  "question": 380,
-  "text": "None",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1517,
- "fields": {
-  "question": 381,
-  "text": "stop",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1518,
- "fields": {
-  "question": 381,
-  "text": "break",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1519,
- "fields": {
-  "question": 381,
-  "text": "exit",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1520,
- "fields": {
-  "question": 381,
-  "text": "return",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1521,
- "fields": {
-  "question": 382,
-  "text": "Dasturni tugatish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1522,
- "fields": {
-  "question": 382,
-  "text": "Faylni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1523,
- "fields": {
-  "question": 382,
-  "text": "O'zgaruvchini saqlash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1524,
- "fields": {
-  "question": 382,
-  "text": "Ekranga chiqarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1525,
- "fields": {
-  "question": 383,
-  "text": "Float",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1526,
- "fields": {
-  "question": 383,
-  "text": "String",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1527,
- "fields": {
-  "question": 383,
-  "text": "Integer",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1528,
- "fields": {
-  "question": 383,
-  "text": "Variable",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1529,
- "fields": {
-  "question": 384,
-  "text": "[]",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1530,
- "fields": {
-  "question": 384,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1531,
- "fields": {
-  "question": 384,
-  "text": "//",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1532,
- "fields": {
-  "question": 384,
-  "text": "{}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1533,
- "fields": {
-  "question": 385,
-  "text": "Uzunlikni o'lchaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1534,
- "fields": {
-  "question": 385,
-  "text": "Sikl ochadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1535,
- "fields": {
-  "question": 385,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1536,
- "fields": {
-  "question": 385,
-  "text": "Ko'paytiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1537,
- "fields": {
-  "question": 386,
-  "text": "Ro'yxat yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1538,
- "fields": {
-  "question": 386,
-  "text": "Xatoliklarni ushlash",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1539,
- "fields": {
-  "question": 386,
-  "text": "Fayl yozish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1540,
- "fields": {
-  "question": 386,
-  "text": "Funksiya chaqirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1541,
- "fields": {
-  "question": 387,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1542,
- "fields": {
-  "question": 387,
-  "text": "object",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1543,
- "fields": {
-  "question": 387,
-  "text": "function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1544,
- "fields": {
-  "question": 387,
-  "text": "class",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1545,
- "fields": {
-  "question": 388,
-  "text": "Matematika modulini ulaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1546,
- "fields": {
-  "question": 388,
-  "text": "Xato beradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1547,
- "fields": {
-  "question": 388,
-  "text": "String qaytaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1548,
- "fields": {
-  "question": 388,
-  "text": "Harfni songa otkazadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1549,
- "fields": {
-  "question": 389,
-  "text": "xatoni ushlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1550,
- "fields": {
-  "question": 389,
-  "text": "shart tekshiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1551,
- "fields": {
-  "question": 389,
-  "text": "tsikl",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1552,
- "fields": {
-  "question": 389,
-  "text": "sinf yaratadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1553,
- "fields": {
-  "question": 390,
-  "text": "Tuple o'zgarmas",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1554,
- "fields": {
-  "question": 390,
-  "text": "Farqi yoq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1555,
- "fields": {
-  "question": 390,
-  "text": "List tezroq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1556,
- "fields": {
-  "question": 390,
-  "text": "List o'zgarmas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1557,
- "fields": {
-  "question": 391,
-  "text": "Mantiqiy operatorlar",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1558,
- "fields": {
-  "question": 391,
-  "text": "Matematik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1559,
- "fields": {
-  "question": 391,
-  "text": "Modullar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1560,
- "fields": {
-  "question": 391,
-  "text": "Belgilar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
  "pk": 1561,
  "fields": {
   "question": 392,
@@ -8518,2706 +4342,6 @@
   "question": 406,
   "text": "Modullar",
   "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1621,
- "fields": {
-  "question": 407,
-  "text": "Faqat ma'lumotlar bazasi uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1622,
- "fields": {
-  "question": 407,
-  "text": "Obyektga yo'naltirilgan va interpretatsiya qilinadigan",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1623,
- "fields": {
-  "question": 407,
-  "text": "Kompilyatsiya qilinadigan",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1624,
- "fields": {
-  "question": 407,
-  "text": "Faqat web uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1625,
- "fields": {
-  "question": 408,
-  "text": "{}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1626,
- "fields": {
-  "question": 408,
-  "text": "[]",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1627,
- "fields": {
-  "question": 408,
-  "text": "<>",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1628,
- "fields": {
-  "question": 408,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1629,
- "fields": {
-  "question": 409,
-  "text": "Class yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1630,
- "fields": {
-  "question": 409,
-  "text": "Funksiya yaratish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1631,
- "fields": {
-  "question": 409,
-  "text": "O'zgaruvchi yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1632,
- "fields": {
-  "question": 409,
-  "text": "Sikl yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1633,
- "fields": {
-  "question": 410,
-  "text": "NaN",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1634,
- "fields": {
-  "question": 410,
-  "text": "undefined",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1635,
- "fields": {
-  "question": 410,
-  "text": "null",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1636,
- "fields": {
-  "question": 410,
-  "text": "None",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1637,
- "fields": {
-  "question": 411,
-  "text": "stop",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1638,
- "fields": {
-  "question": 411,
-  "text": "break",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1639,
- "fields": {
-  "question": 411,
-  "text": "exit",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1640,
- "fields": {
-  "question": 411,
-  "text": "return",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1641,
- "fields": {
-  "question": 412,
-  "text": "Dasturni tugatish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1642,
- "fields": {
-  "question": 412,
-  "text": "Ekranga chiqarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1643,
- "fields": {
-  "question": 412,
-  "text": "O'zgaruvchini saqlash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1644,
- "fields": {
-  "question": 412,
-  "text": "Faylni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1645,
- "fields": {
-  "question": 413,
-  "text": "Variable",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1646,
- "fields": {
-  "question": 413,
-  "text": "Float",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1647,
- "fields": {
-  "question": 413,
-  "text": "Integer",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1648,
- "fields": {
-  "question": 413,
-  "text": "String",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1649,
- "fields": {
-  "question": 414,
-  "text": "[]",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1650,
- "fields": {
-  "question": 414,
-  "text": "{}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1651,
- "fields": {
-  "question": 414,
-  "text": "//",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1652,
- "fields": {
-  "question": 414,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1653,
- "fields": {
-  "question": 415,
-  "text": "Ko'paytiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1654,
- "fields": {
-  "question": 415,
-  "text": "Sikl ochadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1655,
- "fields": {
-  "question": 415,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1656,
- "fields": {
-  "question": 415,
-  "text": "Uzunlikni o'lchaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1657,
- "fields": {
-  "question": 416,
-  "text": "Funksiya chaqirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1658,
- "fields": {
-  "question": 416,
-  "text": "Ro'yxat yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1659,
- "fields": {
-  "question": 416,
-  "text": "Xatoliklarni ushlash",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1660,
- "fields": {
-  "question": 416,
-  "text": "Fayl yozish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1661,
- "fields": {
-  "question": 417,
-  "text": "function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1662,
- "fields": {
-  "question": 417,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1663,
- "fields": {
-  "question": 417,
-  "text": "object",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1664,
- "fields": {
-  "question": 417,
-  "text": "class",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1665,
- "fields": {
-  "question": 418,
-  "text": "String qaytaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1666,
- "fields": {
-  "question": 418,
-  "text": "Matematika modulini ulaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1667,
- "fields": {
-  "question": 418,
-  "text": "Harfni songa otkazadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1668,
- "fields": {
-  "question": 418,
-  "text": "Xato beradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1669,
- "fields": {
-  "question": 419,
-  "text": "tsikl",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1670,
- "fields": {
-  "question": 419,
-  "text": "sinf yaratadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1671,
- "fields": {
-  "question": 419,
-  "text": "xatoni ushlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1672,
- "fields": {
-  "question": 419,
-  "text": "shart tekshiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1673,
- "fields": {
-  "question": 420,
-  "text": "List o'zgarmas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1674,
- "fields": {
-  "question": 420,
-  "text": "List tezroq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1675,
- "fields": {
-  "question": 420,
-  "text": "Tuple o'zgarmas",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1676,
- "fields": {
-  "question": 420,
-  "text": "Farqi yoq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1677,
- "fields": {
-  "question": 421,
-  "text": "Matematik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1678,
- "fields": {
-  "question": 421,
-  "text": "Modullar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1679,
- "fields": {
-  "question": 421,
-  "text": "Mantiqiy operatorlar",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1680,
- "fields": {
-  "question": 421,
-  "text": "Belgilar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1681,
- "fields": {
-  "question": 422,
-  "text": "Faqat web uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1682,
- "fields": {
-  "question": 422,
-  "text": "Kompilyatsiya qilinadigan",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1683,
- "fields": {
-  "question": 422,
-  "text": "Faqat ma'lumotlar bazasi uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1684,
- "fields": {
-  "question": 422,
-  "text": "Obyektga yo'naltirilgan va interpretatsiya qilinadigan",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1685,
- "fields": {
-  "question": 423,
-  "text": "<>",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1686,
- "fields": {
-  "question": 423,
-  "text": "{}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1687,
- "fields": {
-  "question": 423,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1688,
- "fields": {
-  "question": 423,
-  "text": "[]",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1689,
- "fields": {
-  "question": 424,
-  "text": "O'zgaruvchi yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1690,
- "fields": {
-  "question": 424,
-  "text": "Class yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1691,
- "fields": {
-  "question": 424,
-  "text": "Funksiya yaratish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1692,
- "fields": {
-  "question": 424,
-  "text": "Sikl yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1693,
- "fields": {
-  "question": 425,
-  "text": "NaN",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1694,
- "fields": {
-  "question": 425,
-  "text": "null",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1695,
- "fields": {
-  "question": 425,
-  "text": "undefined",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1696,
- "fields": {
-  "question": 425,
-  "text": "None",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1697,
- "fields": {
-  "question": 426,
-  "text": "break",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1698,
- "fields": {
-  "question": 426,
-  "text": "return",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1699,
- "fields": {
-  "question": 426,
-  "text": "exit",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1700,
- "fields": {
-  "question": 426,
-  "text": "stop",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1701,
- "fields": {
-  "question": 427,
-  "text": "Faylni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1702,
- "fields": {
-  "question": 427,
-  "text": "Dasturni tugatish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1703,
- "fields": {
-  "question": 427,
-  "text": "Ekranga chiqarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1704,
- "fields": {
-  "question": 427,
-  "text": "O'zgaruvchini saqlash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1705,
- "fields": {
-  "question": 428,
-  "text": "Variable",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1706,
- "fields": {
-  "question": 428,
-  "text": "Integer",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1707,
- "fields": {
-  "question": 428,
-  "text": "Float",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1708,
- "fields": {
-  "question": 428,
-  "text": "String",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1709,
- "fields": {
-  "question": 429,
-  "text": "//",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1710,
- "fields": {
-  "question": 429,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1711,
- "fields": {
-  "question": 429,
-  "text": "{}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1712,
- "fields": {
-  "question": 429,
-  "text": "[]",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1713,
- "fields": {
-  "question": 430,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1714,
- "fields": {
-  "question": 430,
-  "text": "Sikl ochadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1715,
- "fields": {
-  "question": 430,
-  "text": "Uzunlikni o'lchaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1716,
- "fields": {
-  "question": 430,
-  "text": "Ko'paytiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1717,
- "fields": {
-  "question": 431,
-  "text": "Funksiya chaqirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1718,
- "fields": {
-  "question": 431,
-  "text": "Xatoliklarni ushlash",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1719,
- "fields": {
-  "question": 431,
-  "text": "Ro'yxat yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1720,
- "fields": {
-  "question": 431,
-  "text": "Fayl yozish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1721,
- "fields": {
-  "question": 432,
-  "text": "object",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1722,
- "fields": {
-  "question": 432,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1723,
- "fields": {
-  "question": 432,
-  "text": "class",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1724,
- "fields": {
-  "question": 432,
-  "text": "function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1725,
- "fields": {
-  "question": 433,
-  "text": "Harfni songa otkazadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1726,
- "fields": {
-  "question": 433,
-  "text": "String qaytaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1727,
- "fields": {
-  "question": 433,
-  "text": "Matematika modulini ulaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1728,
- "fields": {
-  "question": 433,
-  "text": "Xato beradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1729,
- "fields": {
-  "question": 434,
-  "text": "tsikl",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1730,
- "fields": {
-  "question": 434,
-  "text": "xatoni ushlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1731,
- "fields": {
-  "question": 434,
-  "text": "shart tekshiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1732,
- "fields": {
-  "question": 434,
-  "text": "sinf yaratadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1733,
- "fields": {
-  "question": 435,
-  "text": "Tuple o'zgarmas",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1734,
- "fields": {
-  "question": 435,
-  "text": "List o'zgarmas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1735,
- "fields": {
-  "question": 435,
-  "text": "Farqi yoq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1736,
- "fields": {
-  "question": 435,
-  "text": "List tezroq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1737,
- "fields": {
-  "question": 436,
-  "text": "Matematik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1738,
- "fields": {
-  "question": 436,
-  "text": "Mantiqiy operatorlar",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1739,
- "fields": {
-  "question": 436,
-  "text": "Belgilar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1740,
- "fields": {
-  "question": 436,
-  "text": "Modullar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1741,
- "fields": {
-  "question": 437,
-  "text": "Kompilyatsiya qilinadigan",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1742,
- "fields": {
-  "question": 437,
-  "text": "Faqat ma'lumotlar bazasi uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1743,
- "fields": {
-  "question": 437,
-  "text": "Faqat web uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1744,
- "fields": {
-  "question": 437,
-  "text": "Obyektga yo'naltirilgan va interpretatsiya qilinadigan",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1745,
- "fields": {
-  "question": 438,
-  "text": "[]",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1746,
- "fields": {
-  "question": 438,
-  "text": "{}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1747,
- "fields": {
-  "question": 438,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1748,
- "fields": {
-  "question": 438,
-  "text": "<>",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1749,
- "fields": {
-  "question": 439,
-  "text": "Funksiya yaratish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1750,
- "fields": {
-  "question": 439,
-  "text": "Sikl yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1751,
- "fields": {
-  "question": 439,
-  "text": "O'zgaruvchi yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1752,
- "fields": {
-  "question": 439,
-  "text": "Class yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1753,
- "fields": {
-  "question": 440,
-  "text": "None",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1754,
- "fields": {
-  "question": 440,
-  "text": "null",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1755,
- "fields": {
-  "question": 440,
-  "text": "undefined",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1756,
- "fields": {
-  "question": 440,
-  "text": "NaN",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1757,
- "fields": {
-  "question": 441,
-  "text": "stop",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1758,
- "fields": {
-  "question": 441,
-  "text": "exit",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1759,
- "fields": {
-  "question": 441,
-  "text": "break",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1760,
- "fields": {
-  "question": 441,
-  "text": "return",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1761,
- "fields": {
-  "question": 442,
-  "text": "O'zgaruvchini saqlash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1762,
- "fields": {
-  "question": 442,
-  "text": "Faylni o'chirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1763,
- "fields": {
-  "question": 442,
-  "text": "Dasturni tugatish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1764,
- "fields": {
-  "question": 442,
-  "text": "Ekranga chiqarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1765,
- "fields": {
-  "question": 443,
-  "text": "Float",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1766,
- "fields": {
-  "question": 443,
-  "text": "Variable",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1767,
- "fields": {
-  "question": 443,
-  "text": "Integer",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1768,
- "fields": {
-  "question": 443,
-  "text": "String",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1769,
- "fields": {
-  "question": 444,
-  "text": "{}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1770,
- "fields": {
-  "question": 444,
-  "text": "//",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1771,
- "fields": {
-  "question": 444,
-  "text": "()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1772,
- "fields": {
-  "question": 444,
-  "text": "[]",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1773,
- "fields": {
-  "question": 445,
-  "text": "Uzunlikni o'lchaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1774,
- "fields": {
-  "question": 445,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1775,
- "fields": {
-  "question": 445,
-  "text": "Sikl ochadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1776,
- "fields": {
-  "question": 445,
-  "text": "Ko'paytiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1777,
- "fields": {
-  "question": 446,
-  "text": "Fayl yozish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1778,
- "fields": {
-  "question": 446,
-  "text": "Funksiya chaqirish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1779,
- "fields": {
-  "question": 446,
-  "text": "Ro'yxat yaratish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1780,
- "fields": {
-  "question": 446,
-  "text": "Xatoliklarni ushlash",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1781,
- "fields": {
-  "question": 447,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1782,
- "fields": {
-  "question": 447,
-  "text": "class",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1783,
- "fields": {
-  "question": 447,
-  "text": "object",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1784,
- "fields": {
-  "question": 447,
-  "text": "function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1785,
- "fields": {
-  "question": 448,
-  "text": "Harfni songa otkazadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1786,
- "fields": {
-  "question": 448,
-  "text": "Matematika modulini ulaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1787,
- "fields": {
-  "question": 448,
-  "text": "Xato beradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1788,
- "fields": {
-  "question": 448,
-  "text": "String qaytaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1789,
- "fields": {
-  "question": 449,
-  "text": "tsikl",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1790,
- "fields": {
-  "question": 449,
-  "text": "shart tekshiradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1791,
- "fields": {
-  "question": 449,
-  "text": "sinf yaratadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1792,
- "fields": {
-  "question": 449,
-  "text": "xatoni ushlaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1793,
- "fields": {
-  "question": 450,
-  "text": "Tuple o'zgarmas",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1794,
- "fields": {
-  "question": 450,
-  "text": "Farqi yoq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1795,
- "fields": {
-  "question": 450,
-  "text": "List tezroq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1796,
- "fields": {
-  "question": 450,
-  "text": "List o'zgarmas",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1797,
- "fields": {
-  "question": 451,
-  "text": "Belgilar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1798,
- "fields": {
-  "question": 451,
-  "text": "Mantiqiy operatorlar",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1799,
- "fields": {
-  "question": 451,
-  "text": "Modullar",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1800,
- "fields": {
-  "question": 451,
-  "text": "Matematik",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1801,
- "fields": {
-  "question": 452,
-  "text": "Front-end dinamik tili",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1802,
- "fields": {
-  "question": 452,
-  "text": "Faqat DB",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1803,
- "fields": {
-  "question": 452,
-  "text": "Kompilyatsion",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1804,
- "fields": {
-  "question": 452,
-  "text": "Backend tili",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1805,
- "fields": {
-  "question": 453,
-  "text": "int",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1806,
- "fields": {
-  "question": 453,
-  "text": "let",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1807,
- "fields": {
-  "question": 453,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1808,
- "fields": {
-  "question": 453,
-  "text": "None",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1809,
- "fields": {
-  "question": 454,
-  "text": "Data Option Modul",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1810,
- "fields": {
-  "question": 454,
-  "text": "Dom URL",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1811,
- "fields": {
-  "question": 454,
-  "text": "Document Object Model",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1812,
- "fields": {
-  "question": 454,
-  "text": "Document Order",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1813,
- "fields": {
-  "question": 455,
-  "text": "selectId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1814,
- "fields": {
-  "question": 455,
-  "text": "getId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1815,
- "fields": {
-  "question": 455,
-  "text": "findId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1816,
- "fields": {
-  "question": 455,
-  "text": "getElementById",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1817,
- "fields": {
-  "question": 456,
-  "text": "f() => ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1818,
- "fields": {
-  "question": 456,
-  "text": "func = ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1819,
- "fields": {
-  "question": 456,
-  "text": "function()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1820,
- "fields": {
-  "question": 456,
-  "text": "def func",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1821,
- "fields": {
-  "question": 457,
-  "text": "HTML yozadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1822,
- "fields": {
-  "question": 457,
-  "text": "Console paneliga ma'lumot chiqaradi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1823,
- "fields": {
-  "question": 457,
-  "text": "Fayl o'qitadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1824,
- "fields": {
-  "question": 457,
-  "text": "Ekranga chiqaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1825,
- "fields": {
-  "question": 458,
-  "text": "length()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1826,
- "fields": {
-  "question": 458,
-  "text": "array.length",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1827,
- "fields": {
-  "question": 458,
-  "text": "array.size()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1828,
- "fields": {
-  "question": 458,
-  "text": "array.len",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1829,
- "fields": {
-  "question": 459,
-  "text": "==",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1830,
- "fields": {
-  "question": 459,
-  "text": "eq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1831,
- "fields": {
-  "question": 459,
-  "text": "=",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1832,
- "fields": {
-  "question": 459,
-  "text": "===",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1833,
- "fields": {
-  "question": 460,
-  "text": "request()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1834,
- "fields": {
-  "question": 460,
-  "text": "fetch()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1835,
- "fields": {
-  "question": 460,
-  "text": "pull()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1836,
- "fields": {
-  "question": 460,
-  "text": "get()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1837,
- "fields": {
-  "question": 461,
-  "text": "func()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1838,
- "fields": {
-  "question": 461,
-  "text": "() => {}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1839,
- "fields": {
-  "question": 461,
-  "text": "function() {}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1840,
- "fields": {
-  "question": 461,
-  "text": "=> function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1841,
- "fields": {
-  "question": 462,
-  "text": "localStorage.add()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1842,
- "fields": {
-  "question": 462,
-  "text": "localStorage.setItem()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1843,
- "fields": {
-  "question": 462,
-  "text": "localStorage.set()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1844,
- "fields": {
-  "question": 462,
-  "text": "setItem()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1845,
- "fields": {
-  "question": 463,
-  "text": "addEventListener",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1846,
- "fields": {
-  "question": 463,
-  "text": "addEvent",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1847,
- "fields": {
-  "question": 463,
-  "text": "onClick",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1848,
- "fields": {
-  "question": 463,
-  "text": "onListen",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1849,
- "fields": {
-  "question": 464,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1850,
- "fields": {
-  "question": 464,
-  "text": "Class topadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1851,
- "fields": {
-  "question": 464,
-  "text": "Ma'lumot turini aniqlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1852,
- "fields": {
-  "question": 464,
-  "text": "Hajmni o'lchaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1853,
- "fields": {
-  "question": 465,
-  "text": "Darhol bajarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1854,
- "fields": {
-  "question": 465,
-  "text": "Tsikl uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1855,
- "fields": {
-  "question": 465,
-  "text": "Vaqtni sanash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1856,
- "fields": {
-  "question": 465,
-  "text": "Ma'lum vaqtdan so'ng bajarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1857,
- "fields": {
-  "question": 466,
-  "text": "Brauzer",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1858,
- "fields": {
-  "question": 466,
-  "text": "Terminal",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1859,
- "fields": {
-  "question": 466,
-  "text": "Database",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1860,
- "fields": {
-  "question": 466,
-  "text": "Server",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1861,
- "fields": {
-  "question": 467,
-  "text": "Kompilyatsion",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1862,
- "fields": {
-  "question": 467,
-  "text": "Backend tili",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1863,
- "fields": {
-  "question": 467,
-  "text": "Front-end dinamik tili",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1864,
- "fields": {
-  "question": 467,
-  "text": "Faqat DB",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1865,
- "fields": {
-  "question": 468,
-  "text": "let",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1866,
- "fields": {
-  "question": 468,
-  "text": "None",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1867,
- "fields": {
-  "question": 468,
-  "text": "def",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1868,
- "fields": {
-  "question": 468,
-  "text": "int",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1869,
- "fields": {
-  "question": 469,
-  "text": "Dom URL",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1870,
- "fields": {
-  "question": 469,
-  "text": "Document Order",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1871,
- "fields": {
-  "question": 469,
-  "text": "Data Option Modul",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1872,
- "fields": {
-  "question": 469,
-  "text": "Document Object Model",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1873,
- "fields": {
-  "question": 470,
-  "text": "getId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1874,
- "fields": {
-  "question": 470,
-  "text": "selectId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1875,
- "fields": {
-  "question": 470,
-  "text": "getElementById",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1876,
- "fields": {
-  "question": 470,
-  "text": "findId",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1877,
- "fields": {
-  "question": 471,
-  "text": "function()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1878,
- "fields": {
-  "question": 471,
-  "text": "func = ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1879,
- "fields": {
-  "question": 471,
-  "text": "def func",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1880,
- "fields": {
-  "question": 471,
-  "text": "f() => ()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1881,
- "fields": {
-  "question": 472,
-  "text": "HTML yozadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1882,
- "fields": {
-  "question": 472,
-  "text": "Ekranga chiqaradi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1883,
- "fields": {
-  "question": 472,
-  "text": "Fayl o'qitadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1884,
- "fields": {
-  "question": 472,
-  "text": "Console paneliga ma'lumot chiqaradi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1885,
- "fields": {
-  "question": 473,
-  "text": "array.length",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1886,
- "fields": {
-  "question": 473,
-  "text": "length()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1887,
- "fields": {
-  "question": 473,
-  "text": "array.size()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1888,
- "fields": {
-  "question": 473,
-  "text": "array.len",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1889,
- "fields": {
-  "question": 474,
-  "text": "==",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1890,
- "fields": {
-  "question": 474,
-  "text": "eq",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1891,
- "fields": {
-  "question": 474,
-  "text": "=",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1892,
- "fields": {
-  "question": 474,
-  "text": "===",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1893,
- "fields": {
-  "question": 475,
-  "text": "request()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1894,
- "fields": {
-  "question": 475,
-  "text": "pull()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1895,
- "fields": {
-  "question": 475,
-  "text": "fetch()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1896,
- "fields": {
-  "question": 475,
-  "text": "get()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1897,
- "fields": {
-  "question": 476,
-  "text": "func()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1898,
- "fields": {
-  "question": 476,
-  "text": "=> function",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1899,
- "fields": {
-  "question": 476,
-  "text": "function() {}",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1900,
- "fields": {
-  "question": 476,
-  "text": "() => {}",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1901,
- "fields": {
-  "question": 477,
-  "text": "setItem()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1902,
- "fields": {
-  "question": 477,
-  "text": "localStorage.add()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1903,
- "fields": {
-  "question": 477,
-  "text": "localStorage.set()",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1904,
- "fields": {
-  "question": 477,
-  "text": "localStorage.setItem()",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1905,
- "fields": {
-  "question": 478,
-  "text": "addEventListener",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1906,
- "fields": {
-  "question": 478,
-  "text": "onListen",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1907,
- "fields": {
-  "question": 478,
-  "text": "onClick",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1908,
- "fields": {
-  "question": 478,
-  "text": "addEvent",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1909,
- "fields": {
-  "question": 479,
-  "text": "Ma'lumot turini aniqlaydi",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1910,
- "fields": {
-  "question": 479,
-  "text": "Qo'shadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1911,
- "fields": {
-  "question": 479,
-  "text": "Hajmni o'lchaydi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1912,
- "fields": {
-  "question": 479,
-  "text": "Class topadi",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1913,
- "fields": {
-  "question": 480,
-  "text": "Tsikl uchun",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1914,
- "fields": {
-  "question": 480,
-  "text": "Ma'lum vaqtdan so'ng bajarish",
-  "is_correct": true
- }
-},
-{
- "model": "core.choice",
- "pk": 1915,
- "fields": {
-  "question": 480,
-  "text": "Darhol bajarish",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1916,
- "fields": {
-  "question": 480,
-  "text": "Vaqtni sanash",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1917,
- "fields": {
-  "question": 481,
-  "text": "Server",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1918,
- "fields": {
-  "question": 481,
-  "text": "Database",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1919,
- "fields": {
-  "question": 481,
-  "text": "Terminal",
-  "is_correct": false
- }
-},
-{
- "model": "core.choice",
- "pk": 1920,
- "fields": {
-  "question": 481,
-  "text": "Brauzer",
-  "is_correct": true
  }
 },
 {
@@ -12694,6 +5818,1734 @@
   "question": 563,
   "text": "Ma'lumotni bergan manba",
   "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2249,
+ "fields": {
+  "question": 564,
+  "text": "Kompyuterga bajariladigan buyruqlar ketma-ketligini yozish",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2250,
+ "fields": {
+  "question": 564,
+  "text": "Kompyuterni qismlardan yig'ish",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2251,
+ "fields": {
+  "question": 564,
+  "text": "Internetdan fayl yuklab olish",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2252,
+ "fields": {
+  "question": 564,
+  "text": "Matnni chiroyli bezash",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2253,
+ "fields": {
+  "question": 565,
+  "text": "Faqat mashina kodi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2254,
+ "fields": {
+  "question": 565,
+  "text": "Yuqori darajali, interpretatsiya qilinadigan til",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2255,
+ "fields": {
+  "question": 565,
+  "text": "Faqat brauzerda ishlaydigan belgilash tili",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2256,
+ "fields": {
+  "question": 565,
+  "text": "Ma'lumotlar bazasi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2257,
+ "fields": {
+  "question": 566,
+  "text": "Faqat o'yin yaratish uchun mo'ljallangan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2258,
+ "fields": {
+  "question": 566,
+  "text": "Kod yozmasdan ishlaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2259,
+ "fields": {
+  "question": 566,
+  "text": "Sintaksisi sodda va o'qilishi oson",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2260,
+ "fields": {
+  "question": 566,
+  "text": "Faqat Windows'da ishlaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2261,
+ "fields": {
+  "question": 567,
+  "text": ".js",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2262,
+ "fields": {
+  "question": 567,
+  "text": ".html",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2263,
+ "fields": {
+  "question": 567,
+  "text": ".exe",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2264,
+ "fields": {
+  "question": 567,
+  "text": ".py",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2265,
+ "fields": {
+  "question": 568,
+  "text": "print()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2266,
+ "fields": {
+  "question": 568,
+  "text": "input()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2267,
+ "fields": {
+  "question": 568,
+  "text": "len()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2268,
+ "fields": {
+  "question": 568,
+  "text": "type()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2269,
+ "fields": {
+  "question": 569,
+  "text": "Faqat veb-sahifa dizaynida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2270,
+ "fields": {
+  "question": 569,
+  "text": "Veb, ma'lumotlar tahlili, sun'iy intellekt va avtomatlashtirishda",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2271,
+ "fields": {
+  "question": 569,
+  "text": "Faqat telefon o'yinlarida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2272,
+ "fields": {
+  "question": 569,
+  "text": "Faqat matn muharriri sifatida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2273,
+ "fields": {
+  "question": 570,
+  "text": "// bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2274,
+ "fields": {
+  "question": 570,
+  "text": "<!-- --> bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2275,
+ "fields": {
+  "question": 570,
+  "text": "# belgisi bilan",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2276,
+ "fields": {
+  "question": 570,
+  "text": "** bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2277,
+ "fields": {
+  "question": 571,
+  "text": "\"Salom\"",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2278,
+ "fields": {
+  "question": 571,
+  "text": "print Salom",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2279,
+ "fields": {
+  "question": 571,
+  "text": "Xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2280,
+ "fields": {
+  "question": 571,
+  "text": "Salom",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2281,
+ "fields": {
+  "question": 572,
+  "text": "Chekinish (qator boshidagi bo'sh joy) bilan",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2282,
+ "fields": {
+  "question": 572,
+  "text": "Jingalak qavs {} bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2283,
+ "fields": {
+  "question": 572,
+  "text": "begin va end so'zlari bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2284,
+ "fields": {
+  "question": 572,
+  "text": "Nuqtali vergul bilan",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2285,
+ "fields": {
+  "question": 573,
+  "text": "Kodni chiroyli formatlaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2286,
+ "fields": {
+  "question": 573,
+  "text": "Kodni qatorma-qator o'qib bajaradi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2287,
+ "fields": {
+  "question": 573,
+  "text": "Internetga ulaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2288,
+ "fields": {
+  "question": 573,
+  "text": "Fayllarni o'chiradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2289,
+ "fields": {
+  "question": 574,
+  "text": "Brendan Eich",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2290,
+ "fields": {
+  "question": 574,
+  "text": "Bill Gates",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2291,
+ "fields": {
+  "question": 574,
+  "text": "Guido van Rossum",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2292,
+ "fields": {
+  "question": 574,
+  "text": "Linus Torvalds",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2293,
+ "fields": {
+  "question": 575,
+  "text": "Kompyuterni o'chirib yoqish",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2294,
+ "fields": {
+  "question": 575,
+  "text": "Butun kodni o'chirib qayta yozish",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2295,
+ "fields": {
+  "question": 575,
+  "text": "Xatoga e'tibor bermaslik",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2296,
+ "fields": {
+  "question": 575,
+  "text": "Xato xabarini o'qib, qaysi qatorda ekanini aniqlash",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2297,
+ "fields": {
+  "question": 576,
+  "text": "Lug'at (dict)",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2298,
+ "fields": {
+  "question": 576,
+  "text": "Ro'yxat (list)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2299,
+ "fields": {
+  "question": 576,
+  "text": "Kortej (tuple)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2300,
+ "fields": {
+  "question": 576,
+  "text": "To'plam (set)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2301,
+ "fields": {
+  "question": 577,
+  "text": ".values()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2302,
+ "fields": {
+  "question": 577,
+  "text": ".keys()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2303,
+ "fields": {
+  "question": 577,
+  "text": ".items()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2304,
+ "fields": {
+  "question": 577,
+  "text": ".get()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2305,
+ "fields": {
+  "question": 578,
+  "text": ".keys()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2306,
+ "fields": {
+  "question": 578,
+  "text": ".items()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2307,
+ "fields": {
+  "question": 578,
+  "text": ".values()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2308,
+ "fields": {
+  "question": 578,
+  "text": ".pop()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2309,
+ "fields": {
+  "question": 579,
+  "text": "Faqat kalitlarni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2310,
+ "fields": {
+  "question": 579,
+  "text": "Faqat qiymatlarni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2311,
+ "fields": {
+  "question": 579,
+  "text": "Lug'at uzunligini",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2312,
+ "fields": {
+  "question": 579,
+  "text": "Kalit va qiymat juftligini",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2313,
+ "fields": {
+  "question": 580,
+  "text": "Kalitlarni",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2314,
+ "fields": {
+  "question": 580,
+  "text": "Qiymatlarni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2315,
+ "fields": {
+  "question": 580,
+  "text": "Kalit-qiymat juftliklarini",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2316,
+ "fields": {
+  "question": 580,
+  "text": "Hech narsani, xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2317,
+ "fields": {
+  "question": 581,
+  "text": "1, 2, 3 — har biri alohida qatorda",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2318,
+ "fields": {
+  "question": 581,
+  "text": "3, 1, 2 — har biri alohida qatorda",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2319,
+ "fields": {
+  "question": 581,
+  "text": "[3, 1, 2]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2320,
+ "fields": {
+  "question": 581,
+  "text": "6",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2321,
+ "fields": {
+  "question": 582,
+  "text": "sonlar[0]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2322,
+ "fields": {
+  "question": 582,
+  "text": "sonlar[len]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2323,
+ "fields": {
+  "question": 582,
+  "text": "sonlar[-1]",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2324,
+ "fields": {
+  "question": 582,
+  "text": "sonlar.last()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2325,
+ "fields": {
+  "question": 583,
+  "text": "[10, 20, 30]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2326,
+ "fields": {
+  "question": 583,
+  "text": "[20, 30, 40]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2327,
+ "fields": {
+  "question": 583,
+  "text": "[10, 20]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2328,
+ "fields": {
+  "question": 583,
+  "text": "[20, 30]",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2329,
+ "fields": {
+  "question": 584,
+  "text": "20 in sonlar",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2330,
+ "fields": {
+  "question": 584,
+  "text": "sonlar.has(20)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2331,
+ "fields": {
+  "question": 584,
+  "text": "sonlar.find(20)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2332,
+ "fields": {
+  "question": 584,
+  "text": "20 of sonlar",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2333,
+ "fields": {
+  "question": 585,
+  "text": "Xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2334,
+ "fields": {
+  "question": 585,
+  "text": "Lug'atga 3 kaliti bilan yangi qiymat qo'shadi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2335,
+ "fields": {
+  "question": 585,
+  "text": "3-elementni o'chiradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2336,
+ "fields": {
+  "question": 585,
+  "text": "Yangi ro'yxat yaratadi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2337,
+ "fields": {
+  "question": 586,
+  "text": "users[5]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2338,
+ "fields": {
+  "question": 586,
+  "text": "users.find(5)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2339,
+ "fields": {
+  "question": 586,
+  "text": "users.get(5)",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2340,
+ "fields": {
+  "question": 586,
+  "text": "users.value(5)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2341,
+ "fields": {
+  "question": 587,
+  "text": "Faqat indeksni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2342,
+ "fields": {
+  "question": 587,
+  "text": "Faqat elementni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2343,
+ "fields": {
+  "question": 587,
+  "text": "Ro'yxat uzunligini",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2344,
+ "fields": {
+  "question": 587,
+  "text": "Indeks va element juftligini",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2345,
+ "fields": {
+  "question": 588,
+  "text": "append()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2346,
+ "fields": {
+  "question": 588,
+  "text": "add()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2347,
+ "fields": {
+  "question": 588,
+  "text": "insert()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2348,
+ "fields": {
+  "question": 588,
+  "text": "push()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2349,
+ "fields": {
+  "question": 589,
+  "text": "['olma', 'nok']",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2350,
+ "fields": {
+  "question": 589,
+  "text": "['nok', 'olma']",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2351,
+ "fields": {
+  "question": 589,
+  "text": "['nok']",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2352,
+ "fields": {
+  "question": 589,
+  "text": "Xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2353,
+ "fields": {
+  "question": 590,
+  "text": "pop()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2354,
+ "fields": {
+  "question": 590,
+  "text": "clear()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2355,
+ "fields": {
+  "question": 590,
+  "text": "remove()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2356,
+ "fields": {
+  "question": 590,
+  "text": "index()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2357,
+ "fields": {
+  "question": 591,
+  "text": "Birinchi elementni o'chiradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2358,
+ "fields": {
+  "question": 591,
+  "text": "Ro'yxatni butunlay tozalaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2359,
+ "fields": {
+  "question": 591,
+  "text": "Xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2360,
+ "fields": {
+  "question": 591,
+  "text": "Oxirgi elementni o'chirib, uni qaytaradi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2361,
+ "fields": {
+  "question": 592,
+  "text": "sort()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2362,
+ "fields": {
+  "question": 592,
+  "text": "order()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2363,
+ "fields": {
+  "question": 592,
+  "text": "arrange()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2364,
+ "fields": {
+  "question": 592,
+  "text": "sorted_list()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2365,
+ "fields": {
+  "question": 593,
+  "text": "Hech qanday farqi yo'q",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2366,
+ "fields": {
+  "question": 593,
+  "text": "sort() ro'yxatning o'zini o'zgartiradi, sorted() yangi ro'yxat qaytaradi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2367,
+ "fields": {
+  "question": 593,
+  "text": "sorted() faqat sonlar bilan ishlaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2368,
+ "fields": {
+  "question": 593,
+  "text": "sort() yangi ro'yxat qaytaradi, sorted() esa o'zini o'zgartiradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2369,
+ "fields": {
+  "question": 594,
+  "text": "royxat.length",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2370,
+ "fields": {
+  "question": 594,
+  "text": "royxat.size()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2371,
+ "fields": {
+  "question": 594,
+  "text": "len(royxat)",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2372,
+ "fields": {
+  "question": 594,
+  "text": "count(royxat)",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2373,
+ "fields": {
+  "question": 595,
+  "text": "1",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2374,
+ "fields": {
+  "question": 595,
+  "text": "3",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2375,
+ "fields": {
+  "question": 595,
+  "text": "4",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2376,
+ "fields": {
+  "question": 595,
+  "text": "2",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2377,
+ "fields": {
+  "question": 596,
+  "text": "2",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2378,
+ "fields": {
+  "question": 596,
+  "text": "3",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2379,
+ "fields": {
+  "question": 596,
+  "text": "1",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2380,
+ "fields": {
+  "question": 596,
+  "text": "'c'",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2381,
+ "fields": {
+  "question": 597,
+  "text": "back()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2382,
+ "fields": {
+  "question": 597,
+  "text": "reverse()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2383,
+ "fields": {
+  "question": 597,
+  "text": "invert()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2384,
+ "fields": {
+  "question": 597,
+  "text": "flip()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2385,
+ "fields": {
+  "question": 598,
+  "text": "remove()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2386,
+ "fields": {
+  "question": 598,
+  "text": "delete()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2387,
+ "fields": {
+  "question": 598,
+  "text": "clear()",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2388,
+ "fields": {
+  "question": 598,
+  "text": "empty()",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2389,
+ "fields": {
+  "question": 599,
+  "text": "[1, 2, [3, 4]]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2390,
+ "fields": {
+  "question": 599,
+  "text": "[3, 4]",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2391,
+ "fields": {
+  "question": 599,
+  "text": "Xato beradi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2392,
+ "fields": {
+  "question": 599,
+  "text": "[1, 2, 3, 4]",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2393,
+ "fields": {
+  "question": 600,
+  "text": "Foydalanuvchi interfeysi yaratish uchun JavaScript kutubxonasi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2394,
+ "fields": {
+  "question": 600,
+  "text": "Ma'lumotlar bazasi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2395,
+ "fields": {
+  "question": 600,
+  "text": "Alohida dasturlash tili",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2396,
+ "fields": {
+  "question": 600,
+  "text": "Server operatsion tizimi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2397,
+ "fields": {
+  "question": 601,
+  "text": "Google",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2398,
+ "fields": {
+  "question": 601,
+  "text": "Meta (Facebook)",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2399,
+ "fields": {
+  "question": 601,
+  "text": "Microsoft",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2400,
+ "fields": {
+  "question": 601,
+  "text": "Apple",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2401,
+ "fields": {
+  "question": 602,
+  "text": "Yangi dasturlash tili",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2402,
+ "fields": {
+  "question": 602,
+  "text": "CSS kutubxonasi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2403,
+ "fields": {
+  "question": 602,
+  "text": "JavaScript ichida HTML'ga o'xshash belgilash yozish sintaksisi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2404,
+ "fields": {
+  "question": 602,
+  "text": "Ma'lumot saqlash formati",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2405,
+ "fields": {
+  "question": 603,
+  "text": "CSS fayli",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2406,
+ "fields": {
+  "question": 603,
+  "text": "Server manzili",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2407,
+ "fields": {
+  "question": 603,
+  "text": "Brauzer kengaytmasi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2408,
+ "fields": {
+  "question": 603,
+  "text": "Interfeysning qayta ishlatiladigan mustaqil bo'lagi",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2409,
+ "fields": {
+  "question": 604,
+  "text": "Katta harf bilan boshlanadi: UserCard",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2410,
+ "fields": {
+  "question": 604,
+  "text": "Faqat kichik harflar bilan: usercard",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2411,
+ "fields": {
+  "question": 604,
+  "text": "Raqam bilan boshlanadi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2412,
+ "fields": {
+  "question": 604,
+  "text": "Tire bilan: user-card",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2413,
+ "fields": {
+  "question": 605,
+  "text": "Faqat sonni",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2414,
+ "fields": {
+  "question": 605,
+  "text": "JSX — interfeysning ko'rinishini",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2415,
+ "fields": {
+  "question": 605,
+  "text": "CSS kodini",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2416,
+ "fields": {
+  "question": 605,
+  "text": "Hech narsa qaytarmaydi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2417,
+ "fields": {
+  "question": 606,
+  "text": "state orqali",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2418,
+ "fields": {
+  "question": 606,
+  "text": "import orqali",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2419,
+ "fields": {
+  "question": 606,
+  "text": "props orqali",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2420,
+ "fields": {
+  "question": 606,
+  "text": "CSS orqali",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2421,
+ "fields": {
+  "question": 607,
+  "text": "useProps",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2422,
+ "fields": {
+  "question": 607,
+  "text": "useStyle",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2423,
+ "fields": {
+  "question": 607,
+  "text": "useClass",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2424,
+ "fields": {
+  "question": 607,
+  "text": "useState",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2425,
+ "fields": {
+  "question": 608,
+  "text": "className",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2426,
+ "fields": {
+  "question": 608,
+  "text": "class",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2427,
+ "fields": {
+  "question": 608,
+  "text": "cssClass",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2428,
+ "fields": {
+  "question": 608,
+  "text": "styleClass",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2429,
+ "fields": {
+  "question": 609,
+  "text": "Qo'shtirnoq \"\" ichida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2430,
+ "fields": {
+  "question": 609,
+  "text": "Jingalak qavs {} ichida",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2431,
+ "fields": {
+  "question": 609,
+  "text": "Kvadrat qavs [] ichida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2432,
+ "fields": {
+  "question": 609,
+  "text": "${} ichida",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2433,
+ "fields": {
+  "question": 610,
+  "text": "id nomli CSS klassi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2434,
+ "fields": {
+  "question": 610,
+  "text": "Alohida index.html",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2435,
+ "fields": {
+  "question": 610,
+  "text": "Noyob key",
+  "is_correct": true
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2436,
+ "fields": {
+  "question": 610,
+  "text": "style atributi",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2437,
+ "fields": {
+  "question": 611,
+  "text": "pip install react",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2438,
+ "fields": {
+  "question": 611,
+  "text": "react new app",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2439,
+ "fields": {
+  "question": 611,
+  "text": "django-admin startproject",
+  "is_correct": false
+ }
+},
+{
+ "model": "core.choice",
+ "pk": 2440,
+ "fields": {
+  "question": 611,
+  "text": "npm create vite@latest",
+  "is_correct": true
  }
 },
 {
