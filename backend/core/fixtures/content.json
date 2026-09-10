@@ -209,7 +209,7 @@
   "video_file": "lesson_videos/3-dars_x33wiQU.mp4",
   "order": 3,
   "created_at": "2026-02-18T15:09:31Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -224,7 +224,7 @@
   "video_file": "lesson_videos/4-dars.mp4",
   "order": 4,
   "created_at": "2026-05-27T04:50:47Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -239,7 +239,7 @@
   "video_file": "lesson_videos/5-dars.mp4",
   "order": 5,
   "created_at": "2026-05-27T04:52:26Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -254,7 +254,7 @@
   "video_file": "lesson_videos/6-dars.mp4",
   "order": 6,
   "created_at": "2026-05-27T04:53:43Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -269,7 +269,7 @@
   "video_file": "lesson_videos/7-dars.mp4",
   "order": 7,
   "created_at": "2026-05-27T04:56:13Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -284,7 +284,7 @@
   "video_file": "lesson_videos/8-dars.mp4",
   "order": 8,
   "created_at": "2026-05-27T04:57:28Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -299,7 +299,7 @@
   "video_file": "lesson_videos/9-dars.mp4",
   "order": 9,
   "created_at": "2026-05-27T04:58:47Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -314,7 +314,7 @@
   "video_file": "lesson_videos/10-dars.mp4",
   "order": 10,
   "created_at": "2026-05-27T04:59:46Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -329,7 +329,7 @@
   "video_file": "lesson_videos/11-dars.mp4",
   "order": 11,
   "created_at": "2026-05-27T05:01:43Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -344,7 +344,7 @@
   "video_file": "lesson_videos/12-dars.mp4",
   "order": 12,
   "created_at": "2026-05-27T05:10:02Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -359,7 +359,7 @@
   "video_file": "lesson_videos/13-dars.mp4",
   "order": 13,
   "created_at": "2026-05-27T05:12:32Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -374,7 +374,7 @@
   "video_file": "lesson_videos/14-dars.mp4",
   "order": 14,
   "created_at": "2026-05-27T05:14:10Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -419,7 +419,7 @@
   "video_file": "lesson_videos/4-dars_Jb8G6tD.mp4",
   "order": 4,
   "created_at": "2026-05-28T15:42:47Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -434,7 +434,7 @@
   "video_file": "lesson_videos/5-dars_9edkAWo.mp4",
   "order": 4,
   "created_at": "2026-05-28T15:44:44Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -449,7 +449,7 @@
   "video_file": "lesson_videos/6-dars_EEdbCyH.mp4",
   "order": 6,
   "created_at": "2026-05-28T15:46:42Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -464,7 +464,7 @@
   "video_file": "lesson_videos/7-dars_tjPJH6R.mp4",
   "order": 7,
   "created_at": "2026-05-28T15:47:42Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -479,7 +479,7 @@
   "video_file": "lesson_videos/8-dars_INGlErE.mp4",
   "order": 8,
   "created_at": "2026-05-28T15:49:18Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -494,7 +494,7 @@
   "video_file": "lesson_videos/9-dars_2w9mmIi.mp4",
   "order": 9,
   "created_at": "2026-05-28T15:51:13Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -509,7 +509,7 @@
   "video_file": "lesson_videos/10-dars_B4XDh7c.mp4",
   "order": 10,
   "created_at": "2026-05-28T15:52:02Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -524,7 +524,7 @@
   "video_file": "lesson_videos/11-dars_FFko8Zq.mp4",
   "order": 11,
   "created_at": "2026-05-28T15:53:13Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -539,7 +539,7 @@
   "video_file": "lesson_videos/12-dars_d9aR2Ey.mp4",
   "order": 12,
   "created_at": "2026-05-28T15:54:03Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -554,7 +554,7 @@
   "video_file": "lesson_videos/13-dars_f7VcbGw.mp4",
   "order": 13,
   "created_at": "2026-05-28T15:55:29Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -599,7 +599,7 @@
   "video_file": "lesson_videos/4-dars_4PxT5rD.mp4",
   "order": 4,
   "created_at": "2026-05-28T16:01:55Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -614,7 +614,7 @@
   "video_file": "lesson_videos/5-dars_tI2uubk.mp4",
   "order": 5,
   "created_at": "2026-05-28T16:03:06Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -629,7 +629,7 @@
   "video_file": "lesson_videos/6-dars_SFTAcJV.mp4",
   "order": 6,
   "created_at": "2026-05-28T16:07:52Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -644,7 +644,7 @@
   "video_file": "lesson_videos/7-dars_qRQPqt5.mp4",
   "order": 7,
   "created_at": "2026-05-28T16:18:56Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -659,7 +659,7 @@
   "video_file": "lesson_videos/8-dars_WEMB7fQ.mp4",
   "order": 8,
   "created_at": "2026-05-28T16:19:56Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -674,7 +674,7 @@
   "video_file": "lesson_videos/9-dars_lz4BgiO.mp4",
   "order": 9,
   "created_at": "2026-05-28T16:20:39Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -689,7 +689,7 @@
   "video_file": "lesson_videos/10-dars_UrD9xME.mp4",
   "order": 10,
   "created_at": "2026-05-28T16:21:26Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -704,7 +704,7 @@
   "video_file": "lesson_videos/11-dars_se29FMD.mp4",
   "order": 11,
   "created_at": "2026-05-28T16:25:30Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -719,7 +719,7 @@
   "video_file": "lesson_videos/12-dars_oqkwbwe.mp4",
   "order": 12,
   "created_at": "2026-05-28T16:26:18Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -734,7 +734,7 @@
   "video_file": "lesson_videos/13-dars_KhOHnGy.mp4",
   "order": 13,
   "created_at": "2026-05-28T16:27:06Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -749,7 +749,7 @@
   "video_file": "lesson_videos/14-dars_grbNcEA.mp4",
   "order": 14,
   "created_at": "2026-05-28T16:28:06Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -764,7 +764,7 @@
   "video_file": "lesson_videos/15-dars.mp4",
   "order": 15,
   "created_at": "2026-05-28T16:28:53Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -809,7 +809,7 @@
   "video_file": "lesson_videos/4-dars_1Vg1XBC.mp4",
   "order": 4,
   "created_at": "2026-05-29T04:39:46Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -824,7 +824,7 @@
   "video_file": "lesson_videos/5-dars_Q5tm4Y3.mp4",
   "order": 5,
   "created_at": "2026-05-29T04:41:05Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -839,7 +839,7 @@
   "video_file": "lesson_videos/6-dars_4w1rPyv.mp4",
   "order": 6,
   "created_at": "2026-05-29T04:41:56Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -854,7 +854,7 @@
   "video_file": "lesson_videos/7-dars_raHgPem.mp4",
   "order": 7,
   "created_at": "2026-05-29T04:42:49Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -869,7 +869,7 @@
   "video_file": "lesson_videos/8-dars_FSVr0IF.mp4",
   "order": 8,
   "created_at": "2026-05-29T04:44:36Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -884,7 +884,7 @@
   "video_file": "lesson_videos/9-dars_eUxbGjQ.mp4",
   "order": 9,
   "created_at": "2026-05-29T04:47:46Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -899,7 +899,7 @@
   "video_file": "lesson_videos/10-dars_2T5xX5Z.mp4",
   "order": 10,
   "created_at": "2026-05-29T04:48:41Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -914,7 +914,7 @@
   "video_file": "lesson_videos/11-dars_8xPCcOu.mp4",
   "order": 11,
   "created_at": "2026-05-29T04:49:24Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -929,7 +929,7 @@
   "video_file": "lesson_videos/12-dars_8iw6zSs.mp4",
   "order": 12,
   "created_at": "2026-05-29T04:50:07Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -944,7 +944,7 @@
   "video_file": "lesson_videos/13-dars_JZcWz0H.mp4",
   "order": 13,
   "created_at": "2026-05-29T04:51:21Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -959,7 +959,7 @@
   "video_file": "lesson_videos/14-dars_PLqfPhA.mp4",
   "order": 14,
   "created_at": "2026-05-29T04:52:07Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -974,7 +974,7 @@
   "video_file": "lesson_videos/15-dars_A44YEQT.mp4",
   "order": 15,
   "created_at": "2026-05-29T04:58:35Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -989,7 +989,7 @@
   "video_file": "lesson_videos/16-dars.mp4",
   "order": 16,
   "created_at": "2026-05-29T04:59:23Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1004,7 +1004,7 @@
   "video_file": "lesson_videos/17-dars.mp4",
   "order": 17,
   "created_at": "2026-05-29T05:00:16Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1019,7 +1019,7 @@
   "video_file": "lesson_videos/18-dars.mp4",
   "order": 18,
   "created_at": "2026-05-29T05:01:07Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1034,7 +1034,7 @@
   "video_file": "lesson_videos/19-dars.mp4",
   "order": 19,
   "created_at": "2026-05-29T05:02:02Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1049,7 +1049,7 @@
   "video_file": "lesson_videos/20-dars.mp4",
   "order": 20,
   "created_at": "2026-05-29T05:03:22Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1064,7 +1064,7 @@
   "video_file": "lesson_videos/21-dars.mp4",
   "order": 21,
   "created_at": "2026-05-29T05:04:12Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1079,7 +1079,7 @@
   "video_file": "lesson_videos/22-dars.mp4",
   "order": 22,
   "created_at": "2026-05-29T05:04:55Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1094,7 +1094,7 @@
   "video_file": "lesson_videos/23-dars.mp4",
   "order": 23,
   "created_at": "2026-05-29T05:05:57Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1109,7 +1109,7 @@
   "video_file": "lesson_videos/24-dars.mp4",
   "order": 24,
   "created_at": "2026-05-29T05:06:57Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1124,7 +1124,7 @@
   "video_file": "lesson_videos/25-dars.mp4",
   "order": 25,
   "created_at": "2026-05-29T05:08:00Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1139,7 +1139,7 @@
   "video_file": "lesson_videos/26-dars.mp4",
   "order": 26,
   "created_at": "2026-05-29T05:08:47Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1154,7 +1154,7 @@
   "video_file": "lesson_videos/27-dars.mp4",
   "order": 27,
   "created_at": "2026-05-29T05:09:28Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1169,7 +1169,7 @@
   "video_file": "lesson_videos/28-dars.mp4",
   "order": 28,
   "created_at": "2026-05-29T05:10:17Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1184,7 +1184,7 @@
   "video_file": "lesson_videos/29-dars.mp4",
   "order": 29,
   "created_at": "2026-05-29T05:11:01Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1199,7 +1199,7 @@
   "video_file": "lesson_videos/30-dars.mp4",
   "order": 30,
   "created_at": "2026-05-29T05:11:56Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1244,7 +1244,7 @@
   "video_file": "",
   "order": 3,
   "created_at": "2026-08-15T05:29:38.693Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1274,7 +1274,7 @@
   "video_file": "",
   "order": 2,
   "created_at": "2026-08-15T05:29:38.991Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1289,7 +1289,7 @@
   "video_file": "",
   "order": 3,
   "created_at": "2026-08-15T05:29:39.233Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1304,7 +1304,7 @@
   "video_file": "",
   "order": 4,
   "created_at": "2026-08-15T05:29:39.423Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1319,7 +1319,7 @@
   "video_file": "",
   "order": 1,
   "created_at": "2026-08-15T05:29:39.590Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1334,7 +1334,7 @@
   "video_file": "",
   "order": 2,
   "created_at": "2026-08-15T05:29:39.600Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
@@ -1349,7 +1349,7 @@
   "video_file": "",
   "order": 3,
   "created_at": "2026-08-15T05:29:39.806Z",
-  "is_free": false
+  "is_free": true
  }
 },
 {
