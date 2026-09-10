@@ -22,6 +22,7 @@ from pathlib import Path
 from django.apps import apps
 from django.test import SimpleTestCase, TestCase
 
+from . import richtext
 from .models import Category, Choice, Lesson, Module, Question, Quiz
 
 FIXTURE = Path(__file__).resolve().parent / 'fixtures' / 'content.json'
@@ -214,3 +215,71 @@ class LessonCodeSampleTests(TestCase):
 
         lesson.refresh_from_db()
         self.assertEqual(lesson.practice_code, "print('admin yozgan kod')")
+
+
+m0028 = importlib.import_module('core.migrations.0028_fix_intro_code_samples')
+
+
+class IntroCodeSampleTests(TestCase):
+    """
+    Kirish darslarining namunalari: JavaScript va React darsida Python
+    kodi turardi, Python kirishida esa kod o'rnida YouTube havolasi.
+    """
+
+    def _fixed(self, lesson_id, field):
+        return next(new for pk, f, _, new in m0028.FIXES if pk == lesson_id and f == field)
+
+    def test_js_va_react_namunasida_python_kodi_yoq(self):
+        for lesson_id in (28, 29):
+            with self.subTest(dars=lesson_id):
+                code = self._fixed(lesson_id, 'practice_code')
+                self.assertNotIn('print(', code)
+        self.assertIn('console.log(', self._fixed(29, 'practice_code'))
+        self.assertIn('function Salom()', self._fixed(28, 'practice_code'))
+
+    def test_python_kirish_namunasi_ishlaydi(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exec(self._fixed(32, 'practice_code'), {})
+        self.assertEqual(output.getvalue().strip(), "Salom, dunyo!")
+
+    def test_pleylist_havolasi_yoqolmaydi_va_bosiladigan(self):
+        """Havola koddan chiqarildi — u matnda <a> bo'lib qolishi shart."""
+        html = richtext.render(self._fixed(32, 'theory'))
+        self.assertIn(f'href="{m0028.PLAYLIST_URL.replace("&", "&amp;")}"', html)
+        self.assertNotIn(m0028.PLAYLIST_URL, self._fixed(32, 'practice_code'))
+
+    def test_fixture_yangilangan(self):
+        data = json.loads(FIXTURE.read_text(encoding='utf-8'))
+        lessons = {o['pk']: o['fields'] for o in data if o['model'] == 'core.lesson'}
+        for lesson_id, field, _, new in m0028.FIXES:
+            with self.subTest(dars=lesson_id, maydon=field):
+                self.assertEqual(lessons[lesson_id][field], new)
+
+    def _lesson(self, pk, **fields):
+        category, _ = Category.objects.get_or_create(name="Kurs", slug="kurs")
+        module, _ = Module.objects.get_or_create(category=category, title="M", order=1)
+        return Lesson.objects.create(pk=pk, module=module, title=f"D{pk}", order=pk, **fields)
+
+    def test_eski_qiymatlar_almashtiriladi(self):
+        js = self._lesson(29, practice_code='print("Hello")')
+        intro = self._lesson(
+            32, theory=m0028.INTRO_THEORY,
+            practice_code=f"{m0028.PLAYLIST_URL}\r\nBU onlayn darsning video silkasi",
+        )
+
+        m0028.fix_samples(apps, None)
+
+        js.refresh_from_db()
+        intro.refresh_from_db()
+        self.assertEqual(js.practice_code, self._fixed(29, 'practice_code'))
+        self.assertEqual(intro.practice_code, self._fixed(32, 'practice_code'))
+        self.assertEqual(intro.theory, self._fixed(32, 'theory'))
+
+    def test_admin_ozgartirgan_qiymatga_tegilmaydi(self):
+        react = self._lesson(28, practice_code="const App = () => <p>Admin</p>;")
+
+        m0028.fix_samples(apps, None)
+
+        react.refresh_from_db()
+        self.assertEqual(react.practice_code, "const App = () => <p>Admin</p>;")
