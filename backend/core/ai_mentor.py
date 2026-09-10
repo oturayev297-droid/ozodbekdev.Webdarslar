@@ -19,6 +19,10 @@ worker'larida ishlaydi (DEPLOY.md), va oqim butun javob davomida bitta
 worker'ni band qilib turadi — 3 worker bilan 3 ta bir vaqtdagi suhbat
 butun saytni to'xtatib qo'yardi. `max_tokens` kichik (4096), demak javob
 HTTP timeout'iga yaqin ham kelmaydi.
+
+BILIM: mentor sayt, sahifalar, qoidalar va kurslar haqida
+`core.mentor_knowledge` dan biladi. Dars sahifasida savol berilsa,
+o'sha darsning matni va kod namunasi ham kontekstga qo'shiladi.
 """
 
 import logging
@@ -27,6 +31,8 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils import timezone
+
+from . import mentor_knowledge
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +54,19 @@ MAX_TOKENS = 4096
 #: Foydalanuvchi savolining maksimal uzunligi (belgi)
 MAX_QUESTION_LENGTH = 2000
 
+#: Dars matnining kontekstga qo'shiladigan qismi (belgi). Eng uzun
+#: yozma dars ~2300 belgi, ya'ni amalda hammasi to'liq ketadi. Chegara
+#: kelajakdagi juda uzun dars har savolda qimmatga tushmasligi uchun;
+#: qisqartirilsa bu modelga OCHIQ aytiladi.
+MAX_LESSON_TEXT = 12000
+
 
 SYSTEM_PROMPT = """Sen — ozodbekdev.uz onlayn ta'lim platformasidagi dasturlash o'qituvchisisan.
 
-Platformada to'rt yo'nalish o'qitiladi: Python, Django, JavaScript va React.
+Platformada besh yo'nalish o'qitiladi: Python, Django, JavaScript, React va
+Sun'iy intellekt. Sayt, sahifalar, qoidalar va kurslar haqidagi bilim hamda
+darslar katalogi quyida berilgan — platforma haqidagi savolga shu asosda
+javob ber.
 
 ## Qanday javob berasan
 
@@ -219,28 +234,17 @@ def _call_claude(user, question: str, lesson) -> str:
 
     client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
-    # Dars konteksti — o'quvchi "bu yerda nima deyilgan?" deb so'rasa
-    # model qaysi dars haqida gapirayotganini bilsin.
-    context = ""
+    content = question
     if lesson is not None:
-        context = (
-            f"\n\nO'quvchi hozir \"{lesson.title}\" darsini ko'rmoqda "
-            f"({lesson.module.category.name} yo'nalishi)."
-        )
+        content = f"{_lesson_context(lesson)}\n\nSavol: {question}"
 
-    messages = _history(user) + [{'role': 'user', 'content': question + context}]
+    messages = _history(user) + [{'role': 'user', 'content': content}]
 
     try:
         response = client.messages.create(
             model=settings.ANTHROPIC_MODEL,
             max_tokens=MAX_TOKENS,
-            # Tizim ko'rsatmasi o'zgarmaydi, shuning uchun keshlanadi —
-            # har so'rovda uni qayta hisoblash ortiqcha pul.
-            system=[{
-                'type': 'text',
-                'text': SYSTEM_PROMPT,
-                'cache_control': {'type': 'ephemeral'},
-            }],
+            system=_system_blocks(),
             # Chat uchun kechikish muhim. Dasturlash tushunchasini
             # tushuntirish chuqur fikrlashni talab qilmaydi.
             output_config={'effort': settings.ANTHROPIC_EFFORT},
@@ -290,6 +294,65 @@ def _call_claude(user, question: str, lesson) -> str:
         response.usage.cache_read_input_tokens,
     )
     return text
+
+
+def _system_blocks():
+    """
+    Tizim ko'rsatmasi — IKKI keshlanadigan blok.
+
+    1) ko'rsatma + platforma bilimi: kod o'zgarmaguncha o'zgarmaydi;
+    2) kurs katalogi: faqat admin kontentni o'zgartirganda o'zgaradi.
+
+    Alohida breakpoint'lar shuning uchun: katalog o'zgarsa ham birinchi
+    (kattaroq) blokning keshi saqlanib qoladi. O'quvchining savoli va
+    dars matni `messages` da, ikkala breakpoint'dan KEYIN turadi.
+    """
+    return [
+        {
+            'type': 'text',
+            'text': f"{SYSTEM_PROMPT}\n\n{mentor_knowledge.GUIDE}",
+            'cache_control': {'type': 'ephemeral'},
+        },
+        {
+            'type': 'text',
+            'text': mentor_knowledge.catalog(),
+            'cache_control': {'type': 'ephemeral'},
+        },
+    ]
+
+
+def _lesson_context(lesson) -> str:
+    """
+    O'quvchi turgan dars — nomi, joyi, ko'nikma izohi, matni va kodi.
+
+    Ilgari faqat NOMI yuborilardi va "bu yerda nima deyilgan?" degan
+    savolga model dars matnini ko'rmay javob berardi. Qulflangan dars
+    bu yerga kelmaydi — `api.views.MentorAskView` uni oldinroq rad etadi.
+    """
+    parts = [
+        f"O'quvchi hozir [{lesson.id}] \"{lesson.title}\" darsida turibdi "
+        f"({lesson.module.category.name} kursi, \"{lesson.module.title}\" moduli)."
+    ]
+
+    note = mentor_knowledge.LESSON_NOTES.get(lesson.id)
+    if note:
+        parts.append(f"Dars haqida: {note}")
+
+    theory = (lesson.theory or '').strip()
+    if len(theory) >= mentor_knowledge.TEXT_MIN_CHARS:
+        if len(theory) > MAX_LESSON_TEXT:
+            theory = theory[:MAX_LESSON_TEXT] + "\n[... matn shu yerda qisqartirildi]"
+        parts.append(f"<dars_matni>\n{theory}\n</dars_matni>")
+    else:
+        parts.append(
+            "Bu darsning yozma matni yo'q — mazmuni faqat videoda."
+        )
+
+    code = (lesson.practice_code or '').strip()
+    if code:
+        parts.append(f"<kod_namunasi>\n{code}\n</kod_namunasi>")
+
+    return "\n\n".join(parts)
 
 
 # ==========================================================================

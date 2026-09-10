@@ -10,7 +10,7 @@ Ishga tushirish:  python manage.py test core.tests_mentor
 
 import json
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
 from core.test_utils import approve_all
@@ -18,8 +18,8 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from . import ai_mentor
-from .models import Category, Lesson, MentorMessage, Module
+from . import ai_mentor, mentor_knowledge
+from .models import Category, Challenge, Lesson, MentorMessage, Module
 
 FAKE_KEY = "sk-ant-test-kalit"
 
@@ -273,3 +273,95 @@ class ApiErrorTests(MentorBase):
             response = self.ask()
         self.assertEqual(response.status_code, 503)
         self.assertEqual(MentorMessage.objects.count(), 0)
+
+
+class KnowledgeTests(TestCase):
+    """
+    Mentor bilimi: platforma qo'llanmasi va bazadan quriladigan katalog.
+
+    Katalog har so'rovda qayta quriladi va KESHLANADI — shuning uchun u
+    barqaror bo'lishi va maxfiy narsani (yechimlarni) ko'rsatmasligi shart.
+    """
+
+    def setUp(self):
+        category = Category.objects.create(
+            name="Python", slug="python", description="Python asoslari"
+        )
+        self.module = Module.objects.create(category=category, title="Asoslar", order=1)
+        self.lesson = Lesson.objects.create(
+            module=self.module, title="Sikllar", order=1, is_free=True,
+            theory="For sikli haqida. " * 20, practice_code="for i in range(3):\n    print(i)",
+        )
+        Challenge.objects.create(
+            language='python', title="Yig'indi", description="Vazifa",
+            initial_code='', solution_code='MAXFIY_YECHIM',
+            expected_output='MAXFIY_NATIJA', order=1, difficulty='Oson',
+        )
+
+    def test_katalogda_kurs_modul_va_dars_bor(self):
+        text = mentor_knowledge.catalog()
+        self.assertIn("## Python (/kurslar/python)", text)
+        self.assertIn("### Modul: Asoslar", text)
+        self.assertIn(f"[{self.lesson.id}] Sikllar (bepul, yozma matn)", text)
+
+    def test_katalog_yechim_va_kutilgan_natijani_oshkor_qilmaydi(self):
+        text = mentor_knowledge.catalog()
+        self.assertIn("Yig'indi (python, Oson)", text)
+        self.assertNotIn('MAXFIY_YECHIM', text)
+        self.assertNotIn('MAXFIY_NATIJA', text)
+
+    def test_katalog_barqaror(self):
+        """Tartib o'zgarsa kesh har so'rovda buzilardi."""
+        Lesson.objects.create(module=self.module, title="Teng tartib", order=1)
+        self.assertEqual(mentor_knowledge.catalog(), mentor_knowledge.catalog())
+
+    def test_toldiruvchi_matn_yozma_matn_hisoblanmaydi(self):
+        """"Theory here..." kabi to'ldiruvchi — matn emas."""
+        placeholder = Lesson.objects.create(
+            module=self.module, title="Video dars", order=2, theory="Theory here..."
+        )
+        line = next(
+            l for l in mentor_knowledge.catalog().splitlines()
+            if l.startswith(f"- [{placeholder.id}]")
+        )
+        self.assertNotIn("yozma matn", line)
+
+    def test_dars_konteksti_matn_va_kodni_oladi(self):
+        context = ai_mentor._lesson_context(self.lesson)
+        self.assertIn('"Sikllar"', context)
+        self.assertIn("<dars_matni>", context)
+        self.assertIn("For sikli haqida.", context)
+        self.assertIn("for i in range(3):", context)
+
+    def test_matnsiz_darsda_video_ekani_aytiladi(self):
+        lesson = Lesson.objects.create(module=self.module, title="Faqat video", order=3)
+        context = ai_mentor._lesson_context(lesson)
+        self.assertIn("faqat videoda", context)
+        self.assertNotIn("<dars_matni>", context)
+
+    def test_uzun_matn_qisqartirilgani_ochiq_aytiladi(self):
+        self.lesson.theory = "a" * (ai_mentor.MAX_LESSON_TEXT + 100)
+        context = ai_mentor._lesson_context(self.lesson)
+        self.assertIn("qisqartirildi", context)
+
+    @override_settings(ANTHROPIC_API_KEY=FAKE_KEY)
+    def test_bilim_ikki_keshlanadigan_system_blokida_ketadi(self):
+        user = User.objects.create_user('savolchi', password='Parol12345678')
+        response = MagicMock(stop_reason='end_turn')
+        response.content = [MagicMock(type='text', text='Javob')]
+
+        with patch('anthropic.Anthropic') as client_cls:
+            client_cls.return_value.messages.create.return_value = response
+            ai_mentor._call_claude(user, "Sertifikat qanday olinadi?", self.lesson)
+
+        kwargs = client_cls.return_value.messages.create.call_args.kwargs
+        guide, catalog = kwargs['system']
+        self.assertIn("/sertifikat-tekshirish", guide['text'])
+        self.assertIn("Sikllar", catalog['text'])
+        self.assertEqual(guide['cache_control'], {'type': 'ephemeral'})
+        self.assertEqual(catalog['cache_control'], {'type': 'ephemeral'})
+
+        # Savol va dars matni breakpoint'lardan KEYIN — messages da
+        question = kwargs['messages'][-1]['content']
+        self.assertIn("Sertifikat qanday olinadi?", question)
+        self.assertIn("<dars_matni>", question)
