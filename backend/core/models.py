@@ -47,16 +47,16 @@ class Lesson(models.Model):
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
 
-    #: Bepul dars — tizimga kirgan har kimga ochiq. Qolganlari obuna
-    #: talab qiladi.
+    #: Bepul dars — obunasiz ochiq. Olib tashlansa dars obuna talab
+    #: qiladi.
     #:
-    #: DEFAULT False (fail closed): yangi dars yopiq tug'iladi. Bayroqni
-    #: qo'yishni unutish kontentni bepul qilib qo'ymaydi. Bepul qilish
-    #: har doim ONGLI qaror bo'lishi kerak.
+    #: DEFAULT True: hozircha BARCHA darslar bepul (0025 migratsiyasi
+    #: mavjudlarini ham ochdi). Ilgari default False edi (fail closed);
+    #: pullik darslarga qaytilsa, defaultni ham qaytarish kerak.
     is_free = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name="Bepul dars",
-        help_text="Belgilansa, obunasiz ham ochiq bo'ladi (tanishtiruv darsi)",
+        help_text="Belgilansa, obunasiz ham ochiq bo'ladi",
     )
 
     def __str__(self):

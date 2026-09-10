@@ -4,11 +4,10 @@ Panel formalari
 
 DIQQAT — `is_free`:
 
-Dars bepulmi yoki obuna talab qiladimi, shu bayroq hal qiladi va u
-ATAYLAB standart holatda O'CHIQ (`Lesson.is_free` default=False).
-Formada ham u ochiq qoldirilmaydi: yangi dars qo'shilganda u avtomatik
-PULLIK bo'ladi. Teskarisi bo'lganda, e'tibordan chetda qolgan bitta
-bayroq butun kursni bepulga chiqarib yuborardi.
+Dars bepulmi yoki obuna talab qiladimi, shu bayroq hal qiladi. Hozircha
+BARCHA darslar bepul, shuning uchun u standart holatda YOQILGAN
+(`Lesson.is_free` default=True). Pullik dars qilish uchun belgini olib
+tashlang.
 """
 
 from django import forms
@@ -68,7 +67,7 @@ class LessonForm(forms.ModelForm):
                 "Dars matni. Test generatsiya qilish uchun kamida 200 belgi "
                 "bo'lishi kerak — qisqa matndan savol chiqmaydi."
             ),
-            'is_free': "Belgilanmasa dars OBUNA talab qiladi. Standart holat — pullik.",
+            'is_free': "Belgilanmasa dars OBUNA talab qiladi. Standart holat — bepul.",
             'video_file': "Katta fayl yuklash uzoq davom etadi. Sahifani yopmang.",
         }
         widgets = {
