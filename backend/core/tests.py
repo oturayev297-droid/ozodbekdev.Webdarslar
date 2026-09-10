@@ -7,6 +7,7 @@ Ishga tushirish:  python manage.py test core
 """
 
 import json
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from core import quiz_scoring
@@ -279,3 +280,30 @@ class PasswordResetTests(TestCase):
         return match.group(1)
 
 
+class PasswordResetSmtpFailureTests(TestCase):
+    """
+    SMTP ishlamasa ham so'rov tugashi.
+
+    Railway'da SMTP ulanishi osilib qolardi va gunicorn worker'ni
+    timeout bilan o'ldirardi (`SystemExit: 1`).
+    """
+
+    def setUp(self):
+        User.objects.create_user(
+            'talaba', email='talaba@example.com', password='EskiParol12345'
+        )
+
+    def test_smtp_timeout_xato_tashlamaydi(self):
+        with patch('core.password_reset.send_mail', side_effect=TimeoutError('timed out')):
+            with self.assertLogs('core.password_reset', level='ERROR'):
+                message = pwreset.request_reset('talaba@example.com')
+
+        # Email bor-yo'qligi oshkor qilinmaydi — javob o'sha umumiy xabar
+        self.assertEqual(message, pwreset.GENERIC_MESSAGE)
+
+    def test_email_timeout_gunicorn_timeoutidan_qisqa(self):
+        """Timeout bo'lmasa SMTP gunicorn `--timeout 120` gacha osilardi."""
+        from django.conf import settings
+
+        self.assertTrue(settings.EMAIL_TIMEOUT)
+        self.assertLess(settings.EMAIL_TIMEOUT, 120)

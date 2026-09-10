@@ -131,7 +131,9 @@ def _send_code_email(email: str, pairs):
 
     XATO TASHLAMAYDI: SMTP ishlamasa ham chaqiruvchi oqim davom etadi —
     "xat ketdimi yo'qmi" degan farq foydalanuvchiga oshkor qilinmasligi
-    kerak (enumeratsiyaga qarshi).
+    kerak (enumeratsiyaga qarshi). SMTP osilib qolmasligini
+    `settings.EMAIL_TIMEOUT` ta'minlaydi — usiz so'rov gunicorn
+    timeout'igacha kutib, worker o'ldirilardi.
 
     SMTP sozlanmagan bo'lsa Django console backend ishlatiladi va kod
     terminalga chiqadi — lokal ishlab chiqish uchun.
@@ -166,8 +168,9 @@ def _send_code_email(email: str, pairs):
         logger.info(
             "[AUTH] Tiklash kodi yuborildi: %d ta hisob uchun", len(pairs)
         )
-    except Exception as exc:
-        logger.error("[AUTH] Tiklash kodini yuborib bo'lmadi: %s", exc)
+    except Exception:
+        # `exception` — to'liq traceback logga tushsin
+        logger.exception("[AUTH] Tiklash kodini yuborib bo'lmadi")
 
 
 def confirm_reset(email: str, code: str, new_password: str) -> str:

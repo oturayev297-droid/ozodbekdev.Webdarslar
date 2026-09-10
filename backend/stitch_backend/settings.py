@@ -23,6 +23,7 @@ env = environ.Env(
     EMAIL_HOST_USER=(str, ""),
     EMAIL_HOST_PASSWORD=(str, ""),
     DEFAULT_FROM_EMAIL=(str, ""),
+    EMAIL_TIMEOUT=(int, 10),
     TELEGRAM_BOT_TOKEN=(str, ""),
     TELEGRAM_BOT_USERNAME=(str, ""),
     TELEGRAM_ADMIN_CHAT_IDS=(list, []),
@@ -257,6 +258,14 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD").replace(" ", "")
 EMAIL_USE_TLS = EMAIL_PORT == 587
 EMAIL_USE_SSL = EMAIL_PORT == 465
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL") or EMAIL_HOST_USER or "noreply@localhost"
+
+# SMTP ulanishi uchun soniya. BO'SH QOLDIRILMAYDI: Django standarti
+# cheksiz kutish va SMTP porti yopiq bo'lsa (Railway) so'rov gunicorn
+# `--timeout` iga (120s) qadar osilib turardi. Shunda gunicorn
+# worker'ni SIGABRT bilan o'ldirardi va logda `SystemExit: 1` chiqardi
+# — `except Exception` uni ushlamaydi. Timeout bilan esa oddiy
+# `TimeoutError` chiqadi va `password_reset` uni ushlab logga yozadi.
+EMAIL_TIMEOUT = env("EMAIL_TIMEOUT")
 
 EMAIL_CONFIGURED = bool(EMAIL_HOST_USER and EMAIL_HOST_PASSWORD)
 if EMAIL_CONFIGURED:
