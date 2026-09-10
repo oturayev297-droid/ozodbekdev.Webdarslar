@@ -15,9 +15,10 @@ Shuning uchun bu yerda uch narsa qattiq tekshiriladi:
 """
 
 import json
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from billing.models import PeriodSource, SubscriptionPlan
@@ -769,3 +770,49 @@ class ChallengeCheckTests(ApiBase):
 
     def test_bosh_natija_uchun_alohida_maslahat(self):
         self.assertIn('chiqar', self._check('').json()['detail'].lower())
+
+
+# ══════════════════════════ Video havolasi ══════════════════════════
+
+
+@override_settings(
+    VIDEO_STORAGE_BUCKET='sinov-bucket',
+    VIDEO_STORAGE_ACCESS_KEY='kalit',
+    VIDEO_STORAGE_SECRET_KEY='maxfiy',
+)
+class VideoUrlTokenTests(ApiBase):
+    """
+    API bergan `video_url` pleyerda SESSION'SIZ ochilishi.
+
+    Frontend (Vercel) va backend (Railway) turli domenlarda: `<video>`
+    cookie yubormaydi, frontend esa JWT ishlatadi. Havola o'zi yetarli
+    bo'lishi kerak.
+    """
+
+    def setUp(self):
+        super().setUp()
+        Lesson.objects.filter(pk__in=[self.free.pk, self.paid.pk]).update(
+            video_file='lesson_videos/dars.mp4'
+        )
+        self.client.force_login(make_user('obunachi', subscribed=True))
+
+    def _video_url(self, lesson):
+        response = self.client.get(reverse('api:lesson_detail', args=[lesson.id]))
+        self.assertEqual(response.status_code, 200)
+        return response.json()['video_url']
+
+    def test_pullik_dars_havolasida_token_bor(self):
+        self.assertIn('?t=', self._video_url(self.paid))
+
+    def test_bepul_dars_havolasida_token_yoq(self):
+        self.assertNotIn('?t=', self._video_url(self.free))
+
+    def test_havola_tizimga_kirmagan_brauzerda_ochiladi(self):
+        url = self._video_url(self.paid)
+        self.client.logout()
+
+        with patch('core.video_storage.signed_url', return_value='https://r2/imzo'):
+            response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], 'https://r2/imzo')

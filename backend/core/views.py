@@ -27,23 +27,26 @@ import mimetypes
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 
-from billing.gating import can_access_lesson, paywall
-
-from . import certificates, video_storage
+from . import certificates, video_storage, video_token
 from .approval import approval_required
 from .models import Certificate, Lesson
 
 logger = logging.getLogger(__name__)
 
 
-@approval_required
-@login_required
 def lesson_video(request, lesson_id):
     """
     Dars videosini FAQAT huquqi bor foydalanuvchiga uzatadi.
+
+    SESSION ISHLATILMAYDI (`@login_required` yo'q): frontend boshqa
+    domenda va `<video>` cookie yubormaydi. Huquq quyidagicha:
+
+      * bepul dars  -> hech qanday tekshiruvsiz
+      * pullik dars -> `?t=` token (`core.video_token`). Uni API faqat
+                       huquq tekshirilgandan keyin beradi.
 
     UCHTA REJIM, sozlamaga qarab tanlanadi:
 
@@ -59,9 +62,16 @@ def lesson_video(request, lesson_id):
     """
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
-    # DARVOZA: bepul dars hammaga, qolgani faol obunaga.
-    if not can_access_lesson(request.user, lesson):
-        return paywall(request, "Bu dars videosi obuna bilan ochiladi.")
+    # DARVOZA: bepul dars hammaga, pullik dars faqat token bilan.
+    if not lesson.is_free and video_token.check(request.GET.get('t'), lesson.id) is None:
+        # JSON, 302 EMAS: pleyerga login sahifasining HTML i
+        # qaytmasin. Frontend 403 ni ko'rib darsni qayta so'raydi.
+        message = "Video havolasi eskirgan yoki noto'g'ri. Sahifani yangilang."
+        return JsonResponse(
+            {'success': False, 'error': message, 'detail': message,
+             'code': 'VIDEO_TOKEN_INVALID'},
+            status=403,
+        )
 
     if not lesson.video_file:
         raise Http404("Bu darsda video yo'q")

@@ -21,7 +21,7 @@ IMZOLANGAN HAVOLA NIMA UCHUN:
 
 Faylni ochiq qoldirish mumkin emas — havolani bir marta olgan odam uni
 tarqatib yuborardi va obuna ma'nosini yo'qotardi. Imzolangan havola
-qisqa muddat (standart 4 soat) amal qiladi va shu vaqtdan keyin
+qisqa muddat (standart 30 daqiqa) amal qiladi va shu vaqtdan keyin
 o'ladi. Huquq esa har safar Django tomonida QAYTA tekshiriladi —
 havola faqat tekshiruvdan o'tgandan keyin beriladi.
 
@@ -37,9 +37,10 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 #: Imzolangan havola necha soniya amal qiladi.
-#: 4 soat — eng uzun dars ham bemalol tugaydi, lekin havola
-#: tarqatilgan taqdirda ham ertasiga ishlamaydi.
-DEFAULT_URL_TTL = 4 * 60 * 60
+#: 30 daqiqa — brauzer havolani ochib video oqimini boshlashiga
+#: yetadi, tarqatilgan havola esa tez o'ladi. Havola eskirsa, u
+#: `/lessons/<id>/video/` orqali qayta so'raladi.
+DEFAULT_URL_TTL = 30 * 60
 
 
 class VideoStorageError(Exception):

@@ -9,6 +9,7 @@ HUQUQ har doim Django tomonida tekshiriladi. Bulutga o'tish paywallda
 teshik ochib qo'ymasligi kerak.
 """
 
+import time
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -17,7 +18,7 @@ from django.urls import reverse
 
 from billing.models import PeriodSource, SubscriptionPlan
 from billing.services import extend_subscription
-from core import video_storage
+from core import video_storage, video_token
 from core.models import Category, Lesson, Module
 
 CLOUD = dict(
@@ -85,7 +86,12 @@ class SignedUrlTests(TestCase):
 
 
 class VideoAccessTests(TestCase):
-    """Rejimdan qat'i nazar huquq tekshirilishi."""
+    """
+    Rejimdan qat'i nazar huquq tekshirilishi.
+
+    Session ISHLATILMAYDI: frontend boshqa domenda va `<video>` cookie
+    yubormaydi. Pullik darsni `?t=` token ochadi, bepul dars ochiq.
+    """
 
     def setUp(self):
         SubscriptionPlan.objects.create(code='T', name='T', price_per_month_tiyin=10_000_000)
@@ -95,44 +101,108 @@ class VideoAccessTests(TestCase):
             module=module, title='Pullik', theory='Matn', order=1, is_free=False,
             video_file='lesson_videos/maxfiy.mp4',
         )
+        self.free = Lesson.objects.create(
+            module=module, title='Bepul', theory='Matn', order=2, is_free=True,
+            video_file='lesson_videos/ochiq.mp4',
+        )
         self.user = User.objects.create_user('talaba', password='juda-maxfiy-parol-8')
         profile = self.user.profile
         profile.is_approved = True
         profile.save(update_fields=['is_approved'])
-        self.client.force_login(self.user)
+
+    def _get(self, lesson, token=None):
+        """Tizimga KIRMAGAN brauzer — `<video>` aynan shunday so'raydi."""
+        params = {'t': token} if token is not None else {}
+        return self.client.get(reverse('lesson_video', args=[lesson.id]), params)
+
+    def _mock_signed(self, mock_client, url='https://imzolangan/dars.mp4'):
+        client = MagicMock()
+        client.generate_presigned_url.return_value = url
+        mock_client.return_value = client
 
     @override_settings(**CLOUD)
     @patch('core.video_storage._client')
-    def test_obunasiz_odam_BULUT_HAVOLASINI_OLMAYDI(self, mock_client):
+    def test_tokensiz_odam_BULUT_HAVOLASINI_OLMAYDI(self, mock_client):
         """
         Eng muhim tekshiruv: bulutga o'tish paywallni chetlab
         o'tmasligi kerak. Imzolangan havola umuman so'ralmasligi ham
         kerak — so'ralsa, u loglarda qolib ketardi.
         """
-        response = self.client.get(reverse('lesson_video', args=[self.paid.id]))
+        response = self._get(self.paid)
 
-        self.assertEqual(response.status_code, 402)
+        self.assertEqual(response.status_code, 403)
         mock_client.assert_not_called()
 
     @override_settings(**CLOUD)
     @patch('core.video_storage._client')
-    def test_obunali_odam_havolaga_yonaltiriladi(self, mock_client):
-        client = MagicMock()
-        client.generate_presigned_url.return_value = 'https://imzolangan/dars.mp4'
-        mock_client.return_value = client
+    def test_session_yetmaydi_token_kerak(self, mock_client):
+        """Obunali odam ham tokensiz ololmaydi — huquqni API tekshiradi."""
         extend_subscription(self.user, days=30, source=PeriodSource.ADMIN_GRANT)
+        self.client.force_login(self.user)
 
-        response = self.client.get(reverse('lesson_video', args=[self.paid.id]))
+        response = self._get(self.paid)
+
+        self.assertEqual(response.status_code, 403)
+        mock_client.assert_not_called()
+
+    @override_settings(**CLOUD)
+    @patch('core.video_storage._client')
+    def test_token_bilan_R2_ga_yonaltiriladi(self, mock_client):
+        self._mock_signed(mock_client)
+
+        response = self._get(self.paid, video_token.make(self.paid.id, self.user.id))
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], 'https://imzolangan/dars.mp4')
 
+    @override_settings(**CLOUD)
+    @patch('core.video_storage._client')
+    def test_bepul_dars_login_va_tokensiz_R2_ga_yonaltiriladi(self, mock_client):
+        """Asosiy bug: ilgari bu yerda 302 -> /panel/login/ qaytardi."""
+        self._mock_signed(mock_client, 'https://imzolangan/ochiq.mp4')
+
+        response = self._get(self.free)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], 'https://imzolangan/ochiq.mp4')
+
+    @override_settings(**CLOUD)
+    @patch('core.video_storage._client')
+    def test_muddati_otgan_token_rad_etiladi(self, mock_client):
+        past = time.time() - video_token.TOKEN_TTL - 60
+        with patch('django.core.signing.time.time', return_value=past):
+            token = video_token.make(self.paid.id, self.user.id)
+
+        response = self._get(self.paid, token)
+
+        self.assertEqual(response.status_code, 403)
+        mock_client.assert_not_called()
+
+    @override_settings(**CLOUD)
+    @patch('core.video_storage._client')
+    def test_boshqa_dars_tokeni_rad_etiladi(self, mock_client):
+        """27-dars tokeni 28-darsni ochmasligi kerak."""
+        response = self._get(self.paid, video_token.make(self.free.id, self.user.id))
+
+        self.assertEqual(response.status_code, 403)
+        mock_client.assert_not_called()
+
+    @override_settings(**CLOUD)
+    @patch('core.video_storage._client')
+    def test_soxta_token_rad_etiladi(self, mock_client):
+        token = video_token.make(self.paid.id, self.user.id)
+        # Imzo o'zgarmagan, lekin foydalanuvchi qismi qalbakilashtirilgan
+        forged = token.replace(f"{self.paid.id}:{self.user.id}:", f"{self.paid.id}:999:", 1)
+
+        for bad in ('', 'abc', forged):
+            with self.subTest(token=bad):
+                self.assertEqual(self._get(self.paid, bad).status_code, 403)
+        mock_client.assert_not_called()
+
     @override_settings(VIDEO_STORAGE_BUCKET='', USE_X_ACCEL_REDIRECT=True)
     def test_bulutsiz_nginx_rejimi_ishlaydi(self):
         """Sozlama bo'sh bo'lsa eski yo'l buzilmasligi kerak."""
-        extend_subscription(self.user, days=30, source=PeriodSource.ADMIN_GRANT)
-
-        response = self.client.get(reverse('lesson_video', args=[self.paid.id]))
+        response = self._get(self.paid, video_token.make(self.paid.id, self.user.id))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['X-Accel-Redirect'], '/protected/lesson_videos/maxfiy.mp4')

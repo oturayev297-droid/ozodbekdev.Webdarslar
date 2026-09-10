@@ -167,10 +167,15 @@ class VideoProtectionTests(BaseFixtureMixin, TestCase):
         self.build_content()
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    def test_video_login_talab_qiladi(self):
+    def test_bepul_dars_videosi_login_talab_qilmaydi(self):
+        """
+        Frontend boshqa domenda va `<video>` session cookie yubormaydi.
+        Ilgari bu yerda 302 -> /panel/login/ qaytib, pleyerga HTML
+        tushardi.
+        """
         response = self.client.get(reverse('lesson_video', args=[self.lesson.id]))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/login/', response['Location'])
+        # Video fayli yo'q -> 404, lekin login sahifasiga 302 EMAS
+        self.assertEqual(response.status_code, 404)
 
     def test_media_url_orqali_video_berilmaydi(self):
         """/media/lesson_videos/... endi ochiq marshrut emas."""

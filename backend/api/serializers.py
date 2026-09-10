@@ -13,11 +13,13 @@ Shuning uchun dars serializeri IKKITA: to'liq va qisqartirilgan.
 Qaysi biri ishlatilishi `can_access_lesson` bilan hal qilinadi.
 """
 
+from urllib.parse import urlencode
+
 from rest_framework import serializers
 
 from billing.dates import format_money
 from billing.services import STATUS_LABELS
-from core import richtext
+from core import richtext, video_token
 from core.models import (
     Category,
     Certificate,
@@ -114,13 +116,20 @@ class LessonDetailSerializer(LessonListSerializer):
         """
         Video HAVOLASI beriladi, faylning o'zi emas.
 
-        Havola `/lessons/<id>/video/` ga ishora qiladi va u yerda huquq
-        QAYTA tekshiriladi. Havolani qo'lga kiritgan begona odam ham
-        videoni ololmaydi.
+        Havola `/lessons/<id>/video/` ga ishora qiladi. Pullik darsda
+        unga `?t=<token>` qo'shiladi: `<video>` boshqa domendagi
+        backendga session cookie yubormaydi, huquqni shu qisqa muddatli
+        token olib boradi (`core.video_token`). Bu serializer faqat
+        huquq tekshirilgandan keyin ishlatiladi — token ham faqat
+        shunda beriladi.
         """
         request = self.context.get('request')
         if obj.video_file:
             path = f'/lessons/{obj.id}/video/'
+            if not obj.is_free:
+                user = getattr(request, 'user', None)
+                token = video_token.make(obj.id, getattr(user, 'pk', None) or 0)
+                path += '?' + urlencode({'t': token})
             return request.build_absolute_uri(path) if request else path
         return obj.video_url or None
 

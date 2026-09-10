@@ -21,6 +21,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from core import video_token
 from core.models import Category, Lesson, Module, Quiz
 
 from . import dates, payment_requests
@@ -552,11 +553,12 @@ class ContentGatingTests(BaseBillingTest):
         # Video fayli yo'q -> 404, lekin 402 (paywall) EMAS
         self.assertEqual(response.status_code, 404)
 
-    def test_pullik_dars_videosi_yopiq(self):
+    def test_pullik_dars_videosi_tokensiz_yopiq(self):
+        """Session yetmaydi — pullik video faqat API bergan token bilan."""
         response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
-        self.assertEqual(response.status_code, 402)
+        self.assertEqual(response.status_code, 403)
 
-    def test_paywall_JSON_qaytaradi(self):
+    def test_tokensiz_video_JSON_qaytaradi(self):
         """
         `<video src>` HTML sahifani ko'rsata olmaydi — brauzer
         shunchaki "ochilmadi" deydi va sabab bilinmaydi. JSON esa
@@ -565,12 +567,13 @@ class ContentGatingTests(BaseBillingTest):
         response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
 
         self.assertEqual(response['Content-Type'], 'application/json')
-        self.assertEqual(response.json()['code'], 'SUBSCRIPTION_REQUIRED')
+        self.assertEqual(response.json()['code'], 'VIDEO_TOKEN_INVALID')
 
-    def test_obuna_bilan_pullik_video_ochiladi(self):
-        extend_subscription(self.user, months=1, source=PeriodSource.PAYMENT,
-                            payment_method=PaymentMethod.CASH)
-        response = self.client.get(reverse('lesson_video', args=[self.paid_lesson.id]))
-        self.assertEqual(response.status_code, 404, "Paywall emas, faqat video yo'q")
+    def test_token_bilan_pullik_video_ochiladi(self):
+        token = video_token.make(self.paid_lesson.id, self.user.id)
+        response = self.client.get(
+            reverse('lesson_video', args=[self.paid_lesson.id]), {'t': token}
+        )
+        self.assertEqual(response.status_code, 404, "Darvoza emas, faqat video yo'q")
 
 
