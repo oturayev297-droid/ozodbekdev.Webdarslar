@@ -14,7 +14,9 @@ Ishga tushirish:  python manage.py test core.tests_quiz_content
 """
 
 import importlib
+import io
 import json
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from django.apps import apps
@@ -154,3 +156,61 @@ class MigrationRuleTests(TestCase):
         m0026.replace_off_topic(apps, None)
 
         self.assertTrue(quiz.questions.filter(text="1. Admin yozgan savol").exists())
+
+
+m0027 = importlib.import_module('core.migrations.0027_fix_lesson_code_sample')
+
+
+class LessonCodeSampleTests(TestCase):
+    """
+    "Python Lesson 2" kod namunasi ishga tushirilsa yiqilardi
+    (`User`/`users`, `For`). O'quvchi uni muharrirga ko'chirib, xatoni
+    o'zidan izlardi.
+    """
+
+    def test_tuzatilgan_kod_ishlaydi_va_kutilgan_natijani_beradi(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exec(m0027.FIXED, {})
+
+        self.assertEqual(output.getvalue().splitlines(), [
+            'Ozodbek', 'Suhrob', 'Yurist', 'Shifokor',
+            '1', '2', '3', '4',
+            '1 Ozodbek', '2 Suhrob', '3 Yurist', '4 Shifokor',
+        ])
+
+    def test_eski_kod_haqiqatan_yiqilardi(self):
+        """Migratsiya haqiqiy xatoni tuzatayotganiga dalil."""
+        with self.assertRaises(SyntaxError):
+            compile(m0027.BROKEN, 'namuna', 'exec')
+
+    def test_fixture_dagi_namuna_tuzatilgan(self):
+        data = json.loads(FIXTURE.read_text(encoding='utf-8'))
+        lesson = next(
+            o for o in data if o['model'] == 'core.lesson' and o['pk'] == m0027.LESSON_ID
+        )
+        self.assertEqual(lesson['fields']['practice_code'], m0027.FIXED)
+
+    def _lesson(self, code):
+        category = Category.objects.create(name="Python", slug="python")
+        module = Module.objects.create(category=category, title="M", order=1)
+        return Lesson.objects.create(
+            pk=m0027.LESSON_ID, module=module, title="Python Lesson 2",
+            order=2, practice_code=code,
+        )
+
+    def test_xato_namuna_almashtiriladi(self):
+        lesson = self._lesson(m0027.BROKEN)
+
+        m0027.fix_code_sample(apps, None)
+
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.practice_code, m0027.FIXED)
+
+    def test_admin_ozgartirgan_namunaga_tegilmaydi(self):
+        lesson = self._lesson("print('admin yozgan kod')")
+
+        m0027.fix_code_sample(apps, None)
+
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.practice_code, "print('admin yozgan kod')")

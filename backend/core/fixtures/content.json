@@ -174,7 +174,7 @@
   "module": 9,
   "title": "Python Lesson 2",
   "theory": "Nazariy TG da > > > > >",
-  "practice_code": "User={1:'Ozodbek',2:'SUhrob',3:'Yurist',4:'Shifokor'}\r\n\r\nFor value in users.values() :\r\n      print(value)\r\n\r\nfor key in users.keys():\r\n    print(key)\r\n\r\nfor key, value in users.items():\r\n    print(key, value)",
+  "practice_code": "users = {1: 'Ozodbek', 2: 'Suhrob', 3: 'Yurist', 4: 'Shifokor'}\n\nfor value in users.values():\n    print(value)\n\nfor key in users.keys():\n    print(key)\n\nfor key, value in users.items():\n    print(key, value)",
   "video_url": "https://youtu.be/Q3H1OUj_XU8?list=PLOvS2OkP87tSfos3rmPAhg9FqFDhbOcr1",
   "video_file": "lesson_videos/2-dars_Xuaslly.mp4",
   "order": 2,
