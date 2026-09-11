@@ -188,7 +188,7 @@
  "fields": {
   "module": 9,
   "title": "Python darslari Kirish",
-  "theory": "Kirish \r\n\r\nDasutrlash asoslari darsimizni boshlaymiz. \r\nDarsning maqsadi nima? \r\nNima uchun aynan Pyhton?\r\n\r\n[Kursning YouTube'dagi video pleylisti](https://youtu.be/_f8cpjAz0sw?list=PLOvS2OkP87tSfos3rmPAhg9FqFDhbOcr1)",
+  "theory": "Kirish \r\n\r\nDasturlash asoslari darsimizni boshlaymiz. \r\nDarsning maqsadi nima? \r\nNima uchun aynan Python?\r\n\r\n[Kursning YouTube'dagi video pleylisti](https://youtu.be/_f8cpjAz0sw?list=PLOvS2OkP87tSfos3rmPAhg9FqFDhbOcr1)",
   "practice_code": "# Birinchi dasturimiz\nprint(\"Salom, dunyo!\")",
   "video_url": "https://youtu.be/_f8cpjAz0sw?list=PLOvS2OkP87tSfos3rmPAhg9FqFDhbOcr1On9Lw5D7a26THpBDgAma1Sus",
   "video_file": "lesson_videos/kirish.mp4",
@@ -818,7 +818,7 @@
  "fields": {
   "module": 12,
   "title": "JavaScript Lesson 5",
-  "theory": "005.  Brauserda Console  | JavaScript darslari | O'zbek tilida",
+  "theory": "005.  Brauzerda Console  | JavaScript darslari | O'zbek tilida",
   "practice_code": "",
   "video_url": "https://youtu.be/Z4E2xjTCyjM?list=PLNS3PujVHR-ay0HpqbsPWccgEhJZk6K9u",
   "video_file": "lesson_videos/5-dars_Q5tm4Y3.mp4",
@@ -893,7 +893,7 @@
  "fields": {
   "module": 12,
   "title": "JavaScript Lesson 10",
-  "theory": "010. Ko'p ishlatilinadigan String Metodlari  | JavaScript darslari | O'zbek tilida",
+  "theory": "010. Ko'p ishlatiladigan String Metodlari  | JavaScript darslari | O'zbek tilida",
   "practice_code": "",
   "video_url": "https://youtu.be/-bz1HWGOKwc?list=PLNS3PujVHR-ay0HpqbsPWccgEhJZk6K9u",
   "video_file": "lesson_videos/10-dars_2T5xX5Z.mp4",
@@ -1178,7 +1178,7 @@
  "fields": {
   "module": 12,
   "title": "JavaScript Lesson 29",
-  "theory": "029.  Function decloration, Fcuntion expresson, Arrow function  | JavaScript darslar | O'zbek tilida",
+  "theory": "029.  Function declaration, Function expression, Arrow function  | JavaScript darslar | O'zbek tilida",
   "practice_code": "",
   "video_url": "https://www.youtube.com/watch?v=pDDDtLSAoI0",
   "video_file": "lesson_videos/29-dars.mp4",
@@ -1193,7 +1193,7 @@
  "fields": {
   "module": 12,
   "title": "JavaScript Lesson 30",
-  "theory": "030.  Argumentlar va Parametorlar | JavaScript darslari",
+  "theory": "030.  Argumentlar va Parametrlar | JavaScript darslari",
   "practice_code": "",
   "video_url": "https://www.youtube.com/watch?v=HFt_vZm4yE8",
   "video_file": "lesson_videos/30-dars.mp4",
@@ -1513,7 +1513,7 @@
  "pk": 10,
  "fields": {
   "lesson": 31,
-  "title": "Python ro'yhat davomi - Yakuniy Test",
+  "title": "Python ro'yxat davomi - Yakuniy Test",
   "time_limit": 30,
   "is_published": true,
   "is_generated": false,
@@ -1525,7 +1525,7 @@
  "pk": 11,
  "fields": {
   "lesson": 33,
-  "title": "Ro'yhat va uning metodlari - Yakuniy Test",
+  "title": "Ro'yxat va uning metodlari - Yakuniy Test",
   "time_limit": 30,
   "is_published": true,
   "is_generated": false,
@@ -1753,7 +1753,7 @@
  "pk": 284,
  "fields": {
   "quiz": 5,
-  "text": "13. CSRF tokenni qayerga qoyiladi?"
+  "text": "13. CSRF tokenni qayerga qo'yiladi?"
  }
 },
 {
@@ -1801,7 +1801,7 @@
  "pk": 335,
  "fields": {
   "quiz": 7,
-  "text": "4. Id arcqali elementni topish?"
+  "text": "4. Id orqali elementni topish?"
  }
 },
 {
@@ -1857,7 +1857,7 @@
  "pk": 342,
  "fields": {
   "quiz": 7,
-  "text": "11. LocalStorage ga malumot yozish?"
+  "text": "11. LocalStorage ga ma'lumot yozish?"
  }
 },
 {
@@ -1977,7 +1977,7 @@
  "pk": 402,
  "fields": {
   "quiz": 9,
-  "text": "11. Class yaratish sozini toping:"
+  "text": "11. Class yaratish so'zini toping:"
  }
 },
 {
@@ -7595,7 +7595,7 @@
  "pk": 4,
  "fields": {
   "title": "Social Nexus Network",
-  "description": "Kichik ijtimoiy tarmoq platformasi. Postlar, daxshatli animatsiyalar va real-vaqtda muloqot qilish imkoniyati.",
+  "description": "Kichik ijtimoiy tarmoq platformasi. Postlar, dahshatli animatsiyalar va real-vaqtda muloqot qilish imkoniyati.",
   "image_url": "https://img.freepik.com/free-vector/social-media-landing-page_23-2148293345.jpg",
   "difficulty": "Architect",
   "tech_stack": "Socket.io, Express, Redis, PostgreSQL",

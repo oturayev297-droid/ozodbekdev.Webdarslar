@@ -253,8 +253,10 @@ class IntroCodeSampleTests(TestCase):
         data = json.loads(FIXTURE.read_text(encoding='utf-8'))
         lessons = {o['pk']: o['fields'] for o in data if o['model'] == 'core.lesson'}
         for lesson_id, field, _, new in m0028.FIXES:
+            # 32-dars matnidagi imlo keyin 0029 da tuzatilgan
+            expected = m0029.fixed_value('Lesson', lesson_id, field, new)
             with self.subTest(dars=lesson_id, maydon=field):
-                self.assertEqual(lessons[lesson_id][field], new)
+                self.assertEqual(lessons[lesson_id][field], expected)
 
     def _lesson(self, pk, **fields):
         category, _ = Category.objects.get_or_create(name="Kurs", slug="kurs")
@@ -283,3 +285,45 @@ class IntroCodeSampleTests(TestCase):
 
         react.refresh_from_db()
         self.assertEqual(react.practice_code, "const App = () => <p>Admin</p>;")
+
+
+m0029 = importlib.import_module('core.migrations.0029_fix_intro_typos')
+
+
+class TypoTests(TestCase):
+    """Kontentdagi imlo xatolari ("Pyhton", "arcqali", "malumot"...)."""
+
+    def test_fixture_da_xato_sozlar_qolmagan(self):
+        data = json.loads(FIXTURE.read_text(encoding='utf-8'))
+        index = {(o['model'], o['pk']): o['fields'] for o in data}
+        for model, pk, field, replacements in m0029.FIXES:
+            text = index[(f"core.{model.lower()}", pk)][field]
+            for wrong, right in replacements.items():
+                with self.subTest(yozuv=f"{model} {pk}", soz=wrong):
+                    self.assertNotIn(wrong, text)
+                    self.assertIn(right, text)
+
+    def _lesson(self, theory):
+        category = Category.objects.create(name="Python", slug="python")
+        module = Module.objects.create(category=category, title="M", order=1)
+        return Lesson.objects.create(pk=32, module=module, title="Kirish", order=0, theory=theory)
+
+    def test_faqat_xato_sozlar_almashtiriladi(self):
+        lesson = self._lesson("Admin yozgan matn. Dasutrlash va Pyhton haqida.")
+
+        m0029.fix_typos(apps, None)
+
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.theory, "Admin yozgan matn. Dasturlash va Python haqida.")
+
+    def test_qayta_ishga_tushirish_hech_narsani_buzmaydi(self):
+        lesson = self._lesson("Pyhton")
+
+        m0029.fix_typos(apps, None)
+        m0029.fix_typos(apps, None)
+
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.theory, "Python")
+
+    def test_yozuv_bolmasa_yiqilmaydi(self):
+        m0029.fix_typos(apps, None)
