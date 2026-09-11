@@ -1,7 +1,7 @@
 """
 AI Mentor testlari.
 
-Modelga haqiqiy so'rov YUBORILMAYDI — `_call_claude` o'rniga soxta
+Modelga haqiqiy so'rov YUBORILMAYDI — `_call_model` o'rniga soxta
 funksiya qo'yiladi. Testda tarmoqqa chiqish sekin, qimmat va
 ishonchsiz bo'lardi.
 
@@ -12,6 +12,9 @@ import json
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
+import httpx
+import openai
+
 from django.contrib.auth.models import User
 from core.test_utils import approve_all
 from django.test import TestCase, override_settings
@@ -21,10 +24,10 @@ from django.utils import timezone
 from . import ai_mentor, mentor_knowledge
 from .models import Category, Challenge, Lesson, MentorMessage, Module
 
-FAKE_KEY = "sk-ant-test-kalit"
+FAKE_KEY = "gemini-test-kalit"
 
 
-@override_settings(ANTHROPIC_API_KEY=FAKE_KEY, ANTHROPIC_MODEL="claude-opus-5")
+@override_settings(GEMINI_API_KEY=FAKE_KEY, GEMINI_MODEL="gemini-2.5-flash")
 class MentorBase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -51,7 +54,7 @@ class MockModeTests(TestCase):
         self.client.force_login(self.user)
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    @override_settings(ANTHROPIC_API_KEY="")
+    @override_settings(GEMINI_API_KEY="")
     def test_sozlanmagan_holda_xato_bermaydi(self):
         response = self.client.post(
             reverse('api:mentor_ask'),
@@ -64,7 +67,7 @@ class MockModeTests(TestCase):
         self.assertTrue(data['mock'])
         self.assertIn('sozlanmagan', data['answer_html'])
 
-    @override_settings(ANTHROPIC_API_KEY="")
+    @override_settings(GEMINI_API_KEY="")
     def test_mock_rejimda_yozuv_saqlanmaydi(self):
         """Kvota faqat haqiqiy so'rovlardan sanalishi kerak."""
         self.client.post(
@@ -76,7 +79,7 @@ class MockModeTests(TestCase):
 
 
 class AskTests(MentorBase):
-    @patch('core.ai_mentor._call_claude', return_value="For sikli **takrorlaydi**.")
+    @patch('core.ai_mentor._call_model', return_value="For sikli **takrorlaydi**.")
     def test_javob_qaytaradi(self, mock_call):
         data = self.ask().json()
         self.assertIn('answer_html', data)
@@ -84,7 +87,7 @@ class AskTests(MentorBase):
         self.assertIn('<strong>takrorlaydi</strong>', data['answer_html'])
         mock_call.assert_called_once()
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_suhbat_saqlanadi(self, _):
         self.ask("Django nima?")
         row = MentorMessage.objects.get()
@@ -113,7 +116,7 @@ class AskTests(MentorBase):
 
 
 class QuotaTests(MentorBase):
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_daqiqalik_cheklov(self, _):
         for _i in range(ai_mentor.MAX_PER_MINUTE):
             self.assertEqual(self.ask().status_code, 200)
@@ -122,7 +125,7 @@ class QuotaTests(MentorBase):
         self.assertEqual(response.status_code, 429)
         self.assertIn('tez', response.json()['detail'])
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_kunlik_cheklov(self, _):
         # Kunlik chegaraga yetguncha yozuvlarni to'g'ridan-to'g'ri yaratamiz
         MentorMessage.objects.bulk_create([
@@ -136,7 +139,7 @@ class QuotaTests(MentorBase):
         self.assertEqual(response.status_code, 429)
         self.assertIn('Kunlik', response.json()['detail'])
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_eski_sorovlar_hisoblanmaydi(self, _):
         MentorMessage.objects.bulk_create([
             MentorMessage(user=self.user, question=f"q{i}", answer="a")
@@ -146,7 +149,7 @@ class QuotaTests(MentorBase):
 
         self.assertEqual(self.ask().status_code, 200)
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_cheklov_foydalanuvchi_boyicha(self, _):
         """Bir o'quvchining kvotasi boshqasiga ta'sir qilmasligi kerak."""
         for _i in range(ai_mentor.MAX_PER_MINUTE):
@@ -160,7 +163,7 @@ class QuotaTests(MentorBase):
 
 
 class HistoryTests(MentorBase):
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_tarix_serverdan_olinadi(self, _):
         self.ask("Birinchi savol")
         history = ai_mentor._history(self.user)
@@ -169,7 +172,7 @@ class HistoryTests(MentorBase):
             {'role': 'assistant', 'content': "Javob"},
         ])
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_tarix_cheklangan(self, _):
         """Cheklovsiz uzun suhbat har so'rovda qayta yuborilib, xarajat o'sardi."""
         MentorMessage.objects.bulk_create([
@@ -179,7 +182,7 @@ class HistoryTests(MentorBase):
         history = ai_mentor._history(self.user)
         self.assertEqual(len(history), ai_mentor.HISTORY_TURNS * 2)
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_begona_tarix_aralashmaydi(self, _):
         other = User.objects.create_user(username='boshqa', password='Parol12345678')
         MentorMessage.objects.create(user=other, question="Maxfiy", answer="Maxfiy javob")
@@ -201,12 +204,12 @@ class LessonContextTests(MentorBase):
         )
         approve_all()   # ruxsat darvozasi bu testlarning mavzusi emas
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_bepul_dars_konteksti_qabul_qilinadi(self, mock_call):
         self.ask(lesson_id=self.free.id)
         self.assertEqual(MentorMessage.objects.get().lesson, self.free)
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_qulflangan_dars_konteksti_rad_etiladi(self, mock_call):
         """
         Aks holda obunasiz o'quvchi qulflangan dars raqamini yuborib,
@@ -215,7 +218,7 @@ class LessonContextTests(MentorBase):
         self.ask(lesson_id=self.paid.id)
         self.assertIsNone(MentorMessage.objects.get().lesson)
 
-    @patch('core.ai_mentor._call_claude', return_value="Javob")
+    @patch('core.ai_mentor._call_model', return_value="Javob")
     def test_mavjud_bolmagan_dars_yiqitmaydi(self, _):
         self.assertEqual(self.ask(lesson_id=999999).status_code, 200)
 
@@ -252,12 +255,12 @@ class HtmlRenderTests(TestCase):
         self.assertIn("<br>", ai_mentor._to_html("Birinchi\nIkkinchi"))
 
 
-@override_settings(ANTHROPIC_API_KEY=FAKE_KEY)
+@override_settings(GEMINI_API_KEY=FAKE_KEY)
 class ApiErrorTests(MentorBase):
     """Model tomonidagi nosozlik foydalanuvchiga tushunarli chiqishi kerak."""
 
     def test_rad_etish_ushlanadi(self):
-        with patch('core.ai_mentor._call_claude') as mock_call:
+        with patch('core.ai_mentor._call_model') as mock_call:
             mock_call.side_effect = ai_mentor.MentorError(
                 "Bu savolga javob bera olmayman. Dasturlashga oid savol bering."
             )
@@ -268,7 +271,7 @@ class ApiErrorTests(MentorBase):
         self.assertEqual(MentorMessage.objects.count(), 0)
 
     def test_tarmoq_xatosi_ushlanadi(self):
-        with patch('core.ai_mentor._call_claude') as mock_call:
+        with patch('core.ai_mentor._call_model') as mock_call:
             mock_call.side_effect = ai_mentor.MentorError("Tarmoqda nosozlik.", status=503)
             response = self.ask()
         self.assertEqual(response.status_code, 503)
@@ -344,24 +347,157 @@ class KnowledgeTests(TestCase):
         context = ai_mentor._lesson_context(self.lesson)
         self.assertIn("qisqartirildi", context)
 
-    @override_settings(ANTHROPIC_API_KEY=FAKE_KEY)
-    def test_bilim_ikki_keshlanadigan_system_blokida_ketadi(self):
-        user = User.objects.create_user('savolchi', password='Parol12345678')
-        response = MagicMock(stop_reason='end_turn')
-        response.content = [MagicMock(type='text', text='Javob')]
+    def test_tizim_korsatmasi_barqaror_tartibda(self):
+        """O'zgarmas qism birinchi, katalog keyin — kesh uchun."""
+        prompt = ai_mentor._system_prompt()
+        self.assertTrue(prompt.startswith(ai_mentor.SYSTEM_PROMPT))
+        self.assertLess(prompt.index("/sertifikat-tekshirish"), prompt.index("Sikllar"))
+        self.assertEqual(prompt, ai_mentor._system_prompt())
 
-        with patch('anthropic.Anthropic') as client_cls:
-            client_cls.return_value.messages.create.return_value = response
-            ai_mentor._call_claude(user, "Sertifikat qanday olinadi?", self.lesson)
 
-        kwargs = client_cls.return_value.messages.create.call_args.kwargs
-        guide, catalog = kwargs['system']
-        self.assertIn("/sertifikat-tekshirish", guide['text'])
-        self.assertIn("Sikllar", catalog['text'])
-        self.assertEqual(guide['cache_control'], {'type': 'ephemeral'})
-        self.assertEqual(catalog['cache_control'], {'type': 'ephemeral'})
+def _completion(text='Javob', finish_reason='stop'):
+    """`chat.completions.create` javobining soxta nusxasi."""
+    choice = MagicMock(finish_reason=finish_reason)
+    choice.message.content = text
+    return MagicMock(choices=[choice])
 
-        # Savol va dars matni breakpoint'lardan KEYIN — messages da
-        question = kwargs['messages'][-1]['content']
-        self.assertIn("Sertifikat qanday olinadi?", question)
-        self.assertIn("<dars_matni>", question)
+
+def _status_error(cls, status_code):
+    request = httpx.Request('POST', ai_mentor.GEMINI_BASE_URL + 'chat/completions')
+    return cls("xato", response=httpx.Response(status_code, request=request), body=None)
+
+
+@override_settings(GEMINI_API_KEY=FAKE_KEY, GEMINI_MODEL="gemini-2.5-flash")
+class GeminiCallTests(TestCase):
+    """
+    Gemini'ga so'rov — `openai` kutubxonasi mock qilinadi, tarmoqqa
+    chiqilmaydi.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'maxfiy_login', email='maxfiy@pochta.uz', password='Parol12345678'
+        )
+        profile = self.user.profile
+        profile.full_name = "Maxfiyjon Ismov"
+        profile.save(update_fields=['full_name'])
+
+        category = Category.objects.create(name="Python", slug="python")
+        module = Module.objects.create(category=category, title="Asoslar", order=1)
+        self.lesson = Lesson.objects.create(
+            module=module, title="Sikllar", order=1, is_free=True,
+            theory="For sikli haqida. " * 20,
+        )
+
+    def _call(self, side_effect=None, result=None):
+        with patch('openai.OpenAI') as client_cls:
+            create = client_cls.return_value.chat.completions.create
+            if side_effect is not None:
+                create.side_effect = side_effect
+            else:
+                create.return_value = result or _completion()
+            try:
+                return ai_mentor._call_model(self.user, "For sikli nima?", self.lesson)
+            finally:
+                self.client_kwargs = client_cls.call_args.kwargs if client_cls.call_args else {}
+                self.create_kwargs = create.call_args.kwargs if create.call_args else {}
+
+    def test_sorov_gemini_ga_ketadi(self):
+        self.assertEqual(self._call(result=_completion("For — sikl.")), "For — sikl.")
+
+        self.assertEqual(self.client_kwargs['base_url'], ai_mentor.GEMINI_BASE_URL)
+        self.assertEqual(self.client_kwargs['api_key'], FAKE_KEY)
+        self.assertEqual(self.client_kwargs['max_retries'], 0)
+        self.assertLess(self.client_kwargs['timeout'], 120, "gunicorn --timeout dan qisqa")
+        self.assertEqual(self.create_kwargs['model'], "gemini-2.5-flash")
+
+        messages = self.create_kwargs['messages']
+        self.assertEqual(messages[0]['role'], 'system')
+        self.assertIn("FAQAT o'zbek tilida", messages[0]['content'])
+        self.assertIn("/sertifikat-tekshirish", messages[0]['content'])
+        self.assertIn("Sikllar", messages[0]['content'])
+        self.assertEqual(messages[-1]['role'], 'user')
+        self.assertIn("For sikli nima?", messages[-1]['content'])
+        self.assertIn("<dars_matni>", messages[-1]['content'])
+
+    def test_ism_login_va_email_yuborilmaydi(self):
+        MentorMessage.objects.create(user=self.user, question="Oldingi savol", answer="Javob")
+
+        self._call()
+
+        payload = json.dumps([self.client_kwargs, self.create_kwargs], default=str)
+        for secret in ("maxfiy_login", "maxfiy@pochta.uz", "Maxfiyjon", str(self.user.pk) + ":"):
+            with self.subTest(secret=secret):
+                self.assertNotIn(secret, payload)
+        # Tarix esa ketadi — faqat matni
+        self.assertIn("Oldingi savol", payload)
+
+    def test_429_band_xabari(self):
+        with self.assertLogs('core.ai_mentor', level='WARNING'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(side_effect=_status_error(openai.RateLimitError, 429))
+
+        self.assertEqual(ctx.exception.status, 429)
+        self.assertEqual(ctx.exception.message, "Mentor band, 10 soniyadan keyin urinib ko'ring.")
+        self.assertEqual(ctx.exception.retry_after, 10)
+
+    def test_429_api_orqali_json_va_retry_after(self):
+        self.client.force_login(self.user)
+        approve_all()
+
+        with patch('openai.OpenAI') as client_cls:
+            client_cls.return_value.chat.completions.create.side_effect = (
+                _status_error(openai.RateLimitError, 429)
+            )
+            response = self.client.post(
+                reverse('api:mentor_ask'),
+                data=json.dumps({'question': 'For nima?'}),
+                content_type='application/json',
+            )
+
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.json()['detail'], ai_mentor.BUSY_MESSAGE)
+        self.assertEqual(response['Retry-After'], '10')
+        self.assertEqual(MentorMessage.objects.count(), 0, "kvotaga sanalmasin")
+
+    def test_server_xatosi_503_va_loglanadi(self):
+        with self.assertLogs('core.ai_mentor', level='ERROR'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(side_effect=_status_error(openai.InternalServerError, 500))
+        self.assertEqual(ctx.exception.status, 503)
+
+    def test_aloqa_xatosi_503(self):
+        request = httpx.Request('POST', ai_mentor.GEMINI_BASE_URL)
+        with self.assertLogs('core.ai_mentor', level='ERROR'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(side_effect=openai.APIConnectionError(request=request))
+        self.assertEqual(ctx.exception.status, 503)
+
+    def test_timeout_503(self):
+        request = httpx.Request('POST', ai_mentor.GEMINI_BASE_URL)
+        with self.assertLogs('core.ai_mentor', level='ERROR'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(side_effect=openai.APITimeoutError(request=request))
+        self.assertEqual(ctx.exception.status, 503)
+
+    def test_kutilmagan_xato_processni_yiqitmaydi(self):
+        with self.assertLogs('core.ai_mentor', level='ERROR'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(side_effect=ValueError("kutilmagan"))
+        self.assertEqual(ctx.exception.status, 503)
+
+    def test_buzuq_javob_processni_yiqitmaydi(self):
+        with self.assertLogs('core.ai_mentor', level='ERROR'):
+            with self.assertRaises(ai_mentor.MentorError) as ctx:
+                self._call(result=MagicMock(choices=[object()]))
+        self.assertEqual(ctx.exception.status, 503)
+
+    def test_xavfsizlik_filtri_rad_etadi(self):
+        with self.assertRaises(ai_mentor.MentorError) as ctx:
+            self._call(result=_completion(None, finish_reason='content_filter'))
+        self.assertEqual(ctx.exception.status, 400)
+
+    def test_bosh_javob_503(self):
+        with self.assertRaises(ai_mentor.MentorError) as ctx:
+            self._call(result=_completion(""))
+        self.assertEqual(ctx.exception.status, 503)

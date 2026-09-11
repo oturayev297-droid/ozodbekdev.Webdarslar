@@ -733,11 +733,13 @@ class MentorAskView(APIView):
                 request.user, serializer.validated_data['question'], lesson=lesson
             )
         except ai_mentor.MentorError as exc:
-            # `MentorError.status` cheklovda 429, boshqa holatda 400/503
-            return Response(
-                {'detail': getattr(exc, 'message', str(exc))},
-                status=getattr(exc, 'status', status.HTTP_400_BAD_REQUEST),
-            )
+            # `MentorError.status` cheklovda 429, boshqa holatda 400/503.
+            # Gemini band bo'lsa brauzerga qachon qayta urinishni ham
+            # aytamiz (`Retry-After`).
+            response = Response({'detail': exc.message}, status=exc.status)
+            if exc.retry_after:
+                response['Retry-After'] = str(exc.retry_after)
+            return response
 
         return Response({'answer_html': result['answer'], 'mock': result['mock']})
 

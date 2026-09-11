@@ -432,16 +432,24 @@ qaytarish). Bunda **obuna davri avtomatik o'chirilmaydi** — u moliyaviy
 jurnal va o'zgarmasligi kerak. Adminga Telegram xabari boradi, qarorni
 u qabul qiladi.
 
-## 10. AI Mentor (Claude API)
+## 10. AI Mentor (Google Gemini)
 
-1. [platform.claude.com](https://platform.claude.com) da API kalit oling.
-2. `.env` ga yozing:
+1. [aistudio.google.com/apikey](https://aistudio.google.com/apikey) da API kalit oling.
+2. `.env` ga (Railway'da — Variables ga) yozing:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-api03-...
-ANTHROPIC_MODEL=claude-opus-5
-ANTHROPIC_EFFORT=low
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_REASONING_EFFORT=low
 ```
+
+Mentor Gemini'ning OpenAI bilan mos API'siga `openai` kutubxonasi orqali
+ulanadi. Modelga ism, login yoki email yuborilmaydi — faqat savol, dars
+mavzusi va platforma haqidagi bilim.
+
+Gemini band bo'lsa (429) o'quvchi "Mentor band, 10 soniyadan keyin urinib
+ko'ring" xabarini oladi. So'rov 30 soniyadan ko'p kutilmaydi, shuning
+uchun Gemini osilib qolsa ham gunicorn worker'i o'lmaydi.
 
 Kalit bo'sh bo'lsa chat "sozlanmagan" xabarini beradi — sayt buzilmaydi.
 
@@ -457,18 +465,19 @@ Har savol pul turadi, shuning uchun cheklovlar kodda qat'iy belgilangan
 | Yuboriladigan tarix | oxirgi 6 almashuv |
 | Javob uzunligi | 4096 token |
 
-Tizim ko'rsatmasi keshlanadi, ya'ni har so'rovda qayta hisoblanmaydi.
-`ANTHROPIC_EFFORT=low` — dasturlash tushunchasini tushuntirish chuqur
-fikrlashni talab qilmaydi. Javoblar sifati yetarli bo'lmasa `medium`
-qiling.
+Tizim ko'rsatmasi har so'rovda bir xil boshlanadi, Gemini uni o'zi
+keshlaydi. `GEMINI_REASONING_EFFORT=low` — dasturlash tushunchasini
+tushuntirish chuqur fikrlashni talab qilmaydi. Javoblar sifati yetarli
+bo'lmasa `medium` qiling.
 
 Admin panel → **AI Mentor savollari** da barcha suhbatlar ko'rinadi —
 javob sifatini va suiiste'molni shu yerdan kuzating.
 
 ## 11. Test savollarini generatsiya qilish
 
-`ANTHROPIC_API_KEY` sozlangandan keyin (10-bo'lim) darslardan qoralama
-test savollari yozdirish mumkin:
+Generator Claude API'da ishlaydi (mentor esa Gemini'da). `.env` ga
+`ANTHROPIC_API_KEY` (va ixtiyoriy `ANTHROPIC_MODEL`) yozilgandan keyin
+darslardan qoralama test savollari yozdirish mumkin:
 
 ```bash
 # Avval ko'rib chiqing — hech narsa saqlanmaydi
@@ -693,6 +702,7 @@ VIDEO_STORAGE_ACCESS_KEY=...
 VIDEO_STORAGE_SECRET_KEY=...
 MEDIA_STORAGE_CLOUD=True
 TELEGRAM_BOT_TOKEN=...
+GEMINI_API_KEY=...
 ANTHROPIC_API_KEY=...
 EMAIL_HOST_USER=...
 EMAIL_HOST_PASSWORD=...

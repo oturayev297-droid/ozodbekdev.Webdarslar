@@ -14,7 +14,7 @@ Python, Django, JavaScript va React o'rgatuvchi video kurslar platformasi.
 - **O'zlashtirish nazorati** — dars tugatish, level tizimi, haftalik faollik
 - **Parolni tiklash** — emailga 6 xonali kod
 - **Telegram xabarnomalar** — to'lov rekvizitlari, tasdiq, muddat eslatmalari
-- **AI Mentor** — Claude API'ga ulangan haqiqiy o'qituvchi chat
+- **AI Mentor** — Google Gemini'ga ulangan haqiqiy o'qituvchi chat
 - **Kod muharriri** — brauzerda **Python** (Pyodide) va JavaScript
 - **Brute-force himoyasi** — login urinishlari cheklovi
 - **Boshqaruv paneli** (`/panel/`) — hisobotlar, pul aylanmasi, darslik joylash,
@@ -84,7 +84,7 @@ backend/                 Django + DRF  ->  Railway
     password_reset.py    6 xonali kod bilan parol tiklash
     lockout.py           login urinishlari cheklovi (brute-force himoyasi)
     certificates.py      PDF sertifikat generatsiyasi va tekshirish
-    ai_mentor.py         Claude API orqali o'qituvchi chat
+    ai_mentor.py         Google Gemini orqali o'qituvchi chat
     views.py             video uzatish va sertifikat PDF (boshqasi API da)
   billing/               obuna va to'lov
     models.py            Tarif, Obuna, Davr jurnali, To'lov so'rovi
@@ -213,13 +213,14 @@ Mazmun `Certificate` yozuvida muzlatilgan, PDF esa uning ko'rinishi.
 
 ## AI Mentor
 
-Chat `claude-opus-5` modeliga ulangan. `ANTHROPIC_API_KEY` bo'sh bo'lsa
-o'quvchi "sozlanmagan" xabarini oladi va sayt buzilmaydi.
+Chat Google Gemini'ning `gemini-2.5-flash` modeliga (OpenAI bilan mos
+API orqali) ulangan. `GEMINI_API_KEY` bo'sh bo'lsa o'quvchi "sozlanmagan"
+xabarini oladi va sayt buzilmaydi. Modelga ism va email yuborilmaydi.
 
 Xarajat nazorati:
 - Har o'quvchiga daqiqada 5, kunida 60 savol
 - Suhbat tarixidan faqat oxirgi 6 almashuv yuboriladi
-- Tizim ko'rsatmasi keshlanadi (`cache_control`)
+- Tizim ko'rsatmasi har so'rovda bir xil boshlanadi — Gemini uni keshlaydi
 - `effort=low` — tushuntirish uchun chuqur fikrlash kerak emas
 
 **Suhbat tarixi SERVERDA saqlanadi**, klientdan qabul qilinmaydi. Aks

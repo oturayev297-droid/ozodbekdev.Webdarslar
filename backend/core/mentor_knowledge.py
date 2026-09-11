@@ -14,8 +14,9 @@ javob berardi yoki taxmin qilardi. Bu modul unga ikki narsani beradi:
                panelda dars qo'shsa yoki nomini o'zgartirsa, mentor
                buni qo'lda yangilashsiz ko'radi.
 
-KESH UCHUN IKKALASI ALOHIDA BLOK (`core.ai_mentor._call_claude`):
-GUIDE hech qachon o'zgarmaydi, katalog esa faqat admin kontentni
+KESH UCHUN TARTIB MUHIM (`core.ai_mentor._system_prompt`): model
+so'rovning takrorlanadigan boshlanishini keshlaydi. GUIDE hech qachon
+o'zgarmaydi, katalog esa faqat admin kontentni
 o'zgartirganda. Shu sababli katalog BARQAROR tartibda quriladi —
 `order` teng bo'lgan darslar `id` bo'yicha. Tartib har so'rovda
 boshqacha chiqsa, kesh har safar buzilib, bilimning to'liq narxi

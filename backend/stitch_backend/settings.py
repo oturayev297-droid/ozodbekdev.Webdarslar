@@ -36,6 +36,9 @@ env = environ.Env(
     ANTHROPIC_API_KEY=(str, ""),
     ANTHROPIC_MODEL=(str, "claude-opus-5"),
     ANTHROPIC_EFFORT=(str, "low"),
+    GEMINI_API_KEY=(str, ""),
+    GEMINI_MODEL=(str, "gemini-2.5-flash"),
+    GEMINI_REASONING_EFFORT=(str, "low"),
     FRONTEND_ORIGINS=(list, []),
     FRONTEND_URL=(str, ""),
     VIDEO_STORAGE_BUCKET=(str, ""),
@@ -317,15 +320,27 @@ CLICK_SECRET_KEY = env("CLICK_SECRET_KEY").strip()
 
 
 # --------------------------------------------------------------------------
-# AI Mentor (Claude API)
+# AI Mentor (Google Gemini)
 # --------------------------------------------------------------------------
 #
-# Kalit bo'sh bo'lsa chat sozlanmagan xabarini beradi va modelga so'rov
-# ketmaydi — sayt buzilmaydi.
+# `core.ai_mentor` Gemini'ning OpenAI bilan mos API'siga `openai`
+# kutubxonasi orqali ulanadi. Kalit bo'sh bo'lsa chat sozlanmagan
+# xabarini beradi va modelga so'rov ketmaydi — sayt buzilmaydi.
 #
-# EFFORT: dasturlash tushunchasini tushuntirish chuqur fikrlashni talab
-# qilmaydi, shuning uchun standart "low" — javob tez keladi va arzon.
-# Murakkabroq javob kerak bo'lsa "medium" qiling.
+# REASONING_EFFORT: dasturlash tushunchasini tushuntirish chuqur
+# fikrlashni talab qilmaydi, shuning uchun standart "low" — javob tez
+# keladi. Murakkabroq javob kerak bo'lsa "medium" qiling.
+
+GEMINI_API_KEY = env("GEMINI_API_KEY").strip()
+GEMINI_MODEL = env("GEMINI_MODEL").strip() or "gemini-2.5-flash"
+GEMINI_REASONING_EFFORT = env("GEMINI_REASONING_EFFORT").strip() or "low"
+
+# --------------------------------------------------------------------------
+# Test savollari generatori (Claude API) — `generate_quizzes` buyrug'i
+# --------------------------------------------------------------------------
+#
+# Mentor Gemini'ga o'tgan, lekin generator hali Claude'da. Kalit bo'sh
+# bo'lsa buyruq ishlamaydi, sayt esa bunga bog'liq emas.
 
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY").strip()
 ANTHROPIC_MODEL = env("ANTHROPIC_MODEL").strip() or "claude-opus-5"
